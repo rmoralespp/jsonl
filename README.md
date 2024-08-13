@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
 [![pypi](https://img.shields.io/pypi/v/py-jsonl.svg)](https://pypi.python.org/pypi/py-jsonl)
-[![versions](https://img.shields.io/pypi/pyversions/jsonl.svg)](https://github.com/rmoralespp/jsonl)
+[![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
 [![codecov](https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rmoralespp/jsonl)
 [![license](https://img.shields.io/github/license/rmoralespp/jsonl.svg)](https://github.com/rmoralespp/jsonl/blob/main/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -10,7 +10,7 @@
 
 ### About
 
-jsonl is a Python Library for Handling JSON Lines Files
+jsonl is a simple Python Library for Handling JSON Lines Files
 
 `jsonl` exposes an API similar to the `json` module from the standard library.
 
@@ -18,13 +18,6 @@ jsonl is a Python Library for Handling JSON Lines Files
 
 ```pip install py-jsonl```
 
-### Tests
-
-```
-(env)$ pip install -r requirements.txt   # Ignore this command if it has already been executed
-(env)$ pytest tests/
-(env)$ pytest --cov jsonl # Tests with coverge
-```
 
 ### Usage
 
@@ -32,24 +25,31 @@ jsonl is a Python Library for Handling JSON Lines Files
 ```
 dumps(iterable, **kwargs)
 
-Serialize iterable to a JSON lines formatted string.
+Serialize an iterable into a JSON Lines formatted string.
 
 :param Iterable[Any] iterable: Iterable of objects
 :param kwargs: `json.dumps` kwargs
 :rtype: str
+
+Examples:
+    import jsonl.dumps
+
+    data = ({'foo': 1}, {'bar': 2})
+    result = jsonl.dumps(data, file)
+    print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
 ```
 
 #####  dump
 ```
 dump(iterable, fp, **kwargs)
 
-Serialize iterable as a JSON lines formatted stream to file-like object.
+Serialize an iterable as a JSON Lines formatted stream to a file-like object.
 
 :param Iterable[Any] iterable: Iterable of objects
 :param fp: file-like object
 :param kwargs: `json.dumps` kwargs
 
-Example:
+Examples:
     import jsonl.dump
 
     data = ({'foo': 1}, {'bar': 2})
@@ -60,11 +60,11 @@ Example:
 
 #####  dump_into
 ```
-dump_into(filename, iterable, encoding=utf_8, **kwargs)
+dump_into(filename, iterable, encoding="utf-8", **kwargs)
 
-Dump iterable to a JSON lines file.
+Dump an iterable to a JSON Lines file.
 
-Example:
+Examples:
     import jsonl.dump_into
 
     data = ({'foo': 1}, {'bar': 2})
@@ -73,13 +73,12 @@ Example:
 
 #####  dump_fork
 ```
-dump_fork(iterable_by_path, encoding=utf_8, dump_if_empty=True, **kwargs)
+dump_fork(path_iterables, encoding="utf-8", dump_if_empty=True, **kwargs)
 
-Incrementally dumps different groups of elements into
-the indicated JSON lines file.
-***Useful to reduce memory consumption***
+Incrementally dumps multiple iterables into the specified JSON Lines files, 
+effectively reducing memory consumption.
 
-:param Iterable[file_path, Iterable[dict]] iterable_by_path: Group items by file path
+:param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
 :param encoding: file encoding. 'utf-8' used by default
 :param bool dump_if_empty: If false, don't create an empty JSON lines file.
 :param kwargs: `json.dumps` kwargs
@@ -87,13 +86,13 @@ the indicated JSON lines file.
 Examples:
     import jsonl.dump_fork
 
-    path_items = (
+    path_iterables = (
         ("num.jsonl", ({"value": 1}, {"value": 2})),
         ("num.jsonl", ({"value": 3},)),
         ("foo.jsonl", ({"a": "1"}, {"b": 2})),
         ("baz.jsonl", ()),
     )
-    jsonl.dump_fork(path_items)
+    jsonl.dump_fork(path_iterables)
 ```
 
 #####  load
@@ -105,15 +104,22 @@ Deserialize a file-like object containing JSON Lines into a Python iterable of o
 :param fp: file-like object
 :param kwargs: `json.loads` kwargs
 :rtype: Iterable[Any]
+
+Examples:
+    import io
+    import jsonl.load
+    
+    iterable = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n'))
+    print(tuple(iterable))  # >> ({"foo": 1}, {"ño": 2})
 ```
 
 #####  load_from
 ```
 def load_from(filename, encoding=utf_8, **kwargs)
  
-Deserialize a JSON Lines file into a Python iterable of objects.
+Deserialize a JSON Lines file into an iterable of Python objects.
 
-:param filename: path
+:param filename: file path
 :param encoding: file encoding. 'utf-8' used by default
 :param kwargs: `json.loads` kwargs
 :rtype: Iterable[str]
@@ -121,7 +127,14 @@ Deserialize a JSON Lines file into a Python iterable of objects.
 Examples:
     import jsonl.load_from
 
-    it = jsonl.load_from("myfile.jsonl")
-    next(it)
+    iterable = jsonl.load_from("myfile.jsonl")
+    print(tuple(iterable))
+```
 
+### Unit tests
+
+```
+(env)$ pip install -r requirements.txt   # Ignore this command if it has already been executed
+(env)$ pytest tests/
+(env)$ pytest --cov jsonl # Tests with coverge
 ```

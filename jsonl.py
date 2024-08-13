@@ -40,11 +40,18 @@ def dumper(iterable, **kwargs):
 
 def dumps(iterable, **kwargs):
     """
-    Serialize iterable to a JSON lines formatted string.
+    Serialize an iterable into a JSON Lines formatted string.
 
     :param Iterable[Any] iterable: Iterable of objects
     :param kwargs: `json.dumps` kwargs
     :rtype: str
+
+    Examples:
+        import jsonl.dumps
+
+        data = ({'foo': 1}, {'bar': 2})
+        result = jsonl.dumps(data, file)
+        print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
     """
 
     return "".join(dumper(iterable, **kwargs))
@@ -52,13 +59,13 @@ def dumps(iterable, **kwargs):
 
 def dump(iterable, fp, **kwargs):
     """
-    Serialize iterable as a JSON lines formatted stream to file-like object.
+    Serialize an iterable as a JSON Lines formatted stream to a file-like object.
 
     :param Iterable[Any] iterable: Iterable of objects
     :param fp: file-like object
     :param kwargs: `json.dumps` kwargs
 
-    Example:
+    Examples:
         import jsonl.dump
 
         data = ({'foo': 1}, {'bar': 2})
@@ -71,7 +78,7 @@ def dump(iterable, fp, **kwargs):
 
 def dump_into(filename, iterable, encoding=utf_8, **kwargs):
     """
-    Dump iterable to a JSON lines file.
+    Dump an iterable to a JSON Lines file.
 
     Example:
         import jsonl.dump_into
@@ -84,13 +91,12 @@ def dump_into(filename, iterable, encoding=utf_8, **kwargs):
         dump(iterable, f, **kwargs)
 
 
-def dump_fork(iterable_by_path, encoding=utf_8, dump_if_empty=True, **kwargs):
+def dump_fork(path_iterables, encoding=utf_8, dump_if_empty=True, **kwargs):
     """
-    Incrementally dumps different groups of elements into
-    the indicated JSON lines file.
-    ***Useful to reduce memory consumption***
+    Incrementally dumps multiple iterables into the specified JSON Lines files,
+    effectively reducing memory consumption.
 
-    :param Iterable[file_path, Iterable[dict]] iterable_by_path: Group items by file path
+    :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
     :param encoding: file encoding. 'utf-8' used by default
     :param bool dump_if_empty: If false, don't create an empty JSON lines file.
     :param kwargs: `json.dumps` kwargs
@@ -98,13 +104,13 @@ def dump_fork(iterable_by_path, encoding=utf_8, dump_if_empty=True, **kwargs):
     Examples:
         import jsonl.dump_fork
 
-        path_items = (
+        path_iterables = (
             ("num.jsonl", ({"value": 1}, {"value": 2})),
             ("num.jsonl", ({"value": 3},)),
             ("foo.jsonl", ({"a": "1"}, {"b": 2})),
             ("baz.jsonl", ()),
         )
-        jsonl.dump_fork(path_items)
+        jsonl.dump_fork(path_iterables)
     """
 
     def get_writer(dst):
@@ -126,7 +132,7 @@ def dump_fork(iterable_by_path, encoding=utf_8, dump_if_empty=True, **kwargs):
     encoder = functools.partial(dumps_line, **kwargs)
     writers = dict()
 
-    for path, iterable in iterable_by_path:
+    for path, iterable in path_iterables:
         if path in writers:
             writer = writers[path]
         else:
@@ -156,7 +162,7 @@ def load(fp, **kwargs):
 
 def load_from(filename, encoding=utf_8, **kwargs):
     """
-    Deserialize a JSON Lines file into a Python iterable of objects.
+    Deserialize a JSON Lines file into an iterable of Python objects.
 
     :param filename: file path
     :param encoding: file encoding. 'utf-8' used by default
