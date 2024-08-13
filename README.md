@@ -32,10 +32,10 @@ Serialize an iterable into a JSON Lines formatted string.
 :rtype: str
 
 Examples:
-    import jsonl.dumps
+    import jsonl
 
     data = ({'foo': 1}, {'bar': 2})
-    result = jsonl.dumps(data, file)
+    result = jsonl.dumps(data)
     print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
 ```
 
@@ -50,7 +50,7 @@ Serialize an iterable as a JSON Lines formatted stream to a file-like object.
 :param kwargs: `json.dumps` kwargs
 
 Examples:
-    import jsonl.dump
+    import jsonl
 
     data = ({'foo': 1}, {'bar': 2})
     with open('myfile.jsonl', mode='w', encoding='utf-8') as file:
@@ -65,7 +65,7 @@ dump_into(filename, iterable, encoding="utf-8", **kwargs)
 Dump an iterable to a JSON Lines file.
 
 Examples:
-    import jsonl.dump_into
+    import jsonl
 
     data = ({'foo': 1}, {'bar': 2})
     jsonl.dump_into("myfile.jsonl", data)
@@ -84,7 +84,7 @@ effectively reducing memory consumption.
 :param kwargs: `json.dumps` kwargs
 
 Examples:
-    import jsonl.dump_fork
+    import jsonl
 
     path_iterables = (
         ("num.jsonl", ({"value": 1}, {"value": 2})),
@@ -107,10 +107,10 @@ Deserialize a file-like object containing JSON Lines into a Python iterable of o
 
 Examples:
     import io
-    import jsonl.load
+    import jsonl
     
     iterable = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n'))
-    print(tuple(iterable))  # >> ({"foo": 1}, {"ño": 2})
+    print(tuple(iterable))  # >> ({'foo': 1}, {'ño': 2})
 ```
 
 #####  load_from
