@@ -1,7 +1,7 @@
 # jsonl
 
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
-[![pypi](https://img.shields.io/pypi/v/jsonl.svg)](https://pypi.python.org/pypi/jsonl)
+[![pypi](https://img.shields.io/pypi/v/jsonl.svg)](https://pypi.python.org/pypi/jsonl-py)
 [![versions](https://img.shields.io/pypi/pyversions/jsonl.svg)](https://github.com/rmoralespp/jsonl)
 [![codecov](https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rmoralespp/jsonl)
 [![license](https://img.shields.io/github/license/rmoralespp/jsonl.svg)](https://github.com/rmoralespp/jsonl/blob/main/LICENSE)
