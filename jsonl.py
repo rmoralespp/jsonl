@@ -17,7 +17,7 @@ __all__ = [
     "load",
     "load_from",
 ]
-__title__ = "jsonl-py"
+__title__ = "py-jsonl"
 
 import functools
 import json

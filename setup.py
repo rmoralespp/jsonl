@@ -31,7 +31,7 @@ setuptools.setup(
         "Topic :: Utilities",
         "Topic :: File Formats :: JSON",
     ],
-    keywords="jsonlines, ndjson, jsonl",
+    keywords=["jsonlines", "ndjson", "jsonl"],
     author="rmoralespp",
     author_email="rmoralespp@gmail.com",
     url="https://github.com/rmoralespp/jsonl",
