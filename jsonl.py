@@ -7,7 +7,7 @@ described: https://jsonlines.org/
 `jsonl` exposes an API similar to the `json` module from the standard library.
 """
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __all__ = [
     "dump",
     "dumps",
