@@ -9,7 +9,7 @@ described: https://jsonlines.org/
 Recognizes ".gz" and ".gzip" extensions to handle gzip-compressed JSON line files.
 """
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 __all__ = [
     "dump",
     "dumps",
