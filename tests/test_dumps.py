@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import jsonl
+import tests
 
 
 def test_dumps_empty():
     assert not jsonl.dumps(())
 
 
-def test_dumps_data():
-    expected = '{"ño": 1}\n{"foo": "var"}\n'
-    value = ({"ño": 1}, {"foo": "var"})
-    result = jsonl.dumps(iter(value))
-    assert result == expected
+def test_dumps_iter_data():
+    result = jsonl.dumps(iter(tests.data))
+    assert result == tests.string_data

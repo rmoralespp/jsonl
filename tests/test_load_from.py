@@ -13,21 +13,18 @@ def test_load_empty():
     expected = ()
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo.jsonl")
-        tests.write(path)
+        tests.write_text(path)
         result = tuple(jsonl.load_from(path))
     assert result == expected
 
 
-def test_load_data():
-    value = '{"foo": 1}\n{"ño": 2}\n'
-    expected = ({"foo": 1}, {"ño": 2})
-
+@pytest.mark.parametrize("extension", ("jsonl.gzip", "jsonl.gz", "jsonl"))
+def test_load_data(extension):
     with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, "foo.jsonl")
-        tests.write(path, value)
+        path = os.path.join(tmp, f"foo.{extension}")
+        tests.write_text(path, content=tests.string_data)
         result = tuple(jsonl.load_from(path))
-
-    assert result == expected
+    assert result == tuple(tests.data)
 
 
 def test_file_not_found():

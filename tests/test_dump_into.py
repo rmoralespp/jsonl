@@ -3,22 +3,23 @@
 import os
 import tempfile
 
+import pytest
+
 import jsonl
+import tests
 
 
-def test_exists_file():
+def test_dump_into_exists_file():
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo.jsonl")
         jsonl.dump_into(path, ())
         assert os.path.exists(path)
 
 
-def test_dumped_iter_data():
-    value = iter(({"foo": 1}, {"ño": 2}))
-    expected = '{"foo": 1}\n{"ño": 2}\n'
+@pytest.mark.parametrize("extension", ("jsonl.gzip", "jsonl.gz", "jsonl"))
+def test_dump_into_iter_data(extension):
     with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, "foo.jsonl")
-        jsonl.dump_into(path, value)
-        with open(path, encoding="utf-8") as f:
-            result = f.read()
-    assert result == expected
+        path = os.path.join(tmp, "foo.{}".format(extension))
+        jsonl.dump_into(path, iter(tests.data))
+        result = tests.read_text(path)
+    assert result == tests.string_data

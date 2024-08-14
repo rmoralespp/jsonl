@@ -5,6 +5,8 @@ Useful functions for working with JSON lines data as
 described: https://jsonlines.org/
 
 `jsonl` exposes an API similar to the `json` module from the standard library.
+
+Recognizes ".gz" and ".gzip" extensions to handle gzip-compressed JSON line files.
 """
 
 __version__ = "1.0.4"
@@ -20,6 +22,7 @@ __all__ = [
 __title__ = "py-jsonl"
 
 import functools
+import gzip
 import json
 import os
 
@@ -27,6 +30,13 @@ empty = object()
 dumps_line = functools.partial(json.dumps, ensure_ascii=False)
 utf_8 = "utf-8"
 new_line = "\n"
+
+
+def open_file(name, mode="rt", encoding=utf_8):
+    """Open file depending on file extension."""
+
+    opener = gzip.open if name.endswith((".gz", ".gzip")) else open
+    return opener(name, mode=mode, encoding=encoding)
 
 
 def dumper(iterable, **kwargs):
@@ -76,28 +86,31 @@ def dump(iterable, fp, **kwargs):
     fp.writelines(dumper(iterable, **kwargs))
 
 
-def dump_into(filename, iterable, encoding=utf_8, **kwargs):
+def dump_into(filename, iterable, **kwargs):
     """
     Dump an iterable to a JSON Lines file.
+    Use ".gz" or ".gzip" extensions to dump the gzipped file.
 
     Example:
         import jsonl
 
         data = ({'foo': 1}, {'bar': 2})
-        jsonl.dump_into("myfile.jsonl", data)
+
+        jsonl.dump_into("myfile.jsonl", data)     # file
+        jsonl.dump_into("myfile.jsonl.gz", data)  # gzipped file
     """
 
-    with open(filename, mode="w", encoding=encoding) as f:
+    with open_file(filename, mode="wt", encoding=utf_8) as f:
         dump(iterable, f, **kwargs)
 
 
-def dump_fork(path_iterables, encoding=utf_8, dump_if_empty=True, **kwargs):
+def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
     """
     Incrementally dumps multiple iterables into the specified JSON Lines files,
     effectively reducing memory consumption.
+    Use ".gz" or ".gzip" extensions to dump the gzipped file.
 
     :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
-    :param encoding: file encoding. 'utf-8' used by default
     :param bool dump_if_empty: If false, don't create an empty JSON lines file.
     :param kwargs: `json.dumps` kwargs
 
@@ -115,7 +128,7 @@ def dump_fork(path_iterables, encoding=utf_8, dump_if_empty=True, **kwargs):
 
     def get_writer(dst):
         nothing = True
-        with open(dst, mode="w", encoding=encoding) as fd:
+        with open_file(dst, mode="wt", encoding=utf_8) as fd:
             try:
                 while True:
                     obj = yield
@@ -167,21 +180,24 @@ def load(fp, **kwargs):
     yield from map(decode, fp)
 
 
-def load_from(filename, encoding=utf_8, **kwargs):
+def load_from(filename, **kwargs):
     """
     Deserialize a JSON Lines file into an iterable of Python objects.
+    Recognizes ".gz" and ".gzip" extensions to load compressed files.
 
     :param filename: file path
-    :param encoding: file encoding. 'utf-8' used by default
     :param kwargs: `json.loads` kwargs
     :rtype: Iterable[Any]
 
     Examples:
         import jsonl
 
-        iterable = jsonl.load_from("myfile.jsonl")
-        print(tuple(iterable))
+        iterable1 = jsonl.load_from("myfile.jsonl")
+        iterable2 = jsonl.load_from("myfile.jsonl.gz")
+
+        print(tuple(iterable1))
+        print(tuple(iterable2))
     """
 
-    with open(filename, encoding=encoding) as f:
+    with open_file(filename, mode="rt", encoding=utf_8) as f:
         yield from load(f, **kwargs)

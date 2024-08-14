@@ -10,9 +10,9 @@
 
 ### About
 
-jsonl is a simple Python Library for Handling JSON Lines Files
-
-`jsonl` exposes an API similar to the `json` module from the standard library.
+Simple Python Library for Handling JSON Lines Files.
+Recognizes ".gz" and ".gzip" extensions to handle gzip-compressed files.
+Exposes an API similar to the `json` module from the standard library.
 
 ### Installation (via pip)
 
@@ -60,23 +60,26 @@ Examples:
 
 #####  dump_into
 ```
-dump_into(filename, iterable, encoding="utf-8", **kwargs)
+dump_into(filename, iterable, **kwargs)
 
 Dump an iterable to a JSON Lines file.
+Use ".gz" or ".gzip" extensions to dump the gzipped file.
 
 Examples:
     import jsonl
 
     data = ({'foo': 1}, {'bar': 2})
-    jsonl.dump_into("myfile.jsonl", data)
+    jsonl.dump_into("myfile.jsonl", data)     # file
+    jsonl.dump_into("myfile.jsonl.gz", data)  # gzipped file
 ```
 
 #####  dump_fork
 ```
-dump_fork(path_iterables, encoding="utf-8", dump_if_empty=True, **kwargs)
+dump_fork(path_iterables, dump_if_empty=True, **kwargs)
 
 Incrementally dumps multiple iterables into the specified JSON Lines files, 
 effectively reducing memory consumption.
+Use ".gz" or ".gzip" extensions to dump the gzipped file.
 
 :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
 :param encoding: file encoding. 'utf-8' used by default
@@ -88,9 +91,9 @@ Examples:
 
     path_iterables = (
         ("num.jsonl", ({"value": 1}, {"value": 2})),
-        ("num.jsonl", ({"value": 3},)),
         ("foo.jsonl", ({"a": "1"}, {"b": 2})),
-        ("baz.jsonl", ()),
+        ("num.jsonl", ({"value": 3},)),
+        ("foo.jsonl", ()),
     )
     jsonl.dump_fork(path_iterables)
 ```
@@ -115,20 +118,23 @@ Examples:
 
 #####  load_from
 ```
-def load_from(filename, encoding=utf_8, **kwargs)
+def load_from(filename, **kwargs)
  
 Deserialize a JSON Lines file into an iterable of Python objects.
+Recognizes ".gz" and ".gzip" extensions to load compressed files.
 
 :param filename: file path
-:param encoding: file encoding. 'utf-8' used by default
 :param kwargs: `json.loads` kwargs
 :rtype: Iterable[str]
 
 Examples:
     import jsonl.load_from
 
-    iterable = jsonl.load_from("myfile.jsonl")
-    print(tuple(iterable))
+    iterable1 = jsonl.load_from("myfile.jsonl")
+    iterable2 = jsonl.load_from("myfile.jsonl.gz")
+        
+    print(tuple(iterable1))
+    print(tuple(iterable2))
 ```
 
 ### Unit tests

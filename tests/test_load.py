@@ -15,7 +15,7 @@ def test_invalid_lines():
         tests.consume(result)
 
 
-def test_invalid_utf8() -> None:
+def test_invalid_utf8():
     result = jsonl.load(io.BytesIO(b"\xff\xff"))
     with pytest.raises(UnicodeDecodeError):
         tests.consume(result)
@@ -27,7 +27,5 @@ def test_load_empty():
 
 
 def test_load_data():
-    value = '{"foo": 1}\n{"ño": 2}\n'
-    expected = ({"foo": 1}, {"ño": 2})
-    result = jsonl.load(io.StringIO(value))
-    assert tuple(result) == expected
+    result = jsonl.load(io.StringIO(tests.string_data))
+    assert tuple(result) == tuple(tests.data)

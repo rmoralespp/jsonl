@@ -9,32 +9,33 @@ import jsonl
 import tests
 
 
-def test_dumped_iter_data():
+@pytest.mark.parametrize("extension", ("jsonl.gzip", "jsonl.gz", "jsonl"))
+def test_dump_fork_iter_data(extension):
     with tempfile.TemporaryDirectory() as tmp:
-        foo_path = os.path.join(tmp, "foo.jsonl")
-        var_path = os.path.join(tmp, "var.jsonl")
-        baz_path = os.path.join(tmp, "baz.jsonl")
+        foo_path = os.path.join(tmp, f"foo.{extension}")
+        var_path = os.path.join(tmp, f"var.{extension}")
+        baz_path = os.path.join(tmp, f"baz.{extension}")
 
         path_items = (
-            (foo_path, ({"foo": 1}, {"ño": 2})),
-            (foo_path, ({"extra": True},)),
-            (var_path, ({"foo": 1}, {"ño": 2})),
-            (baz_path, ()),
+            (foo_path, iter(({"foo": 1}, {"ño": 2}))),
+            (foo_path, iter(({"extra": True},))),
+            (var_path, iter(({"foo": 1}, {"ño": 2}))),
+            (baz_path, iter(())),
         )
         jsonl.dump_fork(iter(path_items))
 
-        assert tests.read(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}'
-        assert tests.read(var_path) == '{"foo": 1}\n{"ño": 2}'
-        assert tests.read(baz_path) == ""
+        assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}'
+        assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}'
+        assert tests.read_text(baz_path) == ""
 
 
 @pytest.mark.parametrize("dump_if_empty", (True, False))
-def test_dumped_empty_data(dump_if_empty):
+def test_dump_fork_empty_data(dump_if_empty):
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo.jsonl")
         path_items = ((path, ()),)
         jsonl.dump_fork(iter(path_items), dump_if_empty=dump_if_empty)
         if dump_if_empty:
-            assert tests.read(path) == ""
+            assert tests.read_text(path) == ""
         else:
             assert not os.path.exists(path)
