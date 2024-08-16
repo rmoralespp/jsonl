@@ -1,5 +1,9 @@
 ## Releases ##
 
+## v1.1.1 (2024-08-16) ##
+
+- **Changed:** Adding more examples to `README.md`
+
 ## v1.1.0 (2024-08-16) ##
 
 - **Added:** Support for `orjson` and `ujson` libraries, in addition to the standard `json` library.

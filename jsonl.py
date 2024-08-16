@@ -10,7 +10,7 @@ Features:
 - Supports ".gz" and ".gzip" for gzip-compressed JSON files, and ".bz2" for bzip2-compressed JSON files.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __all__ = [
     "dump",
     "dumps",
@@ -111,9 +111,7 @@ def dump(iterable, file, **kwargs):
         import jsonl
 
         data = ({'foo': 1}, {'bar': 2})
-
-        jsonl.dump(data, "myfile.jsonl")     # file
-        jsonl.dump(data, "myfile.jsonl.gz")  # gzipped file
+        jsonl.dump(data, "file1.jsonl")
     """
 
     lines = dumper(iterable, **kwargs)

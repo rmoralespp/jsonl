@@ -62,11 +62,26 @@ dump(filename, iterable, **kwargs)
 Examples:
 
 ```
+import gzip
+
 import jsonl
 
 data = ({'foo': 1}, {'bar': 2})
-jsonl.dump("myfile.jsonl", data)     # file
-jsonl.dump("myfile.jsonl.gz", data)  # gzipped file
+
+# Dump the data into an uncompressed file at the given path.
+jsonl.dump(data, "file1.jsonl")
+
+# Dump the data into a gzipped file at the given path.
+jsonl.dump(data, "file2.jsonl.gz")
+
+# Dump the data into the already opened gzipped file.
+with gzip.open("file3.jsonl.gz", mode="wb") as fp:
+    jsonl.dump(data, fp)
+
+# Append the data to the end of the existing gzipped file.
+with gzip.open("file3.jsonl.gz", mode="ab") as fp:
+    jsonl.dump(data, fp)
+
 ```
 
 #####  dump_fork
@@ -114,11 +129,23 @@ def load(file, **kwargs)
 
 Examples:
 ```
+import gzip
+
 import jsonl
 
-iterable1 = jsonl.load("myfile.jsonl")
-iterable2 = jsonl.load("myfile.jsonl.gz")  # compressed file
-iterable3 = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n')) # file-like
+
+# Load the uncompressed file from the given path.
+iterable1 = jsonl.load("file1.jsonl")
+print(tuple(iterable1))
+
+# Load the gzipped file from the given path.
+iterable2 = jsonl.load("file2.jsonl.gz")
+print(tuple(iterable2))
+
+# Load the gzipped file from the given open file.
+with gzip.open("file3.jsonl.gz", mode="rb") as fp:
+    iterable3 = jsonl.load(fp)
+    print(tuple(iterable3))
 ```
 
 ### Unit tests
