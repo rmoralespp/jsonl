@@ -4,38 +4,68 @@
 Useful functions for working with JSON lines data as
 described: https://jsonlines.org/
 
-`jsonl` exposes an API similar to the `json` module from the standard library.
-
-Recognizes ".gz" and ".gzip" extensions to handle gzip-compressed JSON line files.
+Features:
+- Exposes an API similar to the `json` module from the standard library.
+- Supports `orjson`, `ujson` libraries or standard `json`.
+- Supports ".gz" and ".gzip" for gzip-compressed JSON files, and ".bz2" for bzip2-compressed JSON files.
 """
 
-__version__ = "1.0.5"
+__version__ = "1.1.0"
 __all__ = [
     "dump",
     "dumps",
-    "dump_into",
     "dump_fork",
     "load",
-    "load",
-    "load_from",
 ]
 __title__ = "py-jsonl"
 
+import bz2
 import functools
 import gzip
+import io
 import json
 import os
 
+# Use the fastest available JSON library for serialization/deserialization, prioritizing `orjson`,
+# then `ujson`, and defaulting to the standard `json` if none are installed.
+try:
+    import orjson
+except ImportError:
+    orjson = None
+
+try:
+    import ujson
+except ImportError:
+    ujson = None
+
+json_dumps = (orjson or ujson or json).dumps
+json_loads = (orjson or ujson or json).loads
+
 empty = object()
-dumps_line = functools.partial(json.dumps, ensure_ascii=False)
+dumps_line = functools.partial(json_dumps, ensure_ascii=False)  # result can include non-ASCII characters
 utf_8 = "utf-8"
 new_line = "\n"
+extensions = (".jsonl.gzip", ".jsonl.gz", ".jsonl.bz2", ".jsonl")
 
 
-def open_file(name, mode="rt", encoding=utf_8):
-    """Open file depending on file extension."""
+def is_binary_file(fp):
+    mode = getattr(fp, "mode", None)
+    return (isinstance(mode, str) and "b" in mode) or isinstance(fp, (io.BytesIO, gzip.GzipFile, bz2.BZ2File))
 
-    opener = gzip.open if name.endswith((".gz", ".gzip")) else open
+
+def open_file(name, mode="rt", encoding=None):
+    """Open file depending on supported file extension."""
+
+    if not name.endswith(extensions):
+        raise ValueError(name)
+    elif name.endswith((".gz", ".gzip")):
+        opener = gzip.open
+    elif name.endswith(".bz2"):
+        opener = bz2.open
+    else:
+        opener = open
+    if "t" in mode:  # Text mode encoding is required.
+        encoding = utf_8
     return opener(name, mode=mode, encoding=encoding)
 
 
@@ -67,48 +97,42 @@ def dumps(iterable, **kwargs):
     return "".join(dumper(iterable, **kwargs))
 
 
-def dump(iterable, fp, **kwargs):
-    """
-    Serialize an iterable as a JSON Lines formatted stream to a file-like object.
-
-    :param Iterable[Any] iterable: Iterable of objects
-    :param fp: file-like object
-    :param kwargs: `json.dumps` kwargs
-
-    Examples:
-        import jsonl
-
-        data = ({'foo': 1}, {'bar': 2})
-        with open('myfile.jsonl', mode='w', encoding='utf-8') as file:
-            jsonl.dump(data, file)
-    """
-
-    fp.writelines(dumper(iterable, **kwargs))
-
-
-def dump_into(filename, iterable, **kwargs):
+def dump(iterable, file, **kwargs):
     """
     Dump an iterable to a JSON Lines file.
-    Use ".gz" or ".gzip" extensions to dump the gzipped file.
+    - Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
+    - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
+
+    :param Iterable[Any] iterable: Iterable of objects
+    :param Union[str | bytes | os.PathLike | io.IOBase] file: File to dump
+    :param kwargs: `json.dumps` kwargs
 
     Example:
         import jsonl
 
         data = ({'foo': 1}, {'bar': 2})
 
-        jsonl.dump_into("myfile.jsonl", data)     # file
-        jsonl.dump_into("myfile.jsonl.gz", data)  # gzipped file
+        jsonl.dump(data, "myfile.jsonl")     # file
+        jsonl.dump(data, "myfile.jsonl.gz")  # gzipped file
     """
 
-    with open_file(filename, mode="wt", encoding=utf_8) as f:
-        dump(iterable, f, **kwargs)
+    lines = dumper(iterable, **kwargs)
+    if isinstance(file, io.IOBase):  # file-like object
+        # If it's a binary file, convert string to bytes
+        lines = ((line.encode(utf_8) for line in lines) if is_binary_file(file) else lines)
+        file.writelines(lines)
+    else:
+        with open_file(file, mode="wt", encoding=utf_8) as fp:
+            fp.writelines(lines)
 
 
 def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
     """
     Incrementally dumps multiple iterables into the specified JSON Lines files,
     effectively reducing memory consumption.
-    Use ".gz" or ".gzip" extensions to dump the gzipped file.
+
+    - Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
+    - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
 
     :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
     :param bool dump_if_empty: If false, don't create an empty JSON lines file.
@@ -160,44 +184,30 @@ def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
         writer.close()
 
 
-def load(fp, **kwargs):
+def load(file, **kwargs):
     """
-    Deserialize a file-like object containing JSON Lines into a Python iterable of objects.
+    Deserialize a UTF-8-encoded JSONLines file into an iterable of Python objects.
 
-    :param fp: file-like object
-    :param kwargs: `json.loads` kwargs
-    :rtype: Iterable[Any]
+    - Recognizes (`.gz`, `.gzip`, `.bz2`)  extensions to load compressed files.
+    - Loads falls back to the following functions: (`orjson.loads`, `ujson.loads`, and `json.loads`).
 
-    Examples:
-        import io
-        import jsonl
-
-        iterable = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n'))
-        print(tuple(iterable))  # >> ({'foo': 1}, {'ño': 2})
-    """
-
-    decode = functools.partial(json.loads, **kwargs)
-    yield from map(decode, fp)
-
-
-def load_from(filename, **kwargs):
-    """
-    Deserialize a JSON Lines file into an iterable of Python objects.
-    Recognizes ".gz" and ".gzip" extensions to load compressed files.
-
-    :param filename: file path
+    :param Union[str | bytes | os.PathLike | io.IOBase] file: File to load
     :param kwargs: `json.loads` kwargs
     :rtype: Iterable[Any]
 
     Examples:
         import jsonl
 
-        iterable1 = jsonl.load_from("myfile.jsonl")
-        iterable2 = jsonl.load_from("myfile.jsonl.gz")
-
-        print(tuple(iterable1))
-        print(tuple(iterable2))
+        iterable1 = jsonl.load("myfile.jsonl")
+        iterable2 = jsonl.load("myfile.jsonl.gz")  # compressed file
+        iterable3 = jsonl.load(io.StringIO('{"foo": "baz"}\n')) # file-like
     """
 
-    with open_file(filename, mode="rt", encoding=utf_8) as f:
-        yield from load(f, **kwargs)
+    loads = functools.partial(json_loads, **kwargs)
+    if isinstance(file, io.IOBase):  # file-like object
+        # If it's a binary file, convert bytes to string
+        data = (line.decode(utf_8) for line in file) if is_binary_file(file) else file
+        yield from map(loads, data)
+    else:
+        with open_file(file, mode="rt", encoding=utf_8) as fp:
+            yield from map(loads, fp)

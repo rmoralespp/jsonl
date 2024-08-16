@@ -9,12 +9,12 @@ import jsonl
 import tests
 
 
-@pytest.mark.parametrize("extension", ("jsonl.gzip", "jsonl.gz", "jsonl"))
+@pytest.mark.parametrize("extension", jsonl.extensions)
 def test_dump_fork_iter_data(extension):
     with tempfile.TemporaryDirectory() as tmp:
-        foo_path = os.path.join(tmp, f"foo.{extension}")
-        var_path = os.path.join(tmp, f"var.{extension}")
-        baz_path = os.path.join(tmp, f"baz.{extension}")
+        foo_path = os.path.join(tmp, f"foo{extension}")
+        var_path = os.path.join(tmp, f"var{extension}")
+        baz_path = os.path.join(tmp, f"baz{extension}")
 
         path_items = (
             (foo_path, iter(({"foo": 1}, {"ño": 2}))),

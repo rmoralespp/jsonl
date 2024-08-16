@@ -10,9 +10,13 @@
 
 ### About
 
-Simple Python Library for Handling JSON Lines Files.
-Recognizes ".gz" and ".gzip" extensions to handle gzip-compressed files.
-Exposes an API similar to the `json` module from the standard library.
+Useful functions for working with JSON lines data as
+described: https://jsonlines.org/
+
+Features: 
+- Exposes an API similar to the `json` module from the standard library.
+- Supports `orjson`, `ujson` libraries or standard `json`.
+- Supports `.gz` and `.gzip` for gzip-compressed JSON files, and `.bz2` for bzip2-compressed JSON files.
 
 ### Installation (via pip)
 
@@ -22,119 +26,99 @@ Exposes an API similar to the `json` module from the standard library.
 ### Usage
 
 #####  dumps
+Serialize an iterable into a JSON Lines formatted string.
+
 ```
 dumps(iterable, **kwargs)
-
-Serialize an iterable into a JSON Lines formatted string.
 
 :param Iterable[Any] iterable: Iterable of objects
 :param kwargs: `json.dumps` kwargs
 :rtype: str
+```
 
 Examples:
-    import jsonl
+```
+import jsonl
 
-    data = ({'foo': 1}, {'bar': 2})
-    result = jsonl.dumps(data)
-    print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
+data = ({'foo': 1}, {'bar': 2})
+result = jsonl.dumps(data)
+print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
 ```
 
 #####  dump
-```
-dump(iterable, fp, **kwargs)
-
-Serialize an iterable as a JSON Lines formatted stream to a file-like object.
-
-:param Iterable[Any] iterable: Iterable of objects
-:param fp: file-like object
-:param kwargs: `json.dumps` kwargs
-
-Examples:
-    import jsonl
-
-    data = ({'foo': 1}, {'bar': 2})
-    with open('myfile.jsonl', mode='w', encoding='utf-8') as file:
-        jsonl.dump(data, file)
-```
-
-
-#####  dump_into
-```
-dump_into(filename, iterable, **kwargs)
 
 Dump an iterable to a JSON Lines file.
-Use ".gz" or ".gzip" extensions to dump the gzipped file.
+- Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
+- Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
+
+```
+dump(filename, iterable, **kwargs)
+
+:param Iterable[Any] iterable: Iterable of objects
+:param Union[str | bytes | os.PathLike | io.IOBase] file: File to dump
+:param kwargs: `json.dumps` kwargs
+```
 
 Examples:
-    import jsonl
 
-    data = ({'foo': 1}, {'bar': 2})
-    jsonl.dump_into("myfile.jsonl", data)     # file
-    jsonl.dump_into("myfile.jsonl.gz", data)  # gzipped file
+```
+import jsonl
+
+data = ({'foo': 1}, {'bar': 2})
+jsonl.dump("myfile.jsonl", data)     # file
+jsonl.dump("myfile.jsonl.gz", data)  # gzipped file
 ```
 
 #####  dump_fork
-```
-dump_fork(path_iterables, dump_if_empty=True, **kwargs)
 
 Incrementally dumps multiple iterables into the specified JSON Lines files, 
 effectively reducing memory consumption.
-Use ".gz" or ".gzip" extensions to dump the gzipped file.
+- Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
+- Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
+
+```
+dump_fork(path_iterables, dump_if_empty=True, **kwargs)
 
 :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
-:param encoding: file encoding. 'utf-8' used by default
 :param bool dump_if_empty: If false, don't create an empty JSON lines file.
 :param kwargs: `json.dumps` kwargs
-
-Examples:
-    import jsonl
-
-    path_iterables = (
-        ("num.jsonl", ({"value": 1}, {"value": 2})),
-        ("foo.jsonl", ({"a": "1"}, {"b": 2})),
-        ("num.jsonl", ({"value": 3},)),
-        ("foo.jsonl", ()),
-    )
-    jsonl.dump_fork(path_iterables)
 ```
+Examples:
+
+```
+import jsonl
+
+path_iterables = (
+    ("num.jsonl", ({"value": 1}, {"value": 2})),
+    ("foo.jsonl", ({"a": "1"}, {"b": 2})),
+    ("num.jsonl", ({"value": 3},)),
+    ("foo.jsonl", ()),
+)
+jsonl.dump_fork(path_iterables)
+```
+
 
 #####  load
+
+Deserialize a UTF-8-encoded JSONLines file into an iterable of Python objects.
+- Recognizes (`.gz`, `.gzip`, `.bz2`)  extensions to load compressed files.
+- Loads falls back to the following functions: (`orjson.loads`, `ujson.loads`, and `json.loads`).
+
 ```
-load(fp, **kwargs)
+def load(file, **kwargs)
 
-Deserialize a file-like object containing JSON Lines into a Python iterable of objects.
-
-:param fp: file-like object
+:param Union[str | bytes | os.PathLike | io.IOBase] file: File to load
 :param kwargs: `json.loads` kwargs
 :rtype: Iterable[Any]
-
-Examples:
-    import io
-    import jsonl
-    
-    iterable = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n'))
-    print(tuple(iterable))  # >> ({'foo': 1}, {'ño': 2})
 ```
 
-#####  load_from
-```
-def load_from(filename, **kwargs)
- 
-Deserialize a JSON Lines file into an iterable of Python objects.
-Recognizes ".gz" and ".gzip" extensions to load compressed files.
-
-:param filename: file path
-:param kwargs: `json.loads` kwargs
-:rtype: Iterable[str]
-
 Examples:
-    import jsonl.load_from
+```
+import jsonl
 
-    iterable1 = jsonl.load_from("myfile.jsonl")
-    iterable2 = jsonl.load_from("myfile.jsonl.gz")
-        
-    print(tuple(iterable1))
-    print(tuple(iterable2))
+iterable1 = jsonl.load("myfile.jsonl")
+iterable2 = jsonl.load("myfile.jsonl.gz")  # compressed file
+iterable3 = jsonl.load(io.StringIO('{"foo": 1}\n{"ño": 2}\n')) # file-like
 ```
 
 ### Unit tests
