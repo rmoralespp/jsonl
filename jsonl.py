@@ -9,7 +9,7 @@ Features:
 - Supports `gzip` and `bzip2` compression formats.
 """
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 __all__ = [
     "dump",
     "dumps",
