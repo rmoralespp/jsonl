@@ -13,7 +13,7 @@ def read(filename):
 setuptools.setup(
     name=jsonl.__title__,
     version=jsonl.__version__,
-    description="A Python Library for Handling JSON Lines Files",
+    description="A simple Python library for handling jsonlines files.",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     classifiers=[

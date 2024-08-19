@@ -1,5 +1,10 @@
 ## Releases ##
 
+## v1.1.2 (2024-08-19) ##
+
+- **Changed:** Update `README.md` and code docstrings.
+- **Added:** Configure `.pre-commit-config.yaml` file
+
 ## v1.1.1 (2024-08-16) ##
 
 - **Changed:** Adding more examples to `README.md`

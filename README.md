@@ -13,19 +13,21 @@
 Useful functions for working with jsonlines data as
 described: https://jsonlines.org/
 
-Features: 
+Features:
+
 - Exposes an API similar to the `json` module from the standard library.
-- Supports `orjson`, `ujson` libraries or standard `json`.
-- Supports `gzip` and `bzip2` compressors to save space.
+- Supports `orjson`, `ujson` libraries or standard `json` for serialization/deserialization, prioritizing `orjson`,
+  then `ujson`, and defaulting to the standard `json` if none are installed.
+- Supports `gzip` and `bzip2` compression formats.
 
 ### Installation (via pip)
 
 ```pip install py-jsonl```
 
-
 ### Usage
 
-#####  dumps
+##### dumps
+
 Serialize an iterable into a jsonlines formatted string.
 
 ```
@@ -37,7 +39,8 @@ dumps(iterable, **kwargs)
 ```
 
 Examples:
-```
+
+```python
 import jsonl
 
 data = ({'foo': 1}, {'bar': 2})
@@ -45,14 +48,14 @@ result = jsonl.dumps(data)
 print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
 ```
 
-#####  dump
+##### dump
 
 Dump an iterable to a jsonlines file.
 - Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
 - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
 
 ```
-dump(filename, iterable, **kwargs)
+dump(iterable, file, **kwargs)
 
 :param Iterable[Any] iterable: Iterable of objects
 :param Union[str | bytes | os.PathLike | io.IOBase] file: File to dump
@@ -61,7 +64,7 @@ dump(filename, iterable, **kwargs)
 
 Examples:
 
-```
+```python
 import gzip
 
 import jsonl
@@ -83,11 +86,12 @@ with gzip.open("file3.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp)
 ```
 
-#####  dump_fork
+##### dump_fork
 
-Incrementally dumps multiple iterables into the specified jsonlines file paths, 
+Incrementally dumps multiple iterables into the specified jsonlines file paths,
 effectively reducing memory consumption.
-- Use (`.gz`, `.gzip`, `.bz2`) extensions to dump a compressed file.
+
+- Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
 - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
 
 ```
@@ -97,9 +101,10 @@ dump_fork(path_iterables, dump_if_empty=True, **kwargs)
 :param bool dump_if_empty: If false, don't create an empty jsonlines file.
 :param kwargs: `json.dumps` kwargs
 ```
+
 Examples:
 
-```
+```python
 import jsonl
 
 path_iterables = (
@@ -111,10 +116,10 @@ path_iterables = (
 jsonl.dump_fork(path_iterables)
 ```
 
-
-#####  load
+##### load
 
 Deserialize a UTF-8-encoded jsonlines file into an iterable of Python objects.
+
 - Recognizes (`.gz`, `.gzip`, `.bz2`)  extensions to load compressed files.
 - Loads falls back to the following functions: (`orjson.loads`, `ujson.loads`, and `json.loads`).
 
@@ -127,7 +132,8 @@ def load(file, **kwargs)
 ```
 
 Examples:
-```
+
+```python
 import gzip
 
 import jsonl
