@@ -24,7 +24,7 @@ Features:
 
 ```pip install py-jsonl```
 
-### Usage
+### `jsonl.py` module Usage
 
 ##### dumps
 
@@ -150,6 +150,13 @@ print(tuple(iterable2))
 with gzip.open("file3.jsonl.gz", mode="rb") as fp:
     iterable3 = jsonl.load(fp)
     print(tuple(iterable3))
+```
+
+### `flask_jsonl.py` module Usage
+
+```
+
+
 ```
 
 ### Unit tests

@@ -14,7 +14,7 @@ url = "http://127.0.0.1:5000/"
 
 def fetch(count):
     for i in range(count):
-        yield {"id": i, "title": "One Hundred Years of Solitude", "author": "García Márquez"}
+        yield {"id": i, "title": "One Hundred Years of Solitude"}
 
 
 def read_jsonl_stream(count):
@@ -31,11 +31,11 @@ def write_jsonl_stream(count):
         with open(path, mode="rb") as fn:
             response = requests.post(url + "api/data/", data=fn, headers=headers, stream=True)
 
-        for item in response.iter_lines():
+        for item in jsonl.loader(response.iter_lines()):
             logging.debug("write_jsonl_stream: %s", item)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    read_jsonl_stream(10000)
-    write_jsonl_stream(10000)
+    read_jsonl_stream(100)
+    write_jsonl_stream(100)

@@ -1,5 +1,7 @@
 ## Releases ##
 
+- **Added:** Flask extension to support consuming and producing jsonlines data. ¡Experimental!
+
 ## v1.1.2 (2024-08-19) ##
 
 - **Changed:** Update `README.md` and code docstrings.
