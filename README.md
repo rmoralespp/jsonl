@@ -154,8 +154,80 @@ with gzip.open("file3.jsonl.gz", mode="rb") as fp:
 
 ### `flask_jsonl.py` module Usage
 
+**¡Experimental!** Flask extension to support consuming and producing jsonlines data.
+
+Server example
+
+```python
+import flask
+
+import flask_jsonl
+
+jsonl_app = flask_jsonl.FlaskJsonl()
+flask_app = flask.Flask(__name__)
+jsonl_app.init_app(flask_app)
+
+
+def fetch(count):
+    for i in range(count):
+        yield {"id": i, "title": "One Hundred Years of Solitude"}
+
+
+@flask_app.route("/api/data/<int:count>/", methods=["GET"])
+def dump_jsonl_stream(count):
+    return jsonl_app.response(fetch(count))
+
+
+@flask_app.route("/api/data/", methods=["POST"])
+def dump_loaded_jsonl_stream():
+    return jsonl_app.response(jsonl_app.load())
+
+
+if __name__ == "__main__":
+    flask_app.run(debug=True)
 ```
 
+Client example
+```python
+import logging
+import os
+import tempfile
+
+import requests
+
+import jsonl
+
+headers = {"Content-Type": "application/jsonl"}
+url = "http://127.0.0.1:5000/"
+
+
+def fetch(count):
+    for i in range(count):
+        yield {"id": i, "title": "One Hundred Years of Solitude"}
+
+
+def read_jsonl_stream(count):
+    response = requests.get(url + f"api/data/{count}", headers=headers, stream=True)
+    for item in jsonl.loader(response.iter_lines()):
+        logging.debug("read_jsonl_stream: %s", item)
+
+
+def write_jsonl_stream(count):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = os.path.join(tmpdir, "data.jsonl")
+        jsonl.dump(fetch(count), path)
+
+        with open(path, mode="rb") as fn:
+            response = requests.post(url + "api/data/", data=fn, headers=headers, stream=True)
+
+        for item in jsonl.loader(response.iter_lines()):
+            logging.debug("write_jsonl_stream: %s", item)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    read_jsonl_stream(100)
+    write_jsonl_stream(100)
 
 ```
 
