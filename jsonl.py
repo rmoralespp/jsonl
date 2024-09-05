@@ -41,9 +41,7 @@ json_dumps = (orjson or ujson or json).dumps
 json_loads = (orjson or ujson or json).loads
 
 empty = object()
-dumps_line = functools.partial(
-    json_dumps, ensure_ascii=False
-)  # result can include non-ASCII characters
+dumps_line = functools.partial(json_dumps, ensure_ascii=False)  # result can include non-ASCII characters
 utf_8 = "utf-8"
 new_line = "\n"
 extensions = (".jsonl.gzip", ".jsonl.gz", ".jsonl.bz2", ".jsonl")
@@ -51,9 +49,7 @@ extensions = (".jsonl.gzip", ".jsonl.gz", ".jsonl.bz2", ".jsonl")
 
 def is_binary_file(fp):
     mode = getattr(fp, "mode", None)
-    return (isinstance(mode, str) and "b" in mode) or isinstance(
-        fp, (io.BytesIO, gzip.GzipFile, bz2.BZ2File)
-    )
+    return (isinstance(mode, str) and "b" in mode) or isinstance(fp, (io.BytesIO, gzip.GzipFile, bz2.BZ2File))
 
 
 def open_file(name, mode="rt", encoding=None):
@@ -85,10 +81,7 @@ def loader(iterable, **kwargs):
     """Generator yielding decoded JSON objects."""
 
     deserialize = functools.partial(json_loads, **kwargs)
-    lines = (
-        line.decode(utf_8) if isinstance(line, bytes) else line
-        for line in iter(iterable)
-    )
+    lines = (line.decode(utf_8) if isinstance(line, bytes) else line for line in iter(iterable))
     yield from map(deserialize, lines)
 
 
@@ -131,9 +124,7 @@ def dump(iterable, file, **kwargs):
     lines = dumper(iterable, **kwargs)
     if isinstance(file, io.IOBase):  # file-like object
         # If it's a binary file, convert string to bytes
-        lines = (
-            (line.encode(utf_8) for line in lines) if is_binary_file(file) else lines
-        )
+        lines = ((line.encode(utf_8) for line in lines) if is_binary_file(file) else lines)
         file.writelines(lines)
     else:
         with open_file(file, mode="wt", encoding=utf_8) as fp:
