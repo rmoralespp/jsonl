@@ -3,10 +3,10 @@
 """
 Useful functions for working with jsonlines data as described: https://jsonlines.org/
 
-Features:
-- Exposes an API similar to the `json` module from the standard library.
-- Supports `orjson`, `ujson` libraries or standard `json`.
-- Supports `gzip` and `bzip2` compression formats.
+- Offers an API similar to Python's built-in `json` module.
+- Supports serialization/deserialization using the most common `json` libraries, prioritizing `orjson`, then `ujson`,
+  and defaulting to the standard `json` if the others are unavailable.
+- Enables compression using `gzip`, `bzip2`, and `xz` formats.
 """
 
 __version__ = "1.1.2"
@@ -23,6 +23,7 @@ import functools
 import gzip
 import io
 import json
+import lzma
 import os
 
 # Use the fastest available JSON library for serialization/deserialization, prioritizing `orjson`,
@@ -44,28 +45,31 @@ empty = object()
 dumps_line = functools.partial(json_dumps, ensure_ascii=False)  # result can include non-ASCII characters
 utf_8 = "utf-8"
 new_line = "\n"
-extensions = (".jsonl.gzip", ".jsonl.gz", ".jsonl.bz2", ".jsonl")
+extensions = (".jsonl", ".gz", ".bz2", ".xz")
 
 
 def is_binary_file(fp):
     mode = getattr(fp, "mode", None)
-    return (isinstance(mode, str) and "b" in mode) or isinstance(fp, (io.BytesIO, gzip.GzipFile, bz2.BZ2File))
+    compressed = (io.BytesIO, gzip.GzipFile, bz2.BZ2File, lzma.LZMAFile)
+    return (isinstance(mode, str) and "b" in mode) or isinstance(fp, compressed)
 
 
-def open_file(name, mode="rt", encoding=None):
+def xopen(name, mode="rt", encoding=None):
     """Open file depending on supported file extension."""
 
-    if not name.endswith(extensions):
-        raise ValueError(name)
-    elif name.endswith((".gz", ".gzip")):
-        opener = gzip.open
-    elif name.endswith(".bz2"):
-        opener = bz2.open
+    openers = {
+        ".jsonl": open,
+        ".gz": gzip.open,
+        ".bz2": bz2.open,
+        ".xz": lzma.open,
+    }
+
+    ext = os.path.splitext(name)[1]
+    if fn := openers.get(ext):
+        encoding = utf_8 if "t" in mode else None  # Text mode encoding is required.
+        return fn(name, mode=mode, encoding=encoding)
     else:
-        opener = open
-    if "t" in mode:  # Text mode encoding is required.
-        encoding = utf_8
-    return opener(name, mode=mode, encoding=encoding)
+        raise ValueError(name)
 
 
 def dumper(iterable, **kwargs):
@@ -87,18 +91,11 @@ def loader(iterable, **kwargs):
 
 def dumps(iterable, **kwargs):
     """
-    Serialize an iterable into a jsonlines formatted string.
+    Serialize an iterable into a JSON Lines formatted string.
 
     :param Iterable[Any] iterable: Iterable of objects
     :param kwargs: `json.dumps` kwargs
     :rtype: str
-
-    Examples:
-        import jsonl
-
-        data = ({'foo': 1}, {'bar': 2})
-        result = jsonl.dumps(data)
-        print(result)  # >> '{"foo": 1}\n{"bar": 2}\n'
     """
 
     return "".join(dumper(iterable, **kwargs))
@@ -106,19 +103,11 @@ def dumps(iterable, **kwargs):
 
 def dump(iterable, file, **kwargs):
     """
-    Dump an iterable to a jsonlines file.
-    - Use (`.gz`, `.gzip`, `.bz2`) extensions to create a compressed dump of the file.
-    - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
+    Dump an iterable to a JSON Lines file.
 
-    :param Iterable[Any] iterable: Iterable of objects
+    :param Iterable[Any] iterable: Iterable of object
     :param Union[str | bytes | os.PathLike | io.IOBase] file: File to dump
     :param kwargs: `json.dumps` kwargs
-
-    Example:
-        import jsonl
-
-        data = ({'foo': 1}, {'bar': 2})
-        jsonl.dump(data, "file1.jsonl")
     """
 
     lines = dumper(iterable, **kwargs)
@@ -127,7 +116,7 @@ def dump(iterable, file, **kwargs):
         lines = ((line.encode(utf_8) for line in lines) if is_binary_file(file) else lines)
         file.writelines(lines)
     else:
-        with open_file(file, mode="wt", encoding=utf_8) as fp:
+        with xopen(file, mode="wt", encoding=utf_8) as fp:
             fp.writelines(lines)
 
 
@@ -136,28 +125,14 @@ def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
     Incrementally dumps multiple iterables into the specified jsonlines files,
     effectively reducing memory consumption.
 
-    - Use (`.gz`, `.gzip`, `.bz2`) extensions to dump the compressed file.
-    - Dumps falls back to the following functions: (`orjson.dumps`, `ujson.dumps`, and `json.dumps`).
-
     :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
     :param kwargs: `json.dumps` kwargs
-
-    Examples:
-        import jsonl
-
-        path_iterables = (
-            ("num.jsonl", ({"value": 1}, {"value": 2})),
-            ("num.jsonl", ({"value": 3},)),
-            ("foo.jsonl", ({"a": "1"}, {"b": 2})),
-            ("baz.jsonl", ()),
-        )
-        jsonl.dump_fork(path_iterables)
     """
 
     def get_writer(dst):
         nothing = True
-        with open_file(dst, mode="wt", encoding=utf_8) as fd:
+        with xopen(dst, mode="wt", encoding=utf_8) as fd:
             try:
                 while True:
                     obj = yield
@@ -191,24 +166,15 @@ def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
 
 def load(file, **kwargs):
     """
-    Deserialize a UTF-8-encoded jsonlines file into an iterable of Python objects.
-
-    - Recognizes (`.gz`, `.gzip`, `.bz2`)  extensions to load compressed files.
-    - Loads falls back to the following functions: (`orjson.loads`, `ujson.loads`, and `json.loads`).
+    Deserialize a UTF-8 encoded jsonlines file into an iterable of Python objects.
 
     :param Union[str | bytes | os.PathLike | io.IOBase ] file: File to load
     :param kwargs: `json.loads` kwargs
     :rtype: Iterable[Any]
-
-    Examples:
-        import jsonl
-
-        iterable = jsonl.load("file1.jsonl.gz")
-        print(tuple(iterable))
     """
 
     if isinstance(file, io.IOBase):  # file-like object
         yield from loader(file, **kwargs)
     else:
-        with open_file(file, mode="rt", encoding=utf_8) as fp:
+        with xopen(file, mode="rt", encoding=utf_8) as fp:
             yield from loader(fp, **kwargs)

@@ -41,7 +41,7 @@ def test_dump_given_bytes_io():
 def test_dump_given_file_like(extension, mode):
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"name{extension}")
-        with jsonl.open_file(path, mode=mode) as fp:
+        with jsonl.xopen(path, mode=mode) as fp:
             jsonl.dump(iter(tests.data), fp)
         result = tests.read_text(path)
         assert result == tests.string_data
@@ -50,7 +50,7 @@ def test_dump_given_file_like(extension, mode):
 @pytest.mark.parametrize("extension", jsonl.extensions)
 def test_dump_given_filepath(extension):
     with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, "foo{}".format(extension))
+        path = os.path.join(tmp, f"foo{extension}")
         jsonl.dump(iter(tests.data), path)
         result = tests.read_text(path)
     assert result == tests.string_data

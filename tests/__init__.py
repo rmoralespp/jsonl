@@ -21,12 +21,12 @@ string_data = (
 
 
 def read_text(filename):
-    with jsonl.open_file(filename, mode="rt") as f:
+    with jsonl.xopen(filename, mode="rt") as f:
         return f.read()
 
 
 def write_text(filename, content=""):
-    with jsonl.open_file(filename, mode="wt") as f:
+    with jsonl.xopen(filename, mode="wt") as f:
         f.write(content)
     return filename
 

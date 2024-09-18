@@ -47,10 +47,10 @@ def test_load_given_file_like(extension, mode):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"foo.{extension}")
-        with jsonl.open_file(path, mode="wb") as fp:  # write into binary file
+        with jsonl.xopen(path, mode="wb") as fp:  # write into a binary file
             fp.write(tests.string_data.encode(jsonl.utf_8))
 
-        with jsonl.open_file(path, mode=mode) as fp:
+        with jsonl.xopen(path, mode=mode) as fp:
             result = tuple(jsonl.load(fp))
     assert result == expected
 
