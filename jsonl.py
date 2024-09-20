@@ -21,24 +21,21 @@ __title__ = "py-jsonl"
 import bz2
 import functools
 import gzip
-import json
 import lzma
 import os
 
 # Use the fastest available JSON library for serialization/deserialization, prioritizing `orjson`,
 # then `ujson`, and defaulting to the standard `json` if none are installed.
 try:
-    import orjson
+    import orjson as json_module
 except ImportError:
-    orjson = None
+    try:
+        import ujson as json_module
+    except ImportError:
+        import json as json_module
 
-try:
-    import ujson
-except ImportError:
-    ujson = None
-
-json_dumps = (orjson or ujson or json).dumps
-json_loads = (orjson or ujson or json).loads
+json_dumps = json_module.dumps
+json_loads = json_module.loads
 
 empty = object()
 dumps_line = functools.partial(json_dumps, ensure_ascii=False)  # result can include non-ASCII characters
@@ -69,8 +66,7 @@ def dumper(iterable, **json_dumps_kwargs):
 
     serialize = functools.partial(dumps_line, **json_dumps_kwargs)
     for obj in iter(iterable):
-        yield serialize(obj)
-        yield new_line
+        yield serialize(obj) + new_line
 
 
 def loader(stream, **json_loads_kwargs):
