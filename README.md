@@ -50,7 +50,9 @@ data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
-jsonl.dump(data, "file.jsonl")
+
+jsonl.dump(data, "file.jsonl")  # as list
+jsonl.dump(iter(data), "file.jsonl")  # as iterable
 ```
 
 Write the data to a compressed file at the specified path.
@@ -80,7 +82,7 @@ data = [
 ]
 
 with gzip.open("file.jsonl.gz", mode="wb") as fp:
-    jsonl.dump(data, fp)
+    jsonl.dump(data, fp, text_mode=False)
 ```
 
 Append the data to the end of the existing gzipped file.
@@ -96,7 +98,7 @@ data = [
 ]
 
 with gzip.open("file.jsonl.gz", mode="ab") as fp:
-    jsonl.dump(data, fp)
+    jsonl.dump(data, fp, text_mode=False)
 ```
 
 ##### Dump fork (Incremental dump)

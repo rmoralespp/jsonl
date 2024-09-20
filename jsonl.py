@@ -21,7 +21,6 @@ __title__ = "py-jsonl"
 import bz2
 import functools
 import gzip
-import io
 import json
 import lzma
 import os
@@ -48,13 +47,7 @@ new_line = "\n"
 extensions = (".jsonl", ".gz", ".bz2", ".xz")
 
 
-def is_binary_file(fp):
-    mode = getattr(fp, "mode", None)
-    compressed = (io.BytesIO, gzip.GzipFile, bz2.BZ2File, lzma.LZMAFile)
-    return (isinstance(mode, str) and "b" in mode) or isinstance(fp, compressed)
-
-
-def xopen(name, mode="rt", encoding=None):
+def xopen(name, mode="rt"):
     """Open file depending on supported file extension."""
 
     openers = {
@@ -63,7 +56,6 @@ def xopen(name, mode="rt", encoding=None):
         ".bz2": bz2.open,
         ".xz": lzma.open,
     }
-
     ext = os.path.splitext(name)[1]
     if fn := openers.get(ext):
         encoding = utf_8 if "t" in mode else None  # Text mode encoding is required.
@@ -72,67 +64,74 @@ def xopen(name, mode="rt", encoding=None):
         raise ValueError(name)
 
 
-def dumper(iterable, **kwargs):
-    """Generator yielding jsonlines."""
+def dumper(iterable, **json_dumps_kwargs):
+    """Generator yielding JSON Lines."""
 
-    serialize = functools.partial(dumps_line, **kwargs)
+    serialize = functools.partial(dumps_line, **json_dumps_kwargs)
     for obj in iter(iterable):
         yield serialize(obj)
         yield new_line
 
 
-def loader(iterable, **kwargs):
+def loader(stream, **json_loads_kwargs):
     """Generator yielding decoded JSON objects."""
 
-    deserialize = functools.partial(json_loads, **kwargs)
-    lines = (line.decode(utf_8) if isinstance(line, bytes) else line for line in iter(iterable))
+    deserialize = functools.partial(json_loads, **json_loads_kwargs)
+    lines = (line.decode(utf_8) if isinstance(line, bytes) else line for line in iter(stream))
     yield from map(deserialize, lines)
 
 
-def dumps(iterable, **kwargs):
+def dumps(iterable, **json_dumps_kwargs):
     """
     Serialize an iterable into a JSON Lines formatted string.
 
     :param Iterable[Any] iterable: Iterable of objects
-    :param kwargs: `json.dumps` kwargs
+    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
     :rtype: str
     """
 
-    return "".join(dumper(iterable, **kwargs))
+    return "".join(dumper(iterable, **json_dumps_kwargs))
 
 
-def dump(iterable, file, **kwargs):
+def dump(iterable, file, text_mode=True, **json_dumps_kwargs):
     """
     Dump an iterable to a JSON Lines file.
 
     :param Iterable[Any] iterable: Iterable of object
-    :param Union[str | bytes | os.PathLike | io.IOBase] file: File to dump
-    :param kwargs: `json.dumps` kwargs
+    :param Union[str, bytes, os.PathLike] file: File to dump.
+        If a string, it's a filename; otherwise, a file object is expected to
+        use `writelines` to write the string data.
+    :param bool text_mode: If false, write bytes to the file.
+    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :raises ValueError: If the file object is missing the `writelines` method.
     """
 
-    lines = dumper(iterable, **kwargs)
-    if isinstance(file, io.IOBase):  # file-like object
-        # If it's a binary file, convert string to bytes
-        lines = ((line.encode(utf_8) for line in lines) if is_binary_file(file) else lines)
+    lines = dumper(iterable, **json_dumps_kwargs)
+    if isinstance(file, os.PathLike):
+        file = os.fspath(file)
+    if isinstance(file, str):  # No, it's a filename
+        with xopen(file, mode="wt") as fp:
+            fp.writelines(lines)
+    elif hasattr(file, "writelines"):
+        lines = lines if text_mode else (line.encode(utf_8) for line in lines)
         file.writelines(lines)
     else:
-        with xopen(file, mode="wt", encoding=utf_8) as fp:
-            fp.writelines(lines)
+        raise ValueError("Invalid file object, missing `writelines` method.")
 
 
-def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
+def dump_fork(path_iterables, dump_if_empty=True, **json_dumps_kwargs):
     """
     Incrementally dumps multiple iterables into the specified jsonlines files,
     effectively reducing memory consumption.
 
     :param Iterable[str, Iterable[Any]] path_iterables: Iterable of iterables by filepath
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
-    :param kwargs: `json.dumps` kwargs
+    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
     """
 
     def get_writer(dst):
         nothing = True
-        with xopen(dst, mode="wt", encoding=utf_8) as fd:
+        with xopen(dst, mode="wt") as fd:
             try:
                 while True:
                     obj = yield
@@ -146,7 +145,7 @@ def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
         if nothing and not dump_if_empty:
             os.unlink(dst)
 
-    encoder = functools.partial(dumps_line, **kwargs)
+    encoder = functools.partial(dumps_line, **json_dumps_kwargs)
     writers = dict()
 
     for path, iterable in path_iterables:
@@ -164,17 +163,19 @@ def dump_fork(path_iterables, dump_if_empty=True, **kwargs):
         writer.close()
 
 
-def load(file, **kwargs):
+def load(file, **json_loads_kwargs):
     """
     Deserialize a UTF-8 encoded jsonlines file into an iterable of Python objects.
 
-    :param Union[str | bytes | os.PathLike | io.IOBase ] file: File to load
-    :param kwargs: `json.loads` kwargs
+    :param Union[str | bytes | os.PathLike] file: File to load
+    :param json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
     :rtype: Iterable[Any]
     """
 
-    if isinstance(file, io.IOBase):  # file-like object
-        yield from loader(file, **kwargs)
+    if isinstance(file, os.PathLike):
+        file = os.fspath(file)
+    if isinstance(file, str):  # No, it's a filename
+        with xopen(file, mode="rt") as fp:
+            yield from loader(fp, **json_loads_kwargs)
     else:
-        with xopen(file, mode="rt", encoding=utf_8) as fp:
-            yield from loader(fp, **kwargs)
+        yield from loader(file, **json_loads_kwargs)
