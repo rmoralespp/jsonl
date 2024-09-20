@@ -1,9 +1,18 @@
 ## Releases ##
 
-- **Added:** Flask extension to support consuming and producing jsonlines data. ¡Experimental!
+## v1.3.1 (2024-09-20) ##
 
-## v1.1.2 (2024-08-19) ##
+- **Changed:** Update `README.md` and code docstrings.
+- **Changed:** Update `dumper` function.
 
+## v1.3.0 (2024-09-20) ##
+
+- **Changed:** Improve `loader` and `dumper` functions to handle binary/text files more efficiently.
+- **Changed:** `dump` function now accepts a `text_mode` argument to write text files or binary files.
+
+## v1.2.0 (2024-09-20) ##
+
+- **Added:** Supports `.xz` compression format.
 - **Changed:** Update `README.md` and code docstrings.
 - **Added:** Configure `.pre-commit-config.yaml` file
 
