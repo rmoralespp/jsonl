@@ -9,7 +9,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - Enables compression using `gzip`, `bzip2`, and `xz` formats.
 """
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __all__ = [
     "dump",
     "dumps",
