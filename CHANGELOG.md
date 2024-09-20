@@ -1,5 +1,9 @@
 ## Releases ##
 
+## v1.3.3 (2024-09-20) ##
+
+- **Changed:** Update `dump_fork` function to ensure that the files are closed after writing.
+
 ## v1.3.1 (2024-09-20) ##
 
 - **Changed:** Update `README.md` and code docstrings.

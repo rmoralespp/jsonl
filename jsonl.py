@@ -9,7 +9,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - Enables compression using `gzip`, `bzip2`, and `xz` formats.
 """
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __all__ = [
     "dump",
     "dumps",
@@ -44,7 +44,7 @@ new_line = "\n"
 extensions = (".jsonl", ".gz", ".bz2", ".xz")
 
 
-def xopen(name, mode="rt"):
+def xopen(name, mode="rb"):
     """Open file depending on supported file extension."""
 
     openers = {
@@ -143,20 +143,21 @@ def dump_fork(path_iterables, dump_if_empty=True, **json_dumps_kwargs):
 
     encoder = functools.partial(dumps_line, **json_dumps_kwargs)
     writers = dict()
+    try:
+        for path, iterable in path_iterables:
+            if path in writers:
+                writer = writers[path]
+            else:
+                writer = get_writer(path)
+                writer.send(None)
+                writers[path] = writer
 
-    for path, iterable in path_iterables:
-        if path in writers:
-            writer = writers[path]
-        else:
-            writer = get_writer(path)
-            writer.send(None)
-            writers[path] = writer
-
-        for item in iterable:
-            writer.send(item)
+            for item in iterable:
+                writer.send(item)
     # Cleanup
-    for writer in writers.values():
-        writer.close()
+    finally:
+        for writer in writers.values():
+            writer.close()
 
 
 def load(file, **json_loads_kwargs):
@@ -171,7 +172,7 @@ def load(file, **json_loads_kwargs):
     if isinstance(file, os.PathLike):
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
-        with xopen(file, mode="rt") as fp:
+        with xopen(file) as fp:
             yield from loader(fp, **json_loads_kwargs)
     else:
         yield from loader(file, **json_loads_kwargs)
