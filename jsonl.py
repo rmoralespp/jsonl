@@ -7,6 +7,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - Supports serialization/deserialization using the most common `json` libraries, prioritizing `orjson`, then `ujson`,
   and defaulting to the standard `json` if the others are unavailable.
 - Enables compression using `gzip`, `bzip2`, and `xz` formats.
+- Load files containing broken lines, skipping any malformed lines.
 """
 
 __version__ = "1.3.2"
@@ -21,6 +22,7 @@ __title__ = "py-jsonl"
 import bz2
 import functools
 import gzip
+import logging
 import lzma
 import os
 
@@ -44,7 +46,7 @@ new_line = "\n"
 extensions = (".jsonl", ".gz", ".bz2", ".xz")
 
 
-def xopen(name, mode="rb"):
+def xopen(name, /, *, mode="rb"):
     """Open file depending on supported file extension."""
 
     openers = {
@@ -61,7 +63,7 @@ def xopen(name, mode="rb"):
         raise ValueError(name)
 
 
-def dumper(iterable, **json_dumps_kwargs):
+def dumper(iterable, /, **json_dumps_kwargs):
     """Generator yielding JSON Lines."""
 
     serialize = functools.partial(dumps_line, **json_dumps_kwargs)
@@ -69,15 +71,21 @@ def dumper(iterable, **json_dumps_kwargs):
         yield serialize(obj) + new_line
 
 
-def loader(stream, **json_loads_kwargs):
+def loader(stream, broken, /, **json_loads_kwargs):
     """Generator yielding decoded JSON objects."""
 
     deserialize = functools.partial(json_loads, **json_loads_kwargs)
-    lines = (line.decode(utf_8) if isinstance(line, bytes) else line for line in iter(stream))
-    yield from map(deserialize, lines)
+    for line in stream:
+        try:
+            string_line = line.decode(utf_8) if isinstance(line, bytes) else line
+            yield deserialize(string_line)
+        except Exception as e:
+            logging.warning("Error deserializing line: %s", e)
+            if not broken:
+                raise
 
 
-def dumps(iterable, **json_dumps_kwargs):
+def dumps(iterable, /, **json_dumps_kwargs):
     """
     Serialize an iterable into a JSON Lines formatted string.
 
@@ -89,7 +97,7 @@ def dumps(iterable, **json_dumps_kwargs):
     return "".join(dumper(iterable, **json_dumps_kwargs))
 
 
-def dump(iterable, file, text_mode=True, **json_dumps_kwargs):
+def dump(iterable, file, /, *, text_mode=True, **json_dumps_kwargs):
     """
     Dump an iterable to a JSON Lines file.
 
@@ -115,7 +123,7 @@ def dump(iterable, file, text_mode=True, **json_dumps_kwargs):
         raise ValueError("Invalid file object, missing `writelines` method.")
 
 
-def dump_fork(path_iterables, dump_if_empty=True, **json_dumps_kwargs):
+def dump_fork(path_iterables, /, *, dump_if_empty=True, **json_dumps_kwargs):
     """
     Incrementally dumps multiple iterables into the specified jsonlines files,
     effectively reducing memory consumption.
@@ -154,17 +162,17 @@ def dump_fork(path_iterables, dump_if_empty=True, **json_dumps_kwargs):
 
             for item in iterable:
                 writer.send(item)
-    # Cleanup
-    finally:
+    finally:  # Cleanup
         for writer in writers.values():
             writer.close()
 
 
-def load(file, **json_loads_kwargs):
+def load(file, /, *, broken=False, **json_loads_kwargs):
     """
     Deserialize a UTF-8 encoded jsonlines file into an iterable of Python objects.
 
     :param Union[str | bytes | os.PathLike] file: File to load
+    :param bool broken: If true, skip broken lines (only logging a warning).
     :param json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
     :rtype: Iterable[Any]
     """
@@ -173,6 +181,6 @@ def load(file, **json_loads_kwargs):
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
         with xopen(file) as fp:
-            yield from loader(fp, **json_loads_kwargs)
+            yield from loader(fp, broken, **json_loads_kwargs)
     else:
-        yield from loader(file, **json_loads_kwargs)
+        yield from loader(file, broken, **json_loads_kwargs)

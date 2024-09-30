@@ -1,5 +1,8 @@
 ## Releases ##
 
+- **Added:** Allow reading JSONLines files with broken lines.
+- **Changed:** Using `/` and `*` in function definitions is a stricter way to specify how arguments are passed.
+
 ## v1.3.3 (2024-09-20) ##
 
 - **Changed:** Update `dump_fork` function to ensure that the files are closed after writing.

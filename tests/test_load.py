@@ -12,16 +12,24 @@ import jsonl
 import tests
 
 
-def test_load_given_invalid_lines():
-    result = jsonl.load(io.StringIO("[1, 2]\n\n[3]"))
-    with pytest.raises(json.JSONDecodeError):
-        tests.consume(result)
+@pytest.mark.parametrize("broken", (False, True))
+def test_load_given_invalid_lines(broken):
+    result = jsonl.load(io.StringIO("[1, 2]\n\n[3]\nabc\n[4]\n"), broken=broken)
+    if broken:
+        assert tuple(result) == ([1, 2], [3], [4])
+    else:
+        with pytest.raises(json.JSONDecodeError):
+            tests.consume(result)
 
 
-def test_load_given_invalid_utf8():
-    result = jsonl.load(io.BytesIO(b"\xff\xff"))
-    with pytest.raises(UnicodeDecodeError):
-        tests.consume(result)
+@pytest.mark.parametrize("broken", (False, True))
+def test_load_given_invalid_utf8(broken):
+    result = jsonl.load(io.BytesIO(b"\xff\xff\n[1, 2]"), broken=broken)
+    if broken:
+        assert tuple(result) == ([1, 2],)
+    else:
+        with pytest.raises(UnicodeDecodeError):
+            tests.consume(result)
 
 
 @pytest.mark.parametrize("iofile", (io.StringIO(), io.BytesIO()))

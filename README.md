@@ -12,12 +12,13 @@
 
 Useful functions for working with jsonlines data as described: https://jsonlines.org/
 
-Features:
+**Features:**
 
-- Offers an API similar to Python's built-in `json` module.
-- Supports serialization/deserialization using the most common `json` libraries, prioritizing `orjson`, then `ujson`,
+- 🌎 Offers an API similar to Python's built-in `json` module.
+- 🚀 Supports serialization/deserialization using the most common `json` libraries, prioritizing `orjson`, then `ujson`,
   and defaulting to the standard `json` if the others are unavailable.
-- Enables compression using `gzip`, `bzip2`, and `xz` formats.
+- 🗜️ Enables compression using `gzip`, `bzip2`, and `xz` formats.
+- 🔧 Load files containing broken lines, skipping any malformed lines.
 
 ### Installation (via pip)
 

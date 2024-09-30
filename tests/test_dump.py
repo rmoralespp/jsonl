@@ -36,7 +36,9 @@ def test_dump_given_bytes_io():
         assert fp.getvalue() == expected
 
 
-@pytest.mark.parametrize("mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True)))
+@pytest.mark.parametrize(
+    "mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True))
+)
 @pytest.mark.parametrize("extension", jsonl.extensions)
 def test_dump_given_file_like(extension, mode, text_mode):
     with tempfile.TemporaryDirectory() as tmp:
