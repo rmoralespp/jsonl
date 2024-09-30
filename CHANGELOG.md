@@ -1,5 +1,7 @@
 ## Releases ##
 
+## v1.3.4 (2024-09-30) ##
+
 - **Added:** Allow passing an opener as a parameter.
 - **Added:** Allow reading JSONLines files with broken lines.
 - **Changed:** Using `/` and `*` in function definitions is a stricter way to specify how arguments are passed.

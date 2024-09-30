@@ -110,12 +110,12 @@ Write the data to a custom file object.
 import jsonl
 
 class MyCustomFile1:
-    
+
   def write(self, line):
       print(line)
-      
+
 class MyCustomFile2:
-    
+
   def writelines(self, lines):
       print("".join(lines))
 

@@ -11,7 +11,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - 📦 Provides a simple API for incremental writing to multiple files.
 """
 
-__version__ = "1.3.3"
+__version__ = "1.3.4"
 __all__ = [
     "dump",
     "dumps",
@@ -130,7 +130,9 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, **json_dumps_kwargs)
         for line in lines:
             file.write(line)
     else:
-        raise ValueError("Invalid file object, missing `writelines` and `write` methods.")
+        raise ValueError(
+            "Invalid file object, missing `writelines` and `write` methods."
+        )
 
 
 def dump_fork(path_iterables, /, *, opener=None, text_mode=True, dump_if_empty=True, **json_dumps_kwargs):

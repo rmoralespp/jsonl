@@ -47,7 +47,10 @@ def test_load_give_empty_iofile(iofile):
     assert result == ()
 
 
-@pytest.mark.parametrize("iofile", (io.StringIO(tests.string_data), io.BytesIO(tests.string_data.encode(jsonl.utf_8))))
+@pytest.mark.parametrize(
+    "iofile",
+    (io.StringIO(tests.string_data), io.BytesIO(tests.string_data.encode(jsonl.utf_8))),
+)
 def test_load_given_iofile(iofile):
     with contextlib.closing(iofile):
         result = tuple(jsonl.load(iofile))

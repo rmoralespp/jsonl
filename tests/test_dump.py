@@ -36,7 +36,9 @@ def test_dump_given_bytes_io():
         assert fp.getvalue() == expected
 
 
-@pytest.mark.parametrize("mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True)))
+@pytest.mark.parametrize(
+    "mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True))
+)
 @pytest.mark.parametrize("extension", tests.extensions)
 def test_dump_given_file_object(extension, mode, text_mode):
     with tempfile.TemporaryDirectory() as tmp:
@@ -71,7 +73,6 @@ def test_dump_given_filepath_extension_with_opener():
 
 def test_dump_given_custom_file_write_method():
     class CustomFile:
-
         def __init__(self):
             self.content = ""
 
@@ -85,7 +86,6 @@ def test_dump_given_custom_file_write_method():
 
 def test_dump_given_custom_file_writelines_method():
     class CustomFile:
-
         def __init__(self):
             self.content = None
 
