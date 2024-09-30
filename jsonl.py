@@ -10,7 +10,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - Load files containing broken lines, skipping any malformed lines.
 """
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 __all__ = [
     "dump",
     "dumps",
