@@ -36,26 +36,23 @@ def test_dump_given_bytes_io():
         assert fp.getvalue() == expected
 
 
-@pytest.mark.parametrize(
-    "mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True))
-)
-@pytest.mark.parametrize("extension", jsonl.extensions)
-def test_dump_given_file_like(extension, mode, text_mode):
+@pytest.mark.parametrize("mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True)))
+@pytest.mark.parametrize("extension", tests.extensions)
+def test_dump_given_file_object(extension, mode, text_mode):
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"name{extension}")
         with jsonl.xopen(path, mode=mode) as fp:
             jsonl.dump(iter(tests.data), fp, text_mode=text_mode)
-
         result = tests.read_text(path)
         assert result == tests.string_data
 
 
-def test_dump_given_invalid_file_like():
+def test_dump_given_invalid_file_object():
     with pytest.raises(ValueError):
         jsonl.dump(iter(tests.data), object())
 
 
-@pytest.mark.parametrize("extension", jsonl.extensions)
+@pytest.mark.parametrize("extension", tests.extensions)
 def test_dump_given_filepath(extension):
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"foo{extension}")
@@ -64,7 +61,37 @@ def test_dump_given_filepath(extension):
     assert result == tests.string_data
 
 
-def test_dump_given_invalid_filepath_extension():
-    with pytest.raises(ValueError):
-        with tempfile.TemporaryDirectory() as tmp:
-            jsonl.dump((), os.path.join(tmp, "foo.other"))
+def test_dump_given_filepath_extension_with_opener():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "foo")
+        jsonl.dump(iter(tests.data), path, opener=open)
+        result = tests.read_text(path)
+    assert result == tests.string_data
+
+
+def test_dump_given_custom_file_write_method():
+    class CustomFile:
+
+        def __init__(self):
+            self.content = ""
+
+        def write(self, line):
+            self.content += line
+
+    file = CustomFile()
+    jsonl.dump(tests.data, file)
+    assert file.content == tests.string_data
+
+
+def test_dump_given_custom_file_writelines_method():
+    class CustomFile:
+
+        def __init__(self):
+            self.content = None
+
+        def writelines(self, lines):
+            self.content = "".join(lines)
+
+    file = CustomFile()
+    jsonl.dump(tests.data, file)
+    assert file.content == tests.string_data

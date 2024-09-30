@@ -9,7 +9,7 @@ import jsonl
 import tests
 
 
-@pytest.mark.parametrize("extension", jsonl.extensions)
+@pytest.mark.parametrize("extension", tests.extensions)
 def test_dump_fork_iter_data(extension):
     with tempfile.TemporaryDirectory() as tmp:
         foo_path = os.path.join(tmp, f"foo{extension}")
@@ -24,8 +24,8 @@ def test_dump_fork_iter_data(extension):
         )
         jsonl.dump_fork(iter(path_items))
 
-        assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}'
-        assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}'
+        assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}\n'
+        assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}\n'
         assert tests.read_text(baz_path) == ""
 
 

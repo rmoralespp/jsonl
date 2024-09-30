@@ -13,8 +13,16 @@ import tests
 
 
 @pytest.mark.parametrize("broken", (False, True))
-def test_load_given_invalid_lines(broken):
-    result = jsonl.load(io.StringIO("[1, 2]\n\n[3]\nabc\n[4]\n"), broken=broken)
+def test_load_given_invalid_json_lines(broken):
+    lines = (
+        "prefix\n"  # bad JSON line
+        "[1, 2]\n\n"  # multiple new lines
+        "[3]\n"
+        "affix\n"  # bad JSON line
+        "[4]\n"
+        "suffix\n"  # bad JSON line
+    )
+    result = jsonl.load(io.StringIO(lines), broken=broken)
     if broken:
         assert tuple(result) == ([1, 2], [3], [4])
     else:
@@ -39,10 +47,7 @@ def test_load_give_empty_iofile(iofile):
     assert result == ()
 
 
-@pytest.mark.parametrize(
-    "iofile",
-    (io.StringIO(tests.string_data), io.BytesIO(tests.string_data.encode("utf-8"))),
-)
+@pytest.mark.parametrize("iofile", (io.StringIO(tests.string_data), io.BytesIO(tests.string_data.encode(jsonl.utf_8))))
 def test_load_given_iofile(iofile):
     with contextlib.closing(iofile):
         result = tuple(jsonl.load(iofile))
@@ -50,8 +55,8 @@ def test_load_given_iofile(iofile):
 
 
 @pytest.mark.parametrize("mode", ("rt", "rb"))
-@pytest.mark.parametrize("extension", jsonl.extensions)
-def test_load_given_file_like(extension, mode):
+@pytest.mark.parametrize("extension", tests.extensions)
+def test_load_given_file_like_object(extension, mode):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"foo.{extension}")
@@ -63,7 +68,7 @@ def test_load_given_file_like(extension, mode):
     assert result == expected
 
 
-@pytest.mark.parametrize("extension", jsonl.extensions)
+@pytest.mark.parametrize("extension", tests.extensions)
 def test_load_given_filepath(extension):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
@@ -73,11 +78,16 @@ def test_load_given_filepath(extension):
     assert result == expected
 
 
+@pytest.mark.parametrize("opener", (open, None))
+def test_load_given_filepath_and_opener(opener):
+    expected = tuple(tests.data)
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "foo")
+        tests.write_text(os.path.join(tmp, "foo"), content=tests.string_data)
+        result = tuple(jsonl.load(path, opener=opener))
+    assert result == expected
+
+
 def test_load_given_not_found_filepath():
     with pytest.raises(FileNotFoundError):
         tests.consume(jsonl.load("foo.jsonl"))
-
-
-def test_load_given_invalid_filepath_extension():
-    with pytest.raises(ValueError):
-        tests.consume(jsonl.load("foo.other"))

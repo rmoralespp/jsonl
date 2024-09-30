@@ -4,6 +4,8 @@ import collections
 
 import jsonl
 
+extensions = (".jsonl", ".gz", ".bz2", ".xz", ".unknown")
+
 # https://jsonlines.org/examples/
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},

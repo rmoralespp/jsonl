@@ -19,6 +19,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
   and defaulting to the standard `json` if the others are unavailable.
 - 🗜️ Enables compression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Load files containing broken lines, skipping any malformed lines.
+- 📦 Provides a simple API for incremental writing to multiple files.
 
 ### Installation (via pip)
 
@@ -66,9 +67,9 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "file.jsonl.gz")
-jsonl.dump(data, "file.jsonl.bz2")
-jsonl.dump(data, "file.jsonl.xz")
+jsonl.dump(data, "file.jsonl.gz")  # gzip compression
+jsonl.dump(data, "file.jsonl.bz2")  # bzip2 compression
+jsonl.dump(data, "file.jsonl.xz")  # xz compression
 ```
 
 Write the data to the already opened gzipped file.
@@ -102,6 +103,31 @@ with gzip.open("file.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp, text_mode=False)
 ```
 
+Write the data to a custom file object.
+
+```python
+
+import jsonl
+
+class MyCustomFile1:
+    
+  def write(self, line):
+      print(line)
+      
+class MyCustomFile2:
+    
+  def writelines(self, lines):
+      print("".join(lines))
+
+data = [
+    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
+    {"name": "May", "wins": []},
+]
+
+jsonl.dump(data, MyCustomFile1(), text_mode=True)
+jsonl.dump(data, MyCustomFile2(), text_mode=True)
+```
+
 ##### Dump fork (Incremental dump)
 
 Incrementally dumps multiple iterables into the specified jsonlines file paths,
@@ -110,15 +136,18 @@ effectively reducing memory consumption.
 **Examples:**
 
 ```python
+
 import jsonl
 
-path_iterables = (
-    ("num.jsonl", ({"value": 1}, {"value": 2})),
-    ("foo.jsonl", ({"a": "1"}, {"b": 2})),
-    ("num.jsonl", ({"value": 3},)),
-    ("foo.jsonl", ()),
-)
-jsonl.dump_fork(path_iterables)
+
+def worker():
+    yield ("num.jsonl", ({"value": 1}, {"value": 2}))  # as tuple
+    yield ("foo.jsonl", iter(({"a": "1"}, {"b": 2})))  # as iterator
+    yield ("num.jsonl", ({"value": 3},))
+    yield ("foo.jsonl", ())
+
+
+jsonl.dump_fork(worker())
 ```
 
 ##### load
@@ -175,6 +204,20 @@ jsonl.dump(data, path)
 with gzip.open(path, mode="rb") as fp:
     iterable = jsonl.load(fp)
     print(tuple(iterable))
+```
+
+Load a file containing broken lines, skipping any malformed lines.
+
+```python
+import jsonl
+
+with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
+    fp.write('{"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]}\n')
+    fp.write('{"name": "May", "wins": []\n')  # missing closing bracket
+    fp.write('{"name": "Richard", "wins": []}\n')
+
+iterable = jsonl.load("file.jsonl", broken=True)
+print(tuple(iterable))
 ```
 
 ### Unit tests
