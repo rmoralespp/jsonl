@@ -6,7 +6,9 @@ import json
 import os
 import tempfile
 
+import orjson
 import pytest
+import ujson
 
 import jsonl
 import tests
@@ -71,13 +73,14 @@ def test_load_given_file_like_object(extension, mode):
     assert result == expected
 
 
+@pytest.mark.parametrize("json_loads", [orjson.loads, ujson.loads, None])
 @pytest.mark.parametrize("extension", tests.extensions)
-def test_load_given_filepath(extension):
+def test_load_given_filepath(extension, json_loads):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"foo{extension}")
         tests.write_text(path, content=tests.string_data)
-        result = tuple(jsonl.load(path))
+        result = tuple(jsonl.load(path, json_loads=json_loads))
     assert result == expected
 
 

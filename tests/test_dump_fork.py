@@ -4,13 +4,22 @@ import os
 import tempfile
 
 import pytest
+import ujson
 
 import jsonl
 import tests
 
 
+@pytest.mark.parametrize(
+    "json_dumps, json_dumps_kwargs",
+    [
+        # FIXME: (orjson.dumps, dict()),
+        (ujson.dumps, dict(ensure_ascii=False, separators=(", ", ": "))),
+        (None, dict()),
+    ],
+)
 @pytest.mark.parametrize("extension", tests.extensions)
-def test_dump_fork_iter_data(extension):
+def test_dump_fork_iter_data(extension, json_dumps, json_dumps_kwargs):
     with tempfile.TemporaryDirectory() as tmp:
         foo_path = os.path.join(tmp, f"foo{extension}")
         var_path = os.path.join(tmp, f"var{extension}")
@@ -22,7 +31,7 @@ def test_dump_fork_iter_data(extension):
             (var_path, iter(({"foo": 1}, {"ño": 2}))),
             (baz_path, iter(())),
         )
-        jsonl.dump_fork(iter(path_items))
+        jsonl.dump_fork(iter(path_items), json_dumps=json_dumps, **json_dumps_kwargs)
 
         assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}\n'
         assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}\n'

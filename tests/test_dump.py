@@ -6,6 +6,7 @@ import os
 import tempfile
 
 import pytest
+import ujson
 
 import jsonl
 import tests
@@ -54,11 +55,19 @@ def test_dump_given_invalid_file_object():
         jsonl.dump(iter(tests.data), object())
 
 
+@pytest.mark.parametrize(
+    "json_dumps, json_dumps_kwargs",
+    [
+        # FIXME: (orjson.dumps, dict()),
+        (ujson.dumps, dict(ensure_ascii=False, separators=(", ", ": "))),
+        (None, dict()),
+    ],
+)
 @pytest.mark.parametrize("extension", tests.extensions)
-def test_dump_given_filepath(extension):
+def test_dump_given_filepath(extension, json_dumps, json_dumps_kwargs):
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, f"foo{extension}")
-        jsonl.dump(iter(tests.data), path)
+        jsonl.dump(iter(tests.data), path, json_dumps=json_dumps, **json_dumps_kwargs)
         result = tests.read_text(path)
     assert result == tests.string_data
 

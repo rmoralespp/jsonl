@@ -1,3 +1,5 @@
+from jsonlines.jsonlines import orjson
+
 # jsonl
 
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
@@ -14,9 +16,8 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 
 **Features:**
 
-- 🌎 Offers an API similar to Python's built-in `json` module.
-- 🚀 Supports serialization/deserialization using the most common `json` libraries, prioritizing `orjson`, then `ujson`,
-  and defaulting to the standard `json` if the others are unavailable.
+- 🌎 Offers an API similar to Python's standard `json` module.
+- 🚀 Supports custom serialization/deserialization callbacks. By default, it uses the standard `json` module.
 - 🗜️ Enables compression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Load files containing broken lines, skipping any malformed lines.
 - 📦 Provides a simple API for incremental writing to multiple files.
@@ -72,7 +73,7 @@ jsonl.dump(data, "file.jsonl.bz2")  # bzip2 compression
 jsonl.dump(data, "file.jsonl.xz")  # xz compression
 ```
 
-Write the data to the already opened gzipped file.
+Write the data to the already opened compressed file.
 
 ```python
 import gzip
@@ -87,7 +88,7 @@ with gzip.open("file.jsonl.gz", mode="wb") as fp:
     jsonl.dump(data, fp, text_mode=False)
 ```
 
-Append the data to the end of the existing gzipped file.
+Append the data to the end of the existing compressed file.
 
 ```python
 
@@ -109,15 +110,18 @@ Write the data to a custom file object.
 
 import jsonl
 
+
 class MyCustomFile1:
 
-  def write(self, line):
-      print(line)
+    def write(self, line):
+        print(line)
+
 
 class MyCustomFile2:
 
-  def writelines(self, lines):
-      print("".join(lines))
+    def writelines(self, lines):
+        print("".join(lines))
+
 
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
@@ -128,6 +132,24 @@ jsonl.dump(data, MyCustomFile1(), text_mode=True)
 jsonl.dump(data, MyCustomFile2(), text_mode=True)
 ```
 
+Write the data using a custom serialization callback.
+
+```python
+
+import orjson
+import ujson
+
+import jsonl
+
+data = [
+    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
+    {"name": "May", "wins": []},
+]
+
+jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False) # using (ujson)
+jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps) # using (orjson)
+```
+
 ##### Dump fork (Incremental dump)
 
 Incrementally dumps multiple iterables into the specified jsonlines file paths,
@@ -136,7 +158,8 @@ effectively reducing memory consumption.
 **Examples:**
 
 ```python
-
+import orjson
+import ujson
 import jsonl
 
 
@@ -147,7 +170,9 @@ def worker():
     yield ("foo.jsonl", ())
 
 
-jsonl.dump_fork(worker())
+jsonl.dump_fork(worker())  # using (json)
+jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)  # using (ujson)
+jsonl.dump_fork(worker(), json_dumps=orjson.dumps, ensure_ascii=False)  # using (orjson)
 ```
 
 ##### load
@@ -218,6 +243,27 @@ with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
 
 iterable = jsonl.load("file.jsonl", broken=True)
 print(tuple(iterable))
+```
+
+Load a file using a custom deserialization callback.
+
+```python
+import orjson
+import ujson
+import jsonl
+
+path = "file.jsonl"
+data = [
+    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
+    {"name": "May", "wins": []},
+]
+
+jsonl.dump(data, path)
+
+iterable1 = jsonl.load(path, json_loads=ujson.loads)  # using (ujson)
+iterable2 = jsonl.load(path, json_loads=orjson.loads)  # using (orjson)
+print(tuple(iterable1))
+print(tuple(iterable2))
 ```
 
 ### Unit tests
