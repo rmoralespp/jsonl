@@ -1,5 +1,3 @@
-from jsonlines.jsonlines import orjson
-
 # jsonl
 
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
