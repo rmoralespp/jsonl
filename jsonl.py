@@ -32,9 +32,7 @@ utf_8 = "utf-8"
 new_line = "\n"
 new_line_bytes = b"\n"
 
-default_json_dumps = functools.partial(
-    json.dumps, ensure_ascii=False
-)  # result can include non-ASCII characters
+default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
 default_json_loads = json.loads
 
 
@@ -44,11 +42,12 @@ def get_encoding(mode, /):
 
 def get_line(value, text_mode):
     if text_mode:
-        value = value.decode(utf_8) if isinstance(value, bytes) else value
-        return value + new_line
+        line = value.decode(utf_8) if isinstance(value, bytes) else value
+        resp = line + new_line
     else:
-        value = value.encode(utf_8) if isinstance(value, str) else value
-        return value + new_line_bytes
+        line = value.encode(utf_8) if isinstance(value, str) else value
+        resp = line + new_line_bytes
+    return resp
 
 
 def xopen(name, /, *, mode="rb", encoding=None):
@@ -81,9 +80,7 @@ def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs)
 def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
     """Generator yielding decoded JSON objects."""
 
-    deserialize = functools.partial(
-        json_loads or default_json_loads, **json_loads_kwargs
-    )
+    deserialize = functools.partial(json_loads or default_json_loads, **json_loads_kwargs)
     for line in stream:
         try:
             string_line = line.decode(utf_8) if isinstance(line, bytes) else line
@@ -104,21 +101,10 @@ def dumps(iterable, /, *, json_dumps=None, **json_dumps_kwargs):
     :rtype: str
     """
 
-    return "".join(
-        dumper(iterable, text_mode=True, json_dumps=json_dumps, **json_dumps_kwargs)
-    )
+    return "".join(dumper(iterable, text_mode=True, json_dumps=json_dumps, **json_dumps_kwargs))
 
 
-def dump(
-    iterable,
-    file,
-    /,
-    *,
-    opener=None,
-    text_mode=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
-):
+def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **json_dumps_kwargs):
     """
     Dump an iterable to a JSON Lines file.
 
@@ -132,9 +118,7 @@ def dump(
     :raises ValueError: If the file object is missing the `writelines` and `write` methods.
     """
 
-    lines = dumper(
-        iterable, text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs
-    )
+    lines = dumper(iterable, text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs)
     if isinstance(file, os.PathLike):
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
@@ -148,21 +132,10 @@ def dump(
         for line in lines:
             file.write(line)
     else:
-        raise ValueError(
-            "Invalid file object, missing `writelines` and `write` methods."
-        )
+        raise ValueError("Invalid file object, missing `writelines` and `write` methods.")
 
 
-def dump_fork(
-    paths,
-    /,
-    *,
-    opener=None,
-    text_mode=True,
-    dump_if_empty=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
-):
+def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json_dumps=None, **json_dumps_kwargs):
     """
     Incrementally dumps multiple iterables into the specified jsonlines files,
     effectively reducing memory consumption.
@@ -184,8 +157,7 @@ def dump_fork(
                 while True:
                     obj = yield
                     nothing = False
-                    line = get_line(encoder(obj), text_mode)
-                    fd.write(line)
+                    fd.write(get_line(encoder(obj), text_mode))
             except GeneratorExit:
                 pass
         if nothing and not dump_if_empty:

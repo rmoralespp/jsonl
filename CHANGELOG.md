@@ -1,5 +1,8 @@
 ## Releases ##
 
+- **Changed:** Setup using a TOML file.
+- **Changed:** Supports custom serialization/deserialization. Fix `orjson` serialization.
+
 ## v1.3.4 (2024-09-30) ##
 
 - **Added:** Allow passing an opener as a parameter.
@@ -34,5 +37,6 @@
 
 - **Added:** Support for `orjson` and `ujson` libraries, in addition to the standard `json` library.
 - **Added:** Supports `.gz` and `.gzip` for gzip-compressed JSON files, and `.bz2` for bzip2-compressed JSON files.
-- **Breaking-Changed:** Simplified API by removing `dump_into` and `load_from` functions. The `dump` and `load` functions now
-encompass the functionality of `dump_into` and `load_from`.
+- **Breaking-Changed:** Simplified API by removing `dump_into` and `load_from` functions. The `dump` and `load`
+  functions now
+  encompass the functionality of `dump_into` and `load_from`.
