@@ -131,6 +131,8 @@ jsonl.dump(data, MyCustomFile2(), text_mode=True)
 
 Write the data using a custom serialization callback.
 
+`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
+
 ```python
 
 import orjson
@@ -154,6 +156,8 @@ effectively reducing memory consumption.
 
 **Examples:**
 
+`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
+
 ```python
 import orjson
 import ujson
@@ -161,9 +165,9 @@ import jsonl
 
 
 def worker():
-    yield ("num.jsonl", ({"value": 1}, {"value": 2}))  # as tuple
-    yield ("foo.jsonl", iter(({"a": "1"}, {"b": 2})))  # as iterator
-    yield ("num.jsonl", ({"value": 3},))
+    yield ("num.jsonl", ({"value": 1}, {"value": 2}))
+    yield ("foo.jsonl", iter(({"a": "1"}, {"b": 2})))
+    yield ("num.jsonl", [{"value": 3}])
     yield ("foo.jsonl", ())
 
 
@@ -243,6 +247,8 @@ print(tuple(iterable))
 ```
 
 Load a file using a custom deserialization callback.
+
+`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
 
 ```python
 import orjson
