@@ -52,8 +52,7 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "file.jsonl")  # as list
-jsonl.dump(iter(data), "file.jsonl")  # as iterable
+jsonl.dump(data, "file.jsonl")
 ```
 
 Write the data to a compressed file at the specified path.
@@ -170,7 +169,7 @@ def worker():
 
 jsonl.dump_fork(worker())  # using (json)
 jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)  # using (ujson)
-jsonl.dump_fork(worker(), json_dumps=orjson.dumps, ensure_ascii=False)  # using (orjson)
+jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
 ```
 
 ##### load
