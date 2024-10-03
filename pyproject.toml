@@ -27,9 +27,6 @@ requires-python = ">=3.8"
 Source = "https://github.com/rmoralespp/jsonl"
 Changelog = "https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md"
 
-[tool.setuptools]
-zip_safe = false
-
 [tool.black]
 line-length = 120
 skip-string-normalization = true
