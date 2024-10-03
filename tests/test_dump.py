@@ -2,25 +2,16 @@
 
 import contextlib
 import io
+import json
 import os
 import tempfile
 
+import orjson
 import pytest
+import ujson
 
 import jsonl
 import tests
-
-
-def test_dump_given_empty_string_io():
-    with contextlib.closing(io.StringIO()) as fp:
-        jsonl.dump((), fp)
-        assert fp.getvalue() == ""
-
-
-def test_dump_given_empty_bytes_io():
-    with contextlib.closing(io.BytesIO()) as fp:
-        jsonl.dump((), fp, text_mode=False)
-        assert fp.getvalue() == b""
 
 
 def test_dump_given_string_io():
@@ -36,31 +27,32 @@ def test_dump_given_bytes_io():
         assert fp.getvalue() == expected
 
 
-@pytest.mark.parametrize(
-    "mode, text_mode", (("wt", True), ("wb", False), ("ab", False), ("at", True))
-)
-@pytest.mark.parametrize("extension", tests.extensions)
-def test_dump_given_file_object(extension, mode, text_mode):
-    with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, f"name{extension}")
-        with jsonl.xopen(path, mode=mode) as fp:
-            jsonl.dump(iter(tests.data), fp, text_mode=text_mode)
-        result = tests.read_text(path)
-        assert result == tests.string_data
+@pytest.mark.parametrize("mode, text", (("wt", True), ("wb", False), ("ab", False), ("at", True)))
+def test_dump_given_opened_file(filepath, mode, text):
+    with jsonl.xopen(filepath, mode=mode) as fp:
+        jsonl.dump(iter(tests.data), fp, text_mode=text)
+    result = tests.read_text(filepath)
+    assert result == tests.string_data
 
 
-def test_dump_given_invalid_file_object():
+def test_dump_given_invalid_object():
     with pytest.raises(ValueError):
         jsonl.dump(iter(tests.data), object())
 
 
-@pytest.mark.parametrize("extension", tests.extensions)
-def test_dump_given_filepath(extension):
-    with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, f"foo{extension}")
-        jsonl.dump(iter(tests.data), path)
-        result = tests.read_text(path)
-    assert result == tests.string_data
+@pytest.mark.parametrize(
+    "json_dumps, json_dumps_kwargs, expected",
+    [
+        (orjson.dumps, dict(), tests.compacted_string_data),
+        (ujson.dumps, dict(ensure_ascii=False), tests.compacted_string_data),
+        (json.dumps, dict(ensure_ascii=False), tests.string_data),
+        (None, dict(), tests.string_data),
+    ],
+)
+def test_dump_given_filepath(filepath, json_dumps, json_dumps_kwargs, expected):
+    jsonl.dump(iter(tests.data), filepath, json_dumps=json_dumps, **json_dumps_kwargs)
+    result = tests.read_text(filepath)
+    assert result == expected
 
 
 def test_dump_given_filepath_extension_with_opener():

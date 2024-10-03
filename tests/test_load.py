@@ -12,7 +12,6 @@ import jsonl
 import tests
 
 
-@pytest.mark.parametrize("broken", (False, True))
 def test_load_given_invalid_json_lines(broken):
     lines = (
         "prefix\n"  # bad JSON line
@@ -22,67 +21,60 @@ def test_load_given_invalid_json_lines(broken):
         "[4]\n"
         "suffix\n"  # bad JSON line
     )
-    result = jsonl.load(io.StringIO(lines), broken=broken)
-    if broken:
-        assert tuple(result) == ([1, 2], [3], [4])
-    else:
-        with pytest.raises(json.JSONDecodeError):
-            tests.consume(result)
+    with contextlib.closing(io.StringIO(lines)) as iofile:
+        result = jsonl.load(iofile, broken=broken)
+        if broken:
+            assert tuple(result) == ([1, 2], [3], [4])
+        else:
+            with pytest.raises(json.JSONDecodeError):
+                tests.consume(result)
 
 
-@pytest.mark.parametrize("broken", (False, True))
 def test_load_given_invalid_utf8(broken):
-    result = jsonl.load(io.BytesIO(b"\xff\xff\n[1, 2]"), broken=broken)
-    if broken:
-        assert tuple(result) == ([1, 2],)
-    else:
-        with pytest.raises(UnicodeDecodeError):
-            tests.consume(result)
-
-
-@pytest.mark.parametrize("iofile", (io.StringIO(), io.BytesIO()))
-def test_load_give_empty_iofile(iofile):
-    with contextlib.closing(iofile):
-        result = tuple(jsonl.load(iofile))
-    assert result == ()
+    with contextlib.closing(io.BytesIO(b"\xff\xff\n[1, 2]")) as iofile:
+        result = jsonl.load(iofile, broken=broken)
+        if broken:
+            assert tuple(result) == ([1, 2],)
+        else:
+            with pytest.raises(UnicodeDecodeError):
+                tests.consume(result)
 
 
 @pytest.mark.parametrize(
     "iofile",
-    (io.StringIO(tests.string_data), io.BytesIO(tests.string_data.encode(jsonl.utf_8))),
+    [
+        io.StringIO(tests.string_data),
+        io.BytesIO(tests.string_data.encode(jsonl.utf_8)),
+    ],
 )
-def test_load_given_iofile(iofile):
+def test_load_given_memory_file(iofile):
     with contextlib.closing(iofile):
         result = tuple(jsonl.load(iofile))
     assert result == tuple(tests.data)
 
 
 @pytest.mark.parametrize("mode", ("rt", "rb"))
-@pytest.mark.parametrize("extension", tests.extensions)
-def test_load_given_file_like_object(extension, mode):
+def test_load_given_opened_file(filepath, mode, json_loads):
     expected = tuple(tests.data)
-    with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, f"foo.{extension}")
-        with jsonl.xopen(path, mode="wb") as fp:  # write into a binary file
-            fp.write(tests.string_data.encode(jsonl.utf_8))
-
-        with jsonl.xopen(path, mode=mode) as fp:
-            result = tuple(jsonl.load(fp))
+    # Prepare a file with JSON lines
+    with jsonl.xopen(filepath, mode="wb") as fp:  # write into a binary file
+        content = tests.string_data.encode(jsonl.utf_8)
+        fp.write(content)
+    # Load the file in given mode
+    with jsonl.xopen(filepath, mode=mode) as fp:
+        result = tuple(jsonl.load(fp, json_loads=json_loads))
     assert result == expected
 
 
-@pytest.mark.parametrize("extension", tests.extensions)
-def test_load_given_filepath(extension):
+def test_load_given_filepath(filepath, json_loads):
     expected = tuple(tests.data)
-    with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, f"foo{extension}")
-        tests.write_text(path, content=tests.string_data)
-        result = tuple(jsonl.load(path))
+    tests.write_text(filepath, content=tests.string_data)
+    result = tuple(jsonl.load(filepath, json_loads=json_loads))
     assert result == expected
 
 
 @pytest.mark.parametrize("opener", (open, None))
-def test_load_given_filepath_and_opener(opener):
+def test_load_given_filepath_on_opener(opener):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo")
@@ -93,4 +85,4 @@ def test_load_given_filepath_and_opener(opener):
 
 def test_load_given_not_found_filepath():
     with pytest.raises(FileNotFoundError):
-        tests.consume(jsonl.load("foo.jsonl"))
+        tests.consume(jsonl.load("not_found.jsonl"))

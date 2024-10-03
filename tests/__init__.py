@@ -4,8 +4,6 @@ import collections
 
 import jsonl
 
-extensions = (".jsonl", ".gz", ".bz2", ".xz", ".unknown")
-
 # https://jsonlines.org/examples/
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
@@ -20,6 +18,7 @@ string_data = (
     '{"name": "May", "wins": []}\n'
     '{"name": "Deloise", "wins": [["three of a kind", "5♣"]]}\n'
 )
+compacted_string_data = string_data.replace(", ", ",").replace(": ", ":")
 
 
 def read_text(filename):
