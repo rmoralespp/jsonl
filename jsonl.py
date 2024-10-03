@@ -10,7 +10,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - 📦 Provides a simple API for incremental writing to multiple files.
 """
 
-__version__ = "1.3.5"
+__version__ = "1.3.6"
 __all__ = [
     "dump",
     "dumps",

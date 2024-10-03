@@ -1,5 +1,11 @@
 ## Releases ##
 
+## v1.3.6 (2024-10-03) ##
+
+- **Fixed:** Pyproject file.
+
+## v1.3.5 (2024-10-03) ##
+
 - **Changed:** Setup using a TOML file.
 - **Changed:** Supports custom serialization/deserialization. Fix `orjson` serialization.
 
