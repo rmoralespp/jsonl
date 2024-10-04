@@ -272,7 +272,16 @@ print(tuple(iterable2))
 ### Unit tests
 
 ```
-(env)$ pip install -r requirements.txt   # Ignore this command if it has already been executed
+(env)$ pip install -r requirements-dev.txt   # Ignore this command if it has already been executed
 (env)$ pytest tests/
 (env)$ pytest --cov jsonl # Tests with coverge
+```
+
+
+### Documentation
+
+```
+(env)$ pip install -r requirements-docs.txt   # Ignore this command if it has already been executed
+(env)$ mkdocs serve # Start the live-reloading docs server
+(env)$ mkdocs build # Build the documentation site
 ```

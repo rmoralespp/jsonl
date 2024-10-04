@@ -1,0 +1,28 @@
+site_name: py-jsonl
+site_description: "Documentation for the jsonl Python library"
+site_url: "https://github.com/rmoralespp/jsonl"
+repo_url: https://github.com/rmoralespp/jsonl
+repo_name: jsonl
+theme:
+  name: material
+  custom_dir: 'docs'
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+  markdown_extensions:
+    - toc:
+        permalink: true
+    - pymdownx.superfences
+    - pymdownx.highlight
+nav:
+  - Introduction: index.md
+  - Usage:
+      - Dump Text: dumps.md
+      - Dump Data: dump.md
+      - Dump Fork Data: dump_fork.md
+      - Load Data: load.md

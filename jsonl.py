@@ -81,12 +81,12 @@ def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
     """Generator yielding decoded JSON objects."""
 
     deserialize = functools.partial(json_loads or default_json_loads, **json_loads_kwargs)
-    for line in stream:
+    for lineno, line in enumerate(stream, start=1):
         try:
             string_line = line.decode(utf_8) if isinstance(line, bytes) else line
             yield deserialize(string_line)
         except Exception as e:
-            logging.warning("Error deserializing line: %s", e)
+            logging.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
 
