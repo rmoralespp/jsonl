@@ -22,7 +22,7 @@ theme:
 nav:
   - Introduction: index.md
   - Usage:
-      - Dump Text: dumps.md
-      - Dump Data: dump.md
-      - Dump Fork Data: dump_fork.md
-      - Load Data: load.md
+      - Dump text: dumps.md
+      - Dump data: dump.md
+      - Dump fork: dump_fork.md
+      - Load data: load.md

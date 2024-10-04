@@ -1,5 +1,7 @@
 ## Releases ##
 
+## v1.3.7 (2024-10-04) ##
+
 - **Added:** Generate documentation using `mkdocs`.
 - **Added:** Improve load log error message.
 - **Added:** Update pyproject.toml file. Added ruff rules.
