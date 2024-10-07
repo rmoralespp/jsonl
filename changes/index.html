@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/rmoralespp/jsonl/dump_fork/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/rmoralespp/jsonl/changes/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Dump to multiple jsonlines files - jsonl</title>
+    <title>Changes - jsonl</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Dump to multiple jsonlines files";
-        var mkdocs_page_input_path = "dump_fork.md";
-        var mkdocs_page_url = "/rmoralespp/jsonl/dump_fork/";
+        var mkdocs_page_name = "Changes";
+        var mkdocs_page_input_path = "changes.md";
+        var mkdocs_page_url = "/rmoralespp/jsonl/changes/";
       </script>
     
     <!--[if lt IE 9]>
@@ -44,20 +44,18 @@
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">API usage</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../load/">Load jsonlines file</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../dump/">Dump to a jsonlines file</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Dump to multiple jsonlines files</a>
-    <ul class="current">
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../dump_fork/">Dump to multiple jsonlines files</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../dumps/">Dump to a string</a>
                   </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../changes/">Changes</a>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Changes</a>
                 </li>
               </ul>
       </div>
@@ -74,10 +72,9 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">API usage</li>
-      <li class="breadcrumb-item active">Dump to multiple jsonlines files</li>
+      <li class="breadcrumb-item active">Changes</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/rmoralespp/jsonl/edit/master/docs/dump_fork.md">Edit on jsonl</a>
+          <a href="https://github.com/rmoralespp/jsonl/edit/master/docs/changes.md">Edit on jsonl</a>
     </li>
   </ul>
   <hr/>
@@ -85,40 +82,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="dump-to-multiple-jsonlines-files">Dump to multiple jsonlines files</h1>
-<p>Dump multiple iterables to the specified jsonlines file paths, optimizing memory usage.</p>
-<p>The files can be compressed using <code>gzip</code>, <code>bzip2</code>, or <code>xz</code> formats. If the file extension is not recognized, it will be
-dumped to a text file.</p>
-<p>You can install <code>orjson</code> and <code>ujson</code> to run the following example.</p>
-<pre><code class="language-console">pip install orjson ujson # Ignore this command if these libraries are already installed.
-</code></pre>
-<pre><code class="language-python">import orjson
-import ujson
-import jsonl
-
-
-def worker():
-    yield (&quot;num.jsonl&quot;, ({&quot;value&quot;: 1}, {&quot;value&quot;: 2}))
-    yield (&quot;foo.jsonl&quot;, iter(({&quot;a&quot;: &quot;1&quot;}, {&quot;b&quot;: 2})))
-    yield (&quot;num.jsonl&quot;, [{&quot;value&quot;: 3}])
-    yield (&quot;foo.jsonl&quot;, ())
-
-
-# Dump the data using the default json.dumps function.
-jsonl.dump_fork(worker())
-
-# Dump the data using the ujson library.
-jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)
-
-# Dump the data using the orjson library.
-jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
-</code></pre>
+                <p>Can see changes <a href="https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md">here</a></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../dump/" class="btn btn-neutral float-left" title="Dump to a jsonlines file"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../dumps/" class="btn btn-neutral float-right" title="Dump to a string">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../dumps/" class="btn btn-neutral float-left" title="Dump to a string"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -145,10 +114,8 @@ jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
         </span>
     
     
-      <span><a href="../dump/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../dumps/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../dumps/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
