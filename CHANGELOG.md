@@ -1,5 +1,7 @@
 ## Releases ##
 
+- **Changed:** Improve documentation.
+
 ## v1.3.7 (2024-10-04) ##
 
 - **Added:** Generate documentation using `mkdocs`.

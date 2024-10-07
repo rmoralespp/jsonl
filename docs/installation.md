@@ -1,7 +1,7 @@
 # Installation
 
-Install jsonl via pip:
+Install **jsonl** via pip:
 
-```bash
+```console
 pip install py-jsonl
 ```

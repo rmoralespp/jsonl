@@ -1,11 +1,15 @@
-##### Dump fork (Incremental dump)
+# Dump to multiple jsonlines files
 
-Incrementally dumps multiple iterables into the specified jsonlines file paths,
-effectively reducing memory consumption.
+Dump multiple iterables to the specified jsonlines file paths, optimizing memory usage.
 
-**Examples:**
+The files can be compressed using `gzip`, `bzip2`, or `xz` formats. If the file extension is not recognized, it will be
+dumped to a text file.
 
-`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
+You can install `orjson` and `ujson` to run the following example.
+
+```console
+pip install orjson ujson # Ignore this command if these libraries are already installed.
+```
 
 ```python
 import orjson
@@ -20,7 +24,12 @@ def worker():
     yield ("foo.jsonl", ())
 
 
-jsonl.dump_fork(worker())  # using (json)
-jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)  # using (ujson)
+# Dump the data using the default json.dumps function.
+jsonl.dump_fork(worker())
+
+# Dump the data using the ujson library.
+jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)
+
+# Dump the data using the orjson library.
 jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
 ```

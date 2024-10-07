@@ -1,6 +1,4 @@
-##### Serialize an iterable into a JSON Lines formatted string. (dumps)
-
-Examples:
+##### Serialize an iterable into a JSON Lines formatted string.
 
 ```python
 import jsonl

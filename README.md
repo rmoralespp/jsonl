@@ -8,9 +8,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linter: ruff](https://img.shields.io/badge/linter-_ruff-orange)](https://github.com/charliermarsh/ruff)
 
-### About
+## About
 
-Useful functions for working with jsonlines data as described: https://jsonlines.org/
+**jsonl** is a library that includes useful tools for working with jsonlines data as described: https://jsonlines.org/
 
 **Features:**
 
@@ -20,29 +20,13 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 - 🔧 Load files containing broken lines, skipping any malformed lines.
 - 📦 Provides a simple API for incremental writing to multiple files.
 
-### Installation (via pip)
+## Installation (via pip)
 
 ```pip install py-jsonl```
 
-### Usage
+### Getting Started
 
-##### Serialize an iterable into a JSON Lines formatted string. (dumps)
-
-Examples:
-
-```python
-import jsonl
-
-data = ({'foo': 1}, {'bar': 2})
-result = jsonl.dumps(data)
-print(result)
-```
-
-##### Dump an iterable to a JSON Lines file. (dump)
-
-**Examples:**
-
-Write the data to an uncompressed file at the specified path.
+**Dump an iterable to a JSON Lines file.**
 
 ```python
 import jsonl
@@ -55,134 +39,7 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-Write the data to a compressed file at the specified path.
-
-```python
-import jsonl
-
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, "file.jsonl.gz")  # gzip compression
-jsonl.dump(data, "file.jsonl.bz2")  # bzip2 compression
-jsonl.dump(data, "file.jsonl.xz")  # xz compression
-```
-
-Write the data to the already opened compressed file.
-
-```python
-import gzip
-import jsonl
-
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-with gzip.open("file.jsonl.gz", mode="wb") as fp:
-    jsonl.dump(data, fp, text_mode=False)
-```
-
-Append the data to the end of the existing compressed file.
-
-```python
-
-import gzip
-import jsonl
-
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-with gzip.open("file.jsonl.gz", mode="ab") as fp:
-    jsonl.dump(data, fp, text_mode=False)
-```
-
-Write the data to a custom file object.
-
-```python
-
-import jsonl
-
-
-class MyCustomFile1:
-
-    def write(self, line):
-        print(line)
-
-
-class MyCustomFile2:
-
-    def writelines(self, lines):
-        print("".join(lines))
-
-
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, MyCustomFile1(), text_mode=True)
-jsonl.dump(data, MyCustomFile2(), text_mode=True)
-```
-
-Write the data using a custom serialization callback.
-
-`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
-
-```python
-
-import orjson
-import ujson
-
-import jsonl
-
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False) # using (ujson)
-jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps) # using (orjson)
-```
-
-##### Dump fork (Incremental dump)
-
-Incrementally dumps multiple iterables into the specified jsonlines file paths,
-effectively reducing memory consumption.
-
-**Examples:**
-
-`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
-
-```python
-import orjson
-import ujson
-import jsonl
-
-
-def worker():
-    yield ("num.jsonl", ({"value": 1}, {"value": 2}))
-    yield ("foo.jsonl", iter(({"a": "1"}, {"b": 2})))
-    yield ("num.jsonl", [{"value": 3}])
-    yield ("foo.jsonl", ())
-
-
-jsonl.dump_fork(worker())  # using (json)
-jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)  # using (ujson)
-jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
-```
-
-##### load
-
-Deserialize a UTF-8 encoded jsonlines file into an iterable of Python objects.
-
-**Examples:**
-
-Load an uncompressed file from the specified path.
+**Load a JSON Lines file into an iterable of objects.**
 
 ```python
 import jsonl
@@ -198,76 +55,11 @@ iterable = jsonl.load(path)
 print(tuple(iterable))
 ```
 
-Load a compressed file from the specified path.
+## Documentation
 
-```python
-import jsonl
+See project [documentation](https://rmoralespp.github.io/jsonl/) for more details and examples.
 
-path = "file.jsonl.gz"
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, path)
-iterable = jsonl.load(path)
-print(tuple(iterable))
-```
-
-Load a compressed file from the specified open file object.
-
-```python
-import gzip
-import jsonl
-
-path = "file.jsonl.gz"
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, path)
-with gzip.open(path, mode="rb") as fp:
-    iterable = jsonl.load(fp)
-    print(tuple(iterable))
-```
-
-Load a file containing broken lines, skipping any malformed lines.
-
-```python
-import jsonl
-
-with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
-    fp.write('{"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]}\n')
-    fp.write('{"name": "May", "wins": []\n')  # missing closing bracket
-    fp.write('{"name": "Richard", "wins": []}\n')
-
-iterable = jsonl.load("file.jsonl", broken=True)
-print(tuple(iterable))
-```
-
-Load a file using a custom deserialization callback.
-
-`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
-
-```python
-import orjson
-import ujson
-import jsonl
-
-path = "file.jsonl"
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, path)
-
-iterable1 = jsonl.load(path, json_loads=ujson.loads)  # using (ujson)
-iterable2 = jsonl.load(path, json_loads=orjson.loads)  # using (orjson)
-print(tuple(iterable1))
-print(tuple(iterable2))
-```
+## Development
 
 ### Unit tests
 
@@ -277,11 +69,14 @@ print(tuple(iterable2))
 (env)$ pytest --cov jsonl # Tests with coverge
 ```
 
-
-### Documentation
+### Build documentation
 
 ```
 (env)$ pip install -r requirements-docs.txt   # Ignore this command if it has already been executed
 (env)$ mkdocs serve # Start the live-reloading docs server
 (env)$ mkdocs build # Build the documentation site
 ```
+
+## License
+
+This project is licensed under the terms of the [MIT](LICENSE) license.

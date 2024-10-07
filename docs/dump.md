@@ -1,8 +1,6 @@
-##### Dump an iterable to a JSON Lines file. (dump)
+# Dump an iterable to a JSON Lines file.
 
-**Examples:**
-
-Write the data to an uncompressed file at the specified path.
+**Dump the data to an uncompressed file at the specified path.**
 
 ```python
 import jsonl
@@ -15,7 +13,10 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-Write the data to a compressed file at the specified path.
+**Dump the data to a compressed file at the specified path.**
+
+The file can be compressed using `gzip`, `bzip2`, or `xz` formats. If the file extension is not recognized, it will be
+dumped to a text file.
 
 ```python
 import jsonl
@@ -25,12 +26,20 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "file.jsonl.gz")  # gzip compression
-jsonl.dump(data, "file.jsonl.bz2")  # bzip2 compression
-jsonl.dump(data, "file.jsonl.xz")  # xz compression
+# Dump to a gzip compressed file.
+jsonl.dump(data, "file.jsonl.gz")
+
+# Dump to a bzip2 compressed file.
+jsonl.dump(data, "file.jsonl.bz2")
+
+# Dump to a xz compressed file.
+jsonl.dump(data, "file.jsonl.xz")
+
+# Dump to a text file because the extension is not recognized.
+jsonl.dump(data, "file.jsonl.foo")
 ```
 
-Write the data to the already opened compressed file.
+**Dump the data to the already opened compressed file.**
 
 ```python
 import gzip
@@ -41,11 +50,12 @@ data = [
     {"name": "May", "wins": []},
 ]
 
+# Dump to an opened gzip file, text_mode is false because it is a binary file.
 with gzip.open("file.jsonl.gz", mode="wb") as fp:
     jsonl.dump(data, fp, text_mode=False)
 ```
 
-Append the data to the end of the existing compressed file.
+**Append the data to the end of the existing compressed file.**
 
 ```python
 
@@ -57,11 +67,12 @@ data = [
     {"name": "May", "wins": []},
 ]
 
+# Text mode is false because it is a binary file.
 with gzip.open("file.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp, text_mode=False)
 ```
 
-Write the data to a custom file object.
+**Dump the data to a custom file object.**
 
 ```python
 
@@ -85,13 +96,19 @@ data = [
     {"name": "May", "wins": []},
 ]
 
+# Dump the data to the custom file object using the write method.
 jsonl.dump(data, MyCustomFile1(), text_mode=True)
+
+# Dump the data to the custom file object using the writelines method.
 jsonl.dump(data, MyCustomFile2(), text_mode=True)
 ```
 
-Write the data using a custom serialization callback.
+**Write the data using a custom serialization callback.**
+You can install `orjson` and `ujson` to run the following example.
 
-`pip install orjson ujson`  # Ignore this command if these libraries are already installed.
+```console
+pip install orjson ujson # Ignore this command if these libraries are already installed.
+```
 
 ```python
 
@@ -105,6 +122,9 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False) # using (ujson)
-jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps) # using (orjson)
+# Dump the data using the ujson library.
+jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
+
+# Dump the data using the orjson library.
+jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps)
 ```
