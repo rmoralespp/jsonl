@@ -1,5 +1,7 @@
 ## Releases ##
 
+## v1.3.8 (2024-10-07) ##
+
 - **Changed:** Improve documentation.
 
 ## v1.3.7 (2024-10-04) ##
