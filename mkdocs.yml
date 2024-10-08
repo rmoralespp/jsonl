@@ -6,6 +6,8 @@ repo_name: jsonl
 theme:
   name: readthedocs
   custom_dir: 'docs'
+markdown_extensions:
+  admonition: {}
 nav:
   - Introduction: index.md
   - API usage:

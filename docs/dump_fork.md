@@ -1,6 +1,6 @@
 # Dump to multiple jsonlines files
 
-Dump multiple iterables to the specified jsonlines file paths, optimizing memory usage.
+Dump multiple iterables incrementally to the specified jsonlines file paths, optimizing memory usage.
 
 The files can be compressed using `gzip`, `bzip2`, or `xz` formats. If the file extension is not recognized, it will be
 dumped to a text file.

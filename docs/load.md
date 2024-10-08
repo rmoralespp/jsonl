@@ -1,12 +1,14 @@
 # Load JSON Lines files
 
-Load JSON Lines **(jsonl)** files in Python, covering both uncompressed and compressed files, handling broken lines, and
-using custom deserialization and opener callbacks.
+Load JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats, handling broken
+lines, and allowing custom deserialization and opener callbacks.
 
-Support for loading files compressed in `gzip`, `bzip2`, and `xz` formats.
-If a compression extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
+<a id="note-compression"></a>
+!!! note
+    Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+    If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
 
-**Load an uncompressed file given a path**
+#### Load an uncompressed file given a path.
 
 ```python
 import jsonl
@@ -27,13 +29,14 @@ iterable = jsonl.load(path)
 print(tuple(iterable))
 ```
 
-**Load a compressed file given a path.**
-The file can be compressed using `gzip`, `bzip2`, or `xz` formats.
+#### Load a compressed file given a path.
+
+Check [note](#note-compression) for more details
 
 ```python
 import jsonl
 
-path = "file.jsonl.gz"
+path = "file.jsonl.gz" # gzip compressed file, but it can be ".bz2" or ".xz"
 
 # Example data to save in the file
 data = [
@@ -49,13 +52,15 @@ iterable = jsonl.load(path)
 print(tuple(iterable))
 ```
 
-**Load a file from an open file object.** This is useful when you need to load a file from a custom source.
+#### Load a file from an open file object.
+
+!!! tip
+    This is useful when you need to load a file from a custom source.
 
 ```python
-import gzip
 import jsonl
 
-path = "file.jsonl.gz"
+path = "file.jsonl"
 
 # Example data to save in the file
 data = [
@@ -67,12 +72,16 @@ data = [
 jsonl.dump(data, path)
 
 # Load the file using an open file object
-with gzip.open(path, mode="rb") as fp:
+with open(path, mode="rb") as fp:
     iterable = jsonl.load(fp)
     print(tuple(iterable))
 ```
 
-**Load a file containing broken lines and skip any malformed lines.**
+#### Load a file containing broken lines.
+
+!!! warning
+    If the **broken** parameter is set to `False`, the function will raise an `Exception` when it encounters a broken line.
+    If set to `True`, the function will skip the broken line, continue reading the file, and log a warning message.
 
 ```python
 import jsonl
@@ -96,8 +105,17 @@ WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28
 ({'name': 'Richard', 'wins': []},)
 ```
 
-**Load a file using a custom deserialization callback.**
-You can install `orjson` and `ujson` to run the following example.
+#### Load a file using a custom deserialization.
+
+The `json_loads` parameter allows for custom deserialization and must take a JSON-formatted
+string as input and return a Python object.
+
+!!! tip
+    Commonly, libraries like `orjson` or `ujson` are used for faster performance, or you can implement your own
+    custom deserialization function for specific needs.
+
+The following example demonstrates how to use the `json_loads` parameter to deserialize the data
+using the `orjson` and `ujson` libraries. Make sure to install these libraries to run the example.
 
 ```console
 pip install orjson ujson # Ignore this command if these libraries are already installed.
@@ -132,8 +150,9 @@ print(tuple(iterable1))
 print(tuple(iterable2))
 ```
 
-**Load a file using a custom **opener** callback.**
-The **opener** parameter allows loading files from custom sources, such as a ZIP archive. Here’s how to use it:
+#### Load a file using a custom opener.
+
+The `opener` parameter allows loading files from custom sources, such as a ZIP archive. Here’s how to use it:
 
 ```python
 import zipfile
