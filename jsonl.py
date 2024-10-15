@@ -5,7 +5,7 @@ Useful functions for working with jsonlines data as described: https://jsonlines
 
 - 🌎 Offers an API similar to Python's standard `json` module.
 - 🚀 Supports custom serialization/deserialization callbacks. By default, it uses the standard `json` module.
-- 🗜️ Enables compression using `gzip`, `bzip2`, and `xz` formats.
+- 🗜️ Enables compression/decompression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Load files containing broken lines, skipping any malformed lines.
 - 📦 Provides a simple API for incremental writing to multiple files.
 """
