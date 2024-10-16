@@ -19,8 +19,8 @@ jsonl.dump(data, "file.jsonl")
 #### Dump the data to a compressed file at the specified path.
 
 !!! note
-    Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
-    If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
+Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
 
 ```python
 import jsonl
@@ -43,10 +43,11 @@ jsonl.dump(data, "file.jsonl.xz")
 jsonl.dump(data, "file.jsonl.foo")
 ```
 
-#### Dump the data to the already opened compressed file.
+#### Dump the data to the already opened file.
 
 ```python
 import gzip
+
 import jsonl
 
 data = [
@@ -54,16 +55,20 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Dump to an opened gzip file, text_mode is false because it is a binary file.
-with gzip.open("file.jsonl.gz", mode="wb") as fp:
-    jsonl.dump(data, fp, text_mode=False)
+# Dump to an opened file, Text mode is True because it is a text file.
+with open("file.jsonl", mode="wt", encoding="utf-8") as fd:
+    jsonl.dump(data, fd, text_mode=True)
+
+# Dump to an opened gzip file, Text mode is false because it is a binary file.
+with gzip.open("file.jsonl.gz", mode="wb") as fd:
+    jsonl.dump(data, fd, text_mode=False)
 ```
 
-#### Append the data to the end of the existing compressed file.
+#### Append the data to the end of the existing file.
 
 ```python
-
 import gzip
+
 import jsonl
 
 data = [
@@ -71,16 +76,20 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Text mode is false because it is a binary file.
+# Compressed file: Text mode is false because it is a binary file.
 with gzip.open("file.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp, text_mode=False)
+
+# Uncompressed file: Text mode is true because it is a binary file.
+with open("file.jsonl", mode="at", encoding="utf-8") as fp:
+    jsonl.dump(data, fp, text_mode=True)
 ```
 
 #### Dump the data to a custom file object.
 
 !!! tip
-    Use this feature when you need to write the data to a custom file object.
-    The custom file object must have a `write` or `writelines` method.
+Use this feature when you need to write the data to a custom file object.
+The custom file object must have a `write` or `writelines` method.
 
 ```python
 
@@ -126,7 +135,6 @@ pip install orjson ujson # Ignore this command if these libraries are already in
 ```
 
 ```python
-
 import orjson
 import ujson
 
@@ -142,4 +150,8 @@ jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
 
 # Dump the data using the orjson library.
 jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps)
+
+# Dumping data into a JSON file with compact output using separators (',', ':')
+# to remove unnecessary whitespaces.
+jsonl.dump(data, "bar.jsonl", separators=(',', ':'))
 ```

@@ -72,7 +72,7 @@ data = [
 jsonl.dump(data, path)
 
 # Load the file using an open file object
-with open(path, mode="rb") as fp:
+with open(path) as fp:
     iterable = jsonl.load(fp)
     print(tuple(iterable))
 ```
@@ -88,7 +88,7 @@ import jsonl
 
 # Create a file with broken JSON lines
 with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
-    fp.write('{"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]}\n')
+    fp.write('{"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]}\n')
     fp.write('{"name": "May", "wins": []\n')  # missing closing bracket
     fp.write('{"name": "Richard", "wins": []}\n')
 
@@ -100,9 +100,8 @@ print(tuple(iterable))
 *Output:*
 
 ```console
-WARNING:root:Broken line at 1: Expecting ',' delimiter: line 1 column 69 (char 68)
 WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
-({'name': 'Richard', 'wins': []},)
+({'name': 'Gilbert', 'wins': [['straight', '7♣'], ['one pair', '10♥']]}, {'name': 'Richard', 'wins': []})
 ```
 
 #### Load a file using a custom deserialization.
