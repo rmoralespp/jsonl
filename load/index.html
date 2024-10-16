@@ -162,7 +162,7 @@ data = [
 jsonl.dump(data, path)
 
 # Load the file using an open file object
-with open(path, mode=&quot;rb&quot;) as fp:
+with open(path) as fp:
     iterable = jsonl.load(fp)
     print(tuple(iterable))
 </code></pre>
@@ -176,7 +176,7 @@ If set to <code>True</code>, the function will skip the broken line, continue re
 
 # Create a file with broken JSON lines
 with open(&quot;file.jsonl&quot;, mode=&quot;wt&quot;, encoding=&quot;utf-8&quot;) as fp:
-    fp.write('{&quot;name&quot;: &quot;Gilbert&quot;, &quot;wins&quot;: [[&quot;straight&quot;, &quot;7♣&quot;], [&quot;one pair&quot;, &quot;10♥&quot;]}\n')
+    fp.write('{&quot;name&quot;: &quot;Gilbert&quot;, &quot;wins&quot;: [[&quot;straight&quot;, &quot;7♣&quot;], [&quot;one pair&quot;, &quot;10♥&quot;]]}\n')
     fp.write('{&quot;name&quot;: &quot;May&quot;, &quot;wins&quot;: []\n')  # missing closing bracket
     fp.write('{&quot;name&quot;: &quot;Richard&quot;, &quot;wins&quot;: []}\n')
 
@@ -185,9 +185,8 @@ iterable = jsonl.load(&quot;file.jsonl&quot;, broken=True)
 print(tuple(iterable))
 </code></pre>
 <p><em>Output:</em></p>
-<pre><code class="language-console">WARNING:root:Broken line at 1: Expecting ',' delimiter: line 1 column 69 (char 68)
-WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
-({'name': 'Richard', 'wins': []},)
+<pre><code class="language-console">WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
+({'name': 'Gilbert', 'wins': [['straight', '7♣'], ['one pair', '10♥']]}, {'name': 'Richard', 'wins': []})
 </code></pre>
 <h4 id="load-a-file-using-a-custom-deserialization">Load a file using a custom deserialization.</h4>
 <p>The <code>json_loads</code> parameter allows for custom deserialization and must take a JSON-formatted
