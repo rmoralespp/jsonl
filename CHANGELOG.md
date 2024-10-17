@@ -1,5 +1,9 @@
 ## Releases ##
 
+## v1.3.9 (2024-10-17) ##
+
+- **Added:** Added more examples to the documentation.
+  
 ## v1.3.8 (2024-10-07) ##
 
 - **Changed:** Improve documentation.
