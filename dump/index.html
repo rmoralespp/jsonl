@@ -167,7 +167,7 @@ data = [
 with gzip.open(&quot;file.jsonl.gz&quot;, mode=&quot;ab&quot;) as fp:
     jsonl.dump(data, fp, text_mode=False)
 
-# Uncompressed file: Text mode is true because it is a binary file.
+# Uncompressed file: Text mode is true because it is a text file.
 with open(&quot;file.jsonl&quot;, mode=&quot;at&quot;, encoding=&quot;utf-8&quot;) as fp:
     jsonl.dump(data, fp, text_mode=True)
 </code></pre>
