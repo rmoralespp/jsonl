@@ -80,7 +80,7 @@ data = [
 with gzip.open("file.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp, text_mode=False)
 
-# Uncompressed file: Text mode is true because it is a binary file.
+# Uncompressed file: Text mode is true because it is a text file.
 with open("file.jsonl", mode="at", encoding="utf-8") as fp:
     jsonl.dump(data, fp, text_mode=True)
 ```
