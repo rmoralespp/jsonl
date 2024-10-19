@@ -19,8 +19,8 @@ jsonl.dump(data, "file.jsonl")
 #### Dump the data to a compressed file at the specified path.
 
 !!! note
-Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
-If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
+    Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+    If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
 
 ```python
 import jsonl
@@ -88,8 +88,8 @@ with open("file.jsonl", mode="at", encoding="utf-8") as fp:
 #### Dump the data to a custom file object.
 
 !!! tip
-Use this feature when you need to write the data to a custom file object.
-The custom file object must have a `write` or `writelines` method.
+    Use this feature when you need to write the data to a custom file object.
+    The custom file object must have a `write` or `writelines` method.
 
 ```python
 
