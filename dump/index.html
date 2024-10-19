@@ -113,9 +113,9 @@ jsonl.dump(data, &quot;file.jsonl&quot;)
 <h4 id="dump-the-data-to-a-compressed-file-at-the-specified-path">Dump the data to a compressed file at the specified path.</h4>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-</div>
 <p>Supported compression formats are: <strong>gzip (.gz), bzip2 (.bz2), xz (.xz)</strong>
 If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.</p>
+</div>
 <pre><code class="language-python">import jsonl
 
 data = [
@@ -174,9 +174,9 @@ with open(&quot;file.jsonl&quot;, mode=&quot;at&quot;, encoding=&quot;utf-8&quot
 <h4 id="dump-the-data-to-a-custom-file-object">Dump the data to a custom file object.</h4>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-</div>
 <p>Use this feature when you need to write the data to a custom file object.
 The custom file object must have a <code>write</code> or <code>writelines</code> method.</p>
+</div>
 <pre><code class="language-python">
 import jsonl
 
