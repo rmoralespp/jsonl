@@ -11,23 +11,29 @@
 
 ## About
 
-**jsonl** is a library that includes useful tools for working with jsonlines data as described: https://jsonlines.org/
+**jsonl** is a Python library designed to simplify working with JSON Lines data, adhering to the [JSON Lines format](https://jsonlines.org/).
 
-**Features:**
+### Key Features
 
-- 🌎 Offers an API similar to Python's standard `json` module.
-- 🚀 Supports custom serialization/deserialization callbacks. By default, it uses the standard `json` module.
-- 🗜️ Enables compression/decompression using `gzip`, `bzip2`, and `xz` formats.
-- 🔧 Load files containing broken lines, skipping any malformed lines.
-- 📦 Provides a simple API for incremental writing to multiple files.
+- 🌎 Provides an API similar to Python's standard `json` module.
+- 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
+- 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
+- 🔧 Can load files with broken lines, skipping any malformed entries.
+- 📦 Includes an easy-to-use utility for incrementally writing to multiple JSON Lines files.
 
-## Installation (via pip)
+## Installation
 
-```pip install py-jsonl```
+To install **jsonl** using `pip`, run the following command:
 
-### Getting Started
+```bash
+pip install py-jsonl
+```
 
-**Dump an iterable to a JSON Lines file.**
+## Getting Started
+
+**Dumping Data to a JSON Lines File**
+
+Use `jsonl.dump` to write an iterable of dictionaries to a JSON Lines file:
 
 ```python
 import jsonl
@@ -40,44 +46,45 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-**Load a JSON Lines file into an iterable of objects.**
+**Loading Data from a JSON Lines File**
+
+Use `jsonl.load` to load a JSON Lines file into an iterable of objects:
 
 ```python
 import jsonl
 
-path = "file.jsonl"
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-
-jsonl.dump(data, path)
-iterable = jsonl.load(path)
+iterable = jsonl.load("file.jsonl")
 print(tuple(iterable))
 ```
 
 ## Documentation
 
-See project [documentation](https://rmoralespp.github.io/jsonl/) for more details and examples.
+For more detailed information and usage examples, refer to the project [documentation](https://rmoralespp.github.io/jsonl/)
 
 ## Development
 
-### Unit tests
+To contribute to the project, you can run the following commands for testing and documentation:
+
+### Running Unit Tests
+
+Install the development dependencies and run the tests:
 
 ```
-(env)$ pip install -r requirements-dev.txt   # Ignore this command if it has already been executed
+(env)$ pip install -r requirements-dev.txt  # Skip if already installed
 (env)$ pytest tests/
-(env)$ pytest --cov jsonl # Tests with coverge
+(env)$ pytest --cov jsonl # Run tests with coverage
 ```
 
-### Build documentation
+### Building the Documentation
+
+To build the documentation locally, use the following commands:
 
 ```
-(env)$ pip install -r requirements-docs.txt   # Ignore this command if it has already been executed
-(env)$ mkdocs serve # Start the live-reloading docs server
+(env)$ pip install -r requirements-docs.txt   # Skip if already installed
+(env)$ mkdocs serve # Start live-reloading docs server
 (env)$ mkdocs build # Build the documentation site
 ```
 
 ## License
 
-This project is licensed under the terms of the [MIT](LICENSE) license.
+This project is licensed under the [MIT license](LICENSE).

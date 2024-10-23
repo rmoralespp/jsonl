@@ -1,62 +1,62 @@
-## Releases ##
+## Releases
 
-## v1.3.9 (2024-10-17) ##
+### v1.3.9 (2024-10-17)
 
-- **Added:** Added more examples to the documentation.
-  
-## v1.3.8 (2024-10-07) ##
+- **Added:** More examples added to the documentation for clarity and completeness.
 
-- **Changed:** Improve documentation.
+### v1.3.8 (2024-10-07)
 
-## v1.3.7 (2024-10-04) ##
+- **Improved:** Documentation enhancements to improve readability and comprehensiveness.
 
-- **Added:** Generate documentation using `mkdocs`.
-- **Added:** Improve load log error message.
-- **Added:** Update pyproject.toml file. Added ruff rules.
+### v1.3.7 (2024-10-04)
 
-## v1.3.6 (2024-10-03) ##
+- **Added:** Automatic documentation generation using `mkdocs`.
+- **Added:** Enhanced error messages for log loading to aid in troubleshooting.
+- **Updated:** `pyproject.toml` file to include `ruff` linting rules for code quality.
 
-- **Fixed:** Pyproject file.
+### v1.3.6 (2024-10-03)
 
-## v1.3.5 (2024-10-03) ##
+- **Fixed:** Corrected issues with the `pyproject.toml` file configuration.
 
-- **Changed:** Setup using a TOML file.
-- **Changed:** Supports custom serialization/deserialization. Fix `orjson` serialization.
+### v1.3.5 (2024-10-03)
 
-## v1.3.4 (2024-09-30) ##
+- **Updated:** Configuration migrated to a TOML file format for better maintainability.
+- **Improved:** Added support for custom serialization/deserialization. Fixed `orjson` serialization issues.
 
-- **Added:** Allow passing an opener as a parameter.
-- **Added:** Allow reading JSONLines files with broken lines.
-- **Changed:** Using `/` and `*` in function definitions is a stricter way to specify how arguments are passed.
+### v1.3.4 (2024-09-30)
 
-## v1.3.3 (2024-09-20) ##
+- **Added:** New parameter to allow passing an opener when loading files.
+- **Added:** Ability to read JSONLines files with broken lines for fault tolerance.
+- **Changed:** Stricter argument passing enforced using `/` and `*` in function signatures.
 
-- **Changed:** Update `dump_fork` function to ensure that the files are closed after writing.
+### v1.3.3 (2024-09-20)
 
-## v1.3.1 (2024-09-20) ##
+- **Fixed:** The `dump_fork` function now ensures that files are properly closed after writing to prevent resource
+  leaks.
 
-- **Changed:** Update `README.md` and code docstrings.
-- **Changed:** Update `dumper` function.
+### v1.3.1 (2024-09-20)
 
-## v1.3.0 (2024-09-20) ##
+- **Updated:** Revised `README.md` and code docstrings to improve consistency and clarity.
+- **Improved:** Optimized `dumper` function for better performance.
 
-- **Changed:** Improve `loader` and `dumper` functions to handle binary/text files more efficiently.
-- **Changed:** `dump` function now accepts a `text_mode` argument to write text files or binary files.
+### v1.3.0 (2024-09-20)
 
-## v1.2.0 (2024-09-20) ##
+- **Improved:** Enhanced `loader` and `dumper` functions for more efficient handling of both binary and text files.
+- **Added:** The `dump` function now includes a `text_mode` argument for better control over file types.
 
-- **Added:** Supports `.xz` compression format.
-- **Changed:** Update `README.md` and code docstrings.
-- **Added:** Configure `.pre-commit-config.yaml` file
+### v1.2.0 (2024-09-20)
 
-## v1.1.1 (2024-08-16) ##
+- **Added:** Support for the `.xz` compression format.
+- **Updated:** Improvements to `README.md` and code docstrings for better documentation quality.
+- **Added:** Configuration for `.pre-commit-config.yaml` to enforce code standards.
 
-- **Changed:** Adding more examples to `README.md`
+### v1.1.1 (2024-08-16)
 
-## v1.1.0 (2024-08-16) ##
+- **Improved:** Added additional examples to `README.md` for better user guidance.
 
-- **Added:** Support for `orjson` and `ujson` libraries, in addition to the standard `json` library.
-- **Added:** Supports `.gz` and `.gzip` for gzip-compressed JSON files, and `.bz2` for bzip2-compressed JSON files.
-- **Breaking-Changed:** Simplified API by removing `dump_into` and `load_from` functions. The `dump` and `load`
-  functions now
-  encompass the functionality of `dump_into` and `load_from`.
+### v1.1.0 (2024-08-16)
+
+- **Added:** Support for `orjson` and `ujson` libraries as alternatives to the standard `json` library.
+- **Added:** Support for gzip-compressed JSON files (`.gz` and `.gzip`), as well as bzip2-compressed files (`.bz2`).
+- **Breaking Change:** API simplified by removing `dump_into` and `load_from` functions. The `dump` and `load` functions
+  now handle their functionality.

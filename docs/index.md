@@ -15,11 +15,11 @@ described [jsonlines](https://jsonlines.org/)
 
 **Features:**
 
-- 🌎 Offers an API similar to Python's standard `json` module.
-- 🚀 Supports custom serialization/deserialization callbacks. By default, it uses the standard `json` module.
-- 🗜️ Enables compression/decompression using `gzip`, `bzip2`, and `xz` formats.
-- 🔧 Load files containing broken lines, skipping any malformed lines.
-- 📦 Provides a simple API for incremental writing to multiple files.
+- 🌎 Provides an API similar to Python's standard `json` module.
+- 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
+- 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
+- 🔧 Can load files with broken lines, skipping any malformed entries.
+- 📦 Includes an easy-to-use utility for incrementally writing to multiple JSON Lines files.
 
 ## Installation (via pip)
 
