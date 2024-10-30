@@ -5,6 +5,46 @@ Dump multiple iterables incrementally to the specified jsonlines file paths, opt
 The files can be compressed using `gzip`, `bzip2`, or `xz` formats. If the file extension is not recognized, it will be
 dumped to a text file.
 
+**Example #1**
+
+This example uses `jsonl.dump_fork` to incrementally write daily temperature data for multiple cities to separate JSON
+Lines files, exporting records for the first days of specified years.
+It efficiently manages data by creating individual files for each city, optimizing memory usage.
+
+```python
+import datetime
+import itertools
+import random
+
+import jsonl
+
+
+def get_temperature_by_city():
+    """
+    Generates files for each city with daily temperature data for the initial days of
+    the specified years.
+    """
+
+    years = [2023, 2024]
+    first_days = 10
+    cities = ["New York", "Los Angeles", "Chicago"]
+
+    for year, city in itertools.product(years, cities):
+        start = datetime.datetime(year, 1, 1)
+        dates = (start + datetime.timedelta(days=day) for day in range(first_days))
+        daily_temperature = (
+            {"date": date.isoformat(), "city": city, "temperature": round(random.uniform(-10, 35), 2)}
+            for date in dates
+        )
+        yield (f"{city}.jsonl", daily_temperature)
+
+# Write the generated data to files in JSON Lines format
+jsonl.dump_fork(get_temperature_by_city())
+```
+
+**Example #2**
+
+This example demonstrates how to dump data using different JSON libraries.
 You can install `orjson` and `ujson` to run the following example.
 
 ```console

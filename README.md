@@ -11,9 +11,10 @@
 
 ## About
 
-**jsonl** is a Python library designed to simplify working with JSON Lines data, adhering to the [JSON Lines format](https://jsonlines.org/).
+**jsonl** is a Python library designed to simplify working with JSON Lines data, adhering to
+the [JSON Lines format](https://jsonlines.org/).
 
-### Key Features
+### Features
 
 - 🌎 Provides an API similar to Python's standard `json` module.
 - 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
@@ -57,9 +58,47 @@ iterable = jsonl.load("file.jsonl")
 print(tuple(iterable))
 ```
 
+**Incremental Writing to Multiple JSON Lines Files**
+
+This example uses `jsonl.dump_fork` to incrementally write daily temperature data for multiple cities to separate JSON
+Lines files, exporting records for the first days of specified years.
+It efficiently manages data by creating individual files for each city, optimizing memory usage.
+
+```python
+import datetime
+import itertools
+import random
+
+import jsonl
+
+
+def get_temperature_by_city():
+    """
+    Generates files for each city with daily temperature data for the initial days of
+    the specified years.
+    """
+
+    years = [2023, 2024]
+    first_days = 10
+    cities = ["New York", "Los Angeles", "Chicago"]
+
+    for year, city in itertools.product(years, cities):
+        start = datetime.datetime(year, 1, 1)
+        dates = (start + datetime.timedelta(days=day) for day in range(first_days))
+        daily_temperature = (
+            {"date": date.isoformat(), "city": city, "temperature": round(random.uniform(-10, 35), 2)}
+            for date in dates
+        )
+        yield (f"{city}.jsonl", daily_temperature)
+
+# Write the generated data to files in JSON Lines format
+jsonl.dump_fork(get_temperature_by_city())
+```
+
 ## Documentation
 
-For more detailed information and usage examples, refer to the project [documentation](https://rmoralespp.github.io/jsonl/)
+For more detailed information and usage examples, refer to the
+project [documentation](https://rmoralespp.github.io/jsonl/)
 
 ## Development
 
