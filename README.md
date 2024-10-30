@@ -32,7 +32,7 @@ pip install py-jsonl
 
 ## Getting Started
 
-**Dumping Data to a JSON Lines File**
+**Dumping data to a JSON Lines File**
 
 Use `jsonl.dump` to write an iterable of dictionaries to a JSON Lines file:
 
@@ -47,7 +47,7 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-**Loading Data from a JSON Lines File**
+**Loading data from a JSON Lines File**
 
 Use `jsonl.load` to load a JSON Lines file into an iterable of objects:
 
@@ -58,7 +58,7 @@ iterable = jsonl.load("file.jsonl")
 print(tuple(iterable))
 ```
 
-**Incremental Writing to Multiple JSON Lines Files**
+**Dumping data to Multiple JSON Lines Files**
 
 This example uses `jsonl.dump_fork` to incrementally write daily temperature data for multiple cities to separate JSON
 Lines files, exporting records for the first days of specified years.
