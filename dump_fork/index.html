@@ -100,9 +100,9 @@ import random
 import jsonl
 
 
-def get_temperature_by_city():
+def fetch_temperature_by_city():
     &quot;&quot;&quot;
-    Generates files for each city with daily temperature data for the initial days of
+    Yielding filenames for each city with daily temperature data for the initial days of
     the specified years.
     &quot;&quot;&quot;
 
@@ -119,8 +119,9 @@ def get_temperature_by_city():
         )
         yield (f&quot;{city}.jsonl&quot;, daily_temperature)
 
+
 # Write the generated data to files in JSON Lines format
-jsonl.dump_fork(get_temperature_by_city())
+jsonl.dump_fork(fetch_temperature_by_city())
 </code></pre>
 <p><strong>Example #2</strong></p>
 <p>This example demonstrates how to dump data using different JSON libraries.
