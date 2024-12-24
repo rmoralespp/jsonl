@@ -32,7 +32,7 @@ def get_encoding(mode, /):
     return utf_8 if "t" in mode else None  # Text mode encoding is required.
 
 
-def get_line(value, text_mode):
+def get_line(value, text_mode, /):
     if text_mode:
         line = value.decode(utf_8) if isinstance(value, bytes) else value
         resp = line + new_line
