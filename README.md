@@ -60,7 +60,7 @@ print(tuple(iterable))
 
 **Dumping data to Multiple JSON Lines Files**
 
-This example uses `jsonl.dump_fork` to incrementally write daily temperature data for multiple cities to separate JSON
+This example uses `jsonl.dump_fork` to incrementally write fake daily temperature data for multiple cities to separate JSON
 Lines files, exporting records for the first days of specified years.
 It efficiently manages data by creating individual files for each city, optimizing memory usage.
 
