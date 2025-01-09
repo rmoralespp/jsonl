@@ -25,7 +25,8 @@ new_line_bytes = b"\n"
 default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
 default_json_loads = json.loads
 
-logger = logging.getLogger("jsonl")
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 def get_encoding(mode, /):
