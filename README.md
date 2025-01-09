@@ -5,7 +5,6 @@
 [![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
 [![codecov](https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rmoralespp/jsonl)
 [![license](https://img.shields.io/github/license/rmoralespp/jsonl.svg)](https://github.com/rmoralespp/jsonl/blob/main/LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linter: ruff](https://img.shields.io/badge/linter-_ruff-orange)](https://github.com/charliermarsh/ruff)
 [![Downloads](https://pepy.tech/badge/py-jsonl)](https://pepy.tech/project/py-jsonl)
 
@@ -20,7 +19,7 @@ the [JSON Lines format](https://jsonlines.org/).
 - 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
 - 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Can load files with broken lines, skipping any malformed entries.
-- 📦 Includes an easy-to-use utility for incrementally writing to multiple JSON Lines files.
+- 📦 Includes an easy-to-use utility for writing to multiple JSON Lines files.
 
 ## Installation
 
@@ -34,7 +33,7 @@ pip install py-jsonl
 
 **Dumping data to a JSON Lines File**
 
-Use `jsonl.dump` to write an iterable of dictionaries to a JSON Lines file:
+Use `jsonl.dump` to incrementally write an iterable of dictionaries to a JSON Lines file:
 
 ```python
 import jsonl
@@ -49,7 +48,7 @@ jsonl.dump(data, "file.jsonl")
 
 **Loading data from a JSON Lines File**
 
-Use `jsonl.load` to load a JSON Lines file into an iterable of objects:
+Use `jsonl.load` to incrementally load a JSON Lines file into an iterable of objects:
 
 ```python
 import jsonl
@@ -59,6 +58,8 @@ print(tuple(iterable))
 ```
 
 **Dumping data to Multiple JSON Lines Files**
+
+Use `jsonl.dump_fork` to incrementally write an iterable to multiple JSON Lines files:
 
 This example uses `jsonl.dump_fork` to incrementally write fake daily temperature data for multiple cities to separate JSON
 Lines files, exporting records for the first days of specified years.
@@ -74,7 +75,7 @@ import jsonl
 
 def fetch_temperature_by_city():
     """
-    Yielding filenames for each city with daily temperature data for the initial days of
+    Yielding filenames for each city with fake daily temperature data for the initial days of
     the specified years.
     """
 

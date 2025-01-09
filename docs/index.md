@@ -5,13 +5,13 @@
 [![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
 [![codecov](https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rmoralespp/jsonl)
 [![license](https://img.shields.io/github/license/rmoralespp/jsonl.svg)](https://github.com/rmoralespp/jsonl/blob/main/LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linter: ruff](https://img.shields.io/badge/linter-_ruff-orange)](https://github.com/charliermarsh/ruff)
+[![Downloads](https://pepy.tech/badge/py-jsonl)](https://pepy.tech/project/py-jsonl)
 
 ## About
 
-**jsonl** is a library that includes useful tools for working with jsonlines data as
-described [jsonlines](https://jsonlines.org/)
+**jsonl** is a Python library designed to simplify working with JSON Lines data, adhering to
+the [JSON Lines format](https://jsonlines.org/).
 
 **Features:**
 
@@ -19,7 +19,7 @@ described [jsonlines](https://jsonlines.org/)
 - 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
 - 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Can load files with broken lines, skipping any malformed entries.
-- 📦 Includes an easy-to-use utility for incrementally writing to multiple JSON Lines files.
+- 📦 Includes an easy-to-use utility for writing to multiple JSON Lines files.
 
 ## Installation (via pip)
 

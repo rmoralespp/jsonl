@@ -21,7 +21,7 @@ import jsonl
 
 def fetch_temperature_by_city():
     """
-    Yielding filenames for each city with daily temperature data for the initial days of
+    Yielding filenames for each city with fake daily temperature data for the initial days of
     the specified years.
     """
 
