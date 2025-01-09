@@ -3,6 +3,7 @@
 ### v1.3.10 (2025-01-09)
 
 - **Added:** Use custom logger for better control over logging output.
+- **Change**: Update the CI trigger to avoid runs on opened pull-request.
 
 ### v1.3.9 (2024-10-17)
 
