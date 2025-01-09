@@ -2,14 +2,12 @@
 
 """Useful functions for working with jsonlines data as described: https://jsonlines.org/"""
 
-__version__ = "1.3.9"
 __all__ = [
     "dump",
     "dumps",
     "dump_fork",
     "load",
 ]
-__title__ = "py-jsonl"
 
 import bz2
 import functools
@@ -26,6 +24,8 @@ new_line_bytes = b"\n"
 
 default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
 default_json_loads = json.loads
+
+logger = logging.getLogger("jsonl")
 
 
 def get_encoding(mode, /):
@@ -78,7 +78,7 @@ def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
             string_line = line.decode(utf_8) if isinstance(line, bytes) else line
             yield deserialize(string_line)
         except Exception as e:
-            logging.warning("Broken line at %s: %s", lineno, e)
+            logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
 

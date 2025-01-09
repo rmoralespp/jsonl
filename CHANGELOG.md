@@ -1,5 +1,7 @@
 ## Releases
 
+- **Added:** Use custom logger for better control over logging output.
+
 ### v1.3.9 (2024-10-17)
 
 - **Added:** More examples added to the documentation for clarity and completeness.
