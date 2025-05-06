@@ -7,40 +7,46 @@ dumped to a text file.
 
 **Example #1**
 
-This example uses `jsonl.dump_fork` to incrementally write fake daily temperature data for multiple cities to separate JSON
-Lines files, exporting records for the first days of specified years.
-It efficiently manages data by creating individual files for each city, optimizing memory usage.
+This example uses `jsonl.dump_fork` to write structured data to multiple **.jsonl** files—one per key (in this case, player name). 
+This helps organize and efficiently store data for separate entities.
+This example creates individual JSON Lines files for each player, storing their respective wins.
+
 
 ```python
-import datetime
-import itertools
-import random
-
 import jsonl
 
 
-def fetch_temperature_by_city():
-    """
-    Yielding filenames for each city with fake daily temperature data for the initial days of
-    the specified years.
-    """
+def generate_win_data():
+    """Yield player wins data for multiple players."""
 
-    years = [2023, 2024]
-    first_days = 10
-    cities = ["New York", "Los Angeles", "Chicago"]
-
-    for year, city in itertools.product(years, cities):
-        start = datetime.datetime(year, 1, 1)
-        dates = (start + datetime.timedelta(days=day) for day in range(first_days))
-        daily_temperature = (
-            {"date": date.isoformat(), "city": city, "temperature": round(random.uniform(-10, 35), 2)}
-            for date in dates
-        )
-        yield (f"{city}.jsonl", daily_temperature)
+    data = (
+        {
+            "name": "Gilbert",
+            "wins": [
+                {"hand": "straight", "card": "7♣"},
+                {"hand": "one pair", "card": "10♥"},
+            ]
+        },
+        {
+            "name": "May",
+            "wins": [
+                {"hand": "two pair", "card": "9♠"},
+            ]
+        },
+        {
+            "name": "Gilbert",
+            "wins": [
+                {"hand": "three of a kind", "card": "A♦"},
+            ]
+        }
+    )
+    for player in data:
+        name = player["name"]
+        yield (f"{name}.jsonl", player["wins"])
 
 
 # Write the generated data to files in JSON Lines format
-jsonl.dump_fork(fetch_temperature_by_city())
+jsonl.dump_fork(generate_win_data())
 ```
 
 **Example #2**
