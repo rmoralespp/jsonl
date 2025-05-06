@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.11 (2025-05-06)
+
 - **Changed**: Manage dependencies from `pyproject.toml` instead of `requirements.txt`.
 - **Changed:** Documentation examples to improve clarity and usability of `dump_fork`.
 
