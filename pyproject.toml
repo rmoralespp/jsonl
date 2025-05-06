@@ -1,9 +1,9 @@
 [project]
 name = "py-jsonl"
 version = "1.3.10"
-description = "A simple Python library for handling jsonlines files."
+description = "A lightweight Python library for handling jsonlines files."
 readme = "README.md"
-license = {file = "LICENSE.txt"}
+license-files = ["LICENSE"]
 keywords = ["jsonlines", "ndjson", "jsonl", "json", "gzip", "bzip2", "xz", "utilities", "serialization", "deserialization"]
 authors = [{ name = "rmoralespp", email = "rmoralespp@gmail.com" }]
 requires-python = ">=3.8"
@@ -22,6 +22,22 @@ classifiers = [
     "Topic :: Internet",
     "Topic :: Utilities",
     "Topic :: File Formats :: JSON",
+]
+[project.optional-dependencies]
+doc = [
+    "mkdocs",
+    "mkdocs-material"
+]
+dev = [
+    "pytest",
+    "coverage",
+    "pytest-cov",
+    "setuptools; python_version >= '3.12'",
+    "ujson",
+    "orjson"
+]
+linter = [
+    "ruff"
 ]
 
 [project.urls]

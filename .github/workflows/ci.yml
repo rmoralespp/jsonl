@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install ".[dev]"
       - name: Run tests and collect coverage
         run: pytest --cov jsonl
       - name: Upload coverage reports to Codecov
@@ -42,7 +42,7 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install dependencies
-        run: pip install -r requirements-doc.txt
+        run: pip install ".[doc]"
       - name: Build the documentation
         run: mkdocs build
       - name: Deploy to GitHub Pages

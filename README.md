@@ -10,7 +10,7 @@
 
 ## About
 
-**jsonl** is a Python library designed to simplify working with JSON Lines data, adhering to
+**jsonl** is a lightweight Python library designed to simplify working with JSON Lines data, adhering to
 the [JSON Lines format](https://jsonlines.org/).
 
 ### Features
@@ -111,9 +111,16 @@ To contribute to the project, you can run the following commands for testing and
 Install the development dependencies and run the tests:
 
 ```
-(env)$ pip install -r requirements-dev.txt  # Skip if already installed
-(env)$ pytest tests/
-(env)$ pytest --cov jsonl # Run tests with coverage
+pip install ".[dev]"  # Skip if already installed
+pytest tests/ # Run all tests
+pytest --cov jsonl # Run tests with coverage
+```
+
+### Running Linter
+
+```
+pip install ".[linter]"  # Skip if already installed
+ruff check . # Run linter
 ```
 
 ### Building the Documentation
@@ -121,9 +128,9 @@ Install the development dependencies and run the tests:
 To build the documentation locally, use the following commands:
 
 ```
-(env)$ pip install -r requirements-docs.txt   # Skip if already installed
-(env)$ mkdocs serve # Start live-reloading docs server
-(env)$ mkdocs build # Build the documentation site
+pip install ".[doc]"  # Skip if already installed
+mkdocs serve # Start live-reloading docs server
+mkdocs build # Build the documentation site
 ```
 
 ## License

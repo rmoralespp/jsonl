@@ -1,8 +1,0 @@
-pytest
-coverage
-pytest-cov
-ruff
-black
-setuptools; python_version >= '3.12'
-ujson
-orjson
