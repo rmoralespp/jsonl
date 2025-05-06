@@ -7,7 +7,7 @@ dumped to a text file.
 
 **Example #1**
 
-This example uses `jsonl.dump_fork` to write structured data to multiple **.jsonl** files—one per key (in this case, player name). 
+This example uses `jsonl.dump_fork` to incrementally write structured data to multiple **.jsonl** files—one per key (in this case, player name). 
 This helps organize and efficiently store data for separate entities.
 This example creates individual JSON Lines files for each player, storing their respective wins.
 
