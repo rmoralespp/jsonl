@@ -90,38 +90,43 @@
 <p>The files can be compressed using <code>gzip</code>, <code>bzip2</code>, or <code>xz</code> formats. If the file extension is not recognized, it will be
 dumped to a text file.</p>
 <p><strong>Example #1</strong></p>
-<p>This example uses <code>jsonl.dump_fork</code> to incrementally write fake daily temperature data for multiple cities to separate JSON
-Lines files, exporting records for the first days of specified years.
-It efficiently manages data by creating individual files for each city, optimizing memory usage.</p>
-<pre><code class="language-python">import datetime
-import itertools
-import random
-
-import jsonl
+<p>This example uses <code>jsonl.dump_fork</code> to write structured data to multiple <strong>.jsonl</strong> files—one per key (in this case, player name). 
+This helps organize and efficiently store data for separate entities.
+This example creates individual JSON Lines files for each player, storing their respective wins.</p>
+<pre><code class="language-python">import jsonl
 
 
-def fetch_temperature_by_city():
-    &quot;&quot;&quot;
-    Yielding filenames for each city with fake daily temperature data for the initial days of
-    the specified years.
-    &quot;&quot;&quot;
+def generate_win_data():
+    &quot;&quot;&quot;Yield player wins data for multiple players.&quot;&quot;&quot;
 
-    years = [2023, 2024]
-    first_days = 10
-    cities = [&quot;New York&quot;, &quot;Los Angeles&quot;, &quot;Chicago&quot;]
-
-    for year, city in itertools.product(years, cities):
-        start = datetime.datetime(year, 1, 1)
-        dates = (start + datetime.timedelta(days=day) for day in range(first_days))
-        daily_temperature = (
-            {&quot;date&quot;: date.isoformat(), &quot;city&quot;: city, &quot;temperature&quot;: round(random.uniform(-10, 35), 2)}
-            for date in dates
-        )
-        yield (f&quot;{city}.jsonl&quot;, daily_temperature)
+    data = (
+        {
+            &quot;name&quot;: &quot;Gilbert&quot;,
+            &quot;wins&quot;: [
+                {&quot;hand&quot;: &quot;straight&quot;, &quot;card&quot;: &quot;7♣&quot;},
+                {&quot;hand&quot;: &quot;one pair&quot;, &quot;card&quot;: &quot;10♥&quot;},
+            ]
+        },
+        {
+            &quot;name&quot;: &quot;May&quot;,
+            &quot;wins&quot;: [
+                {&quot;hand&quot;: &quot;two pair&quot;, &quot;card&quot;: &quot;9♠&quot;},
+            ]
+        },
+        {
+            &quot;name&quot;: &quot;Gilbert&quot;,
+            &quot;wins&quot;: [
+                {&quot;hand&quot;: &quot;three of a kind&quot;, &quot;card&quot;: &quot;A♦&quot;},
+            ]
+        }
+    )
+    for player in data:
+        name = player[&quot;name&quot;]
+        yield (f&quot;{name}.jsonl&quot;, player[&quot;wins&quot;])
 
 
 # Write the generated data to files in JSON Lines format
-jsonl.dump_fork(fetch_temperature_by_city())
+jsonl.dump_fork(generate_win_data())
 </code></pre>
 <p><strong>Example #2</strong></p>
 <p>This example demonstrates how to dump data using different JSON libraries.
