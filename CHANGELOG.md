@@ -1,6 +1,9 @@
 ## Releases
 
+### v1.3.12 (2025-06-09)
+
 - **Changed**: Manage dependencies in pyproject.toml according to **PEP735**
+- **Changed**: Removed pre-commit configuration file.
 
 ### v1.3.11 (2025-05-06)
 
