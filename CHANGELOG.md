@@ -1,5 +1,7 @@
 ## Releases
 
+- **Changed**: Manage dependencies in pyproject.toml according to **PEP735**
+
 ### v1.3.11 (2025-05-06)
 
 - **Changed**: Manage dependencies from `pyproject.toml` instead of `requirements.txt`.

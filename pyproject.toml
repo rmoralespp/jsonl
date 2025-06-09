@@ -23,12 +23,12 @@ classifiers = [
     "Topic :: Utilities",
     "Topic :: File Formats :: JSON",
 ]
-[project.optional-dependencies]
+[dependency-groups]
 doc = [
     "mkdocs",
     "mkdocs-material"
 ]
-dev = [
+test = [
     "pytest",
     "coverage",
     "pytest-cov",
@@ -36,7 +36,7 @@ dev = [
     "ujson",
     "orjson"
 ]
-linter = [
+lint = [
     "ruff"
 ]
 

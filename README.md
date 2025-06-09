@@ -109,12 +109,16 @@ project [documentation](https://rmoralespp.github.io/jsonl/)
 
 To contribute to the project, you can run the following commands for testing and documentation:
 
+First, ensure you have the latest version of `pip`:
+
+```python -m pip install --upgrade pip```
+
 ### Running Unit Tests
 
 Install the development dependencies and run the tests:
 
 ```
-pip install ".[dev]"  # Skip if already installed
+pip install --group=test  # Install test dependencies
 pytest tests/ # Run all tests
 pytest --cov jsonl # Run tests with coverage
 ```
@@ -122,7 +126,7 @@ pytest --cov jsonl # Run tests with coverage
 ### Running Linter
 
 ```
-pip install ".[linter]"  # Skip if already installed
+pip install --group=lint  # Install linter dependencies
 ruff check . # Run linter
 ```
 
@@ -131,7 +135,7 @@ ruff check . # Run linter
 To build the documentation locally, use the following commands:
 
 ```
-pip install ".[doc]"  # Skip if already installed
+pip install --group=doc  # Install documentation dependencies
 mkdocs serve # Start live-reloading docs server
 mkdocs build # Build the documentation site
 ```
