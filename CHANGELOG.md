@@ -1,5 +1,8 @@
 ## Releases
 
+- **Changed**: Coverage is now 100%.
+- **Changed**: Improved docstrings.
+
 ### v1.3.12 (2025-06-09)
 
 - **Changed**: Manage dependencies in pyproject.toml according to **PEP735**

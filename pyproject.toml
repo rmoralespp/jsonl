@@ -66,16 +66,11 @@ select = [
     "UP",  # pyupgrade
 ]
 ignore = [
-    "D103", #  Missing docstring
+    "D103", #  Missing docstring in public function
     "D100", #  Missing docstring in public module
     "D104", #  Missing docstring in public package
     "D202", #  No blank lines allowed after function docstring
     "D205", #  1 blank line required between summary line and description
-    "D401",
-    "D415",
-    "D400",
-    "D212",
-    "D211",
-    "UP009",
-    "C408",
+    "D212", #  Multi-line docstring summary should start at the first line
+    "D211", #  No blank lines allowed before function docstring
 ]
