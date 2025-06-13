@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 
-"""Useful functions for working with jsonlines data as described: https://jsonlines.org/"""
+"""Useful functions for working with jsonlines data as described: https://jsonlines.org/."""
 
 __all__ = [
     "dump",
@@ -30,10 +29,14 @@ logger.addHandler(logging.NullHandler())
 
 
 def get_encoding(mode, /):
+    """Get the encoding based on the file mode."""
+
     return utf_8 if "t" in mode else None  # Text mode encoding is required.
 
 
 def get_line(value, text_mode, /):
+    """Get a line from the value, ensuring it ends with a newline character."""
+
     if text_mode:
         line = value.decode(utf_8) if isinstance(value, bytes) else value
         resp = line + new_line
@@ -62,7 +65,7 @@ def xopen(name, /, *, mode="rb", encoding=None):
 
 
 def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs):
-    """Generator yielding JSON Lines."""
+    """Dump an iterable of objects into JSON Lines format."""
 
     serialize = functools.partial(json_dumps or default_json_dumps, **json_dumps_kwargs)
     for obj in iter(iterable):
@@ -71,7 +74,7 @@ def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs)
 
 
 def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
-    """Generator yielding decoded JSON objects."""
+    """Load a JSON Lines formatted stream into an iterable of Python objects."""
 
     deserialize = functools.partial(json_loads or default_json_loads, **json_loads_kwargs)
     for lineno, line in enumerate(stream, start=1):
@@ -89,8 +92,8 @@ def dumps(iterable, /, *, json_dumps=None, **json_dumps_kwargs):
     Serialize an iterable into a JSON Lines formatted string.
 
     :param Iterable[Any] iterable: Iterable of objects
-    :param Callable json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
+    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
     :rtype: str
     """
 
@@ -102,12 +105,12 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
     Dump an iterable to a JSON Lines file.
 
     :param Iterable[Any] iterable: Iterable of objects.
-    :param Union[str, bytes, os.PathLike] file: File to dump.
+    :param str | bytes | os.PathLike | Any file: File to dump.
         * If a file object is provided, the `writelines` or `write` methods will be used to write the string data.
-    :param Callable opener: Custom function to open the file if a filename is provided.
+    :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool text_mode: If false, write bytes to the file.
-    :param Callable json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
+    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
     :raises ValueError: If the file object is missing the `writelines` and `write` methods.
     """
 
@@ -134,11 +137,11 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
     effectively reducing memory consumption.
 
     :param Iterable[str, Iterable[Any]] paths: Iterable of iterables by filepath.
-    :param Callable opener: Custom function to open the given file paths.
+    :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
-    :param Callable json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
+    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
     """
 
     def get_writer(dst):
@@ -157,7 +160,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
             os.unlink(dst)
 
     encoder = functools.partial(json_dumps or default_json_dumps, **json_dumps_kwargs)
-    writers = dict()
+    writers = {}
     try:
         for path, iterable in paths:
             if path in writers:
@@ -181,19 +184,19 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
     If the file's extension indicates a recognized compression format (.gz, .bz2, .xz),
     the corresponding decompression method is applied; if not, the standard open function is used by default.
 
-    :param Union[str | bytes | os.PathLike] file: File to load
-    :param Callable opener: Custom function to open the file if a filename is provided.
+    :param str | bytes | os.PathLike | Any file: File to load.
+    :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
-    :param Callable json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
-    :param json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
+    :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
+    :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
     :rtype: Iterable[Any]
     """
 
     if isinstance(file, os.PathLike):
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
-        fd_open = opener or xopen
-        with fd_open(file, mode="rb", encoding=None) as fd:
+        openhook = opener or xopen
+        with openhook(file, mode="rb", encoding=None) as fd:
             yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
     else:
         yield from loader(file, broken, json_loads=json_loads, **json_loads_kwargs)
