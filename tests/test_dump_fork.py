@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 
 import os
+import pathlib
 import tempfile
 
 import pytest
@@ -13,12 +13,12 @@ import tests
 @pytest.mark.parametrize(
     "json_dumps, json_dumps_kwargs",
     [
-        (ujson.dumps, dict(ensure_ascii=False, separators=(", ", ": "))),
-        (None, dict()),
+        (ujson.dumps, {"ensure_ascii": False, "separators": (", ", ": ")}),
+        (None, {}),
     ],
 )
 @pytest.mark.parametrize("text_mode", (True, False))
-def test_dump_fork_iter_data(file_extension, text_mode, json_dumps, json_dumps_kwargs):
+def test_iter_data(file_extension, text_mode, json_dumps, json_dumps_kwargs):
     with tempfile.TemporaryDirectory() as tmp:
         foo_path = os.path.join(tmp, f"foo{file_extension}")
         var_path = os.path.join(tmp, f"var{file_extension}")
@@ -37,8 +37,10 @@ def test_dump_fork_iter_data(file_extension, text_mode, json_dumps, json_dumps_k
         assert tests.read_text(baz_path) == ""
 
 
+@pytest.mark.parametrize("pathlike", (True, False))
 @pytest.mark.parametrize("dump_if_empty", (True, False))
-def test_dump_fork_empty_data(filepath, dump_if_empty):
+def test_empty_data(filepath, dump_if_empty, pathlike):
+    filepath = pathlib.Path(filepath) if pathlike else filepath
     path_items = ((filepath, ()),)
     jsonl.dump_fork(iter(path_items), dump_if_empty=dump_if_empty)
     if dump_if_empty:

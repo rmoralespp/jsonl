@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 
 import contextlib
 import io
 import json
 import os
+import pathlib
 import tempfile
 
 import pytest
@@ -12,7 +12,7 @@ import jsonl
 import tests
 
 
-def test_load_given_invalid_json_lines(broken):
+def test_invalid_json_lines(broken):
     lines = (
         "prefix\n"  # bad JSON line
         "[1, 2]\n\n"  # multiple new lines
@@ -30,7 +30,7 @@ def test_load_given_invalid_json_lines(broken):
                 tests.consume(result)
 
 
-def test_load_given_invalid_utf8(broken):
+def test_invalid_utf8(broken):
     with contextlib.closing(io.BytesIO(b"\xff\xff\n[1, 2]")) as iofile:
         result = jsonl.load(iofile, broken=broken)
         if broken:
@@ -47,14 +47,14 @@ def test_load_given_invalid_utf8(broken):
         io.BytesIO(tests.string_data.encode(jsonl.utf_8)),
     ],
 )
-def test_load_given_memory_file(iofile):
+def test_memory_file(iofile):
     with contextlib.closing(iofile):
         result = tuple(jsonl.load(iofile))
     assert result == tuple(tests.data)
 
 
 @pytest.mark.parametrize("mode", ("rt", "rb"))
-def test_load_given_opened_file(filepath, mode, json_loads):
+def test_opened_file(filepath, mode, json_loads):
     expected = tuple(tests.data)
     # Prepare a file with JSON lines
     with jsonl.xopen(filepath, mode="wb") as fp:  # write into a binary file
@@ -66,7 +66,9 @@ def test_load_given_opened_file(filepath, mode, json_loads):
     assert result == expected
 
 
-def test_load_given_filepath(filepath, json_loads):
+@pytest.mark.parametrize("pathlike", (True, False))
+def test_filepath(filepath, json_loads, pathlike):
+    filepath = pathlib.Path(filepath) if pathlike else filepath
     expected = tuple(tests.data)
     tests.write_text(filepath, content=tests.string_data)
     result = tuple(jsonl.load(filepath, json_loads=json_loads))
@@ -74,7 +76,7 @@ def test_load_given_filepath(filepath, json_loads):
 
 
 @pytest.mark.parametrize("opener", (open, None))
-def test_load_given_filepath_on_opener(opener):
+def test_filepath_using_opener(opener):
     expected = tuple(tests.data)
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo")
@@ -83,6 +85,6 @@ def test_load_given_filepath_on_opener(opener):
     assert result == expected
 
 
-def test_load_given_not_found_filepath():
+def test_filepath_not_found():
     with pytest.raises(FileNotFoundError):
         tests.consume(jsonl.load("not_found.jsonl"))
