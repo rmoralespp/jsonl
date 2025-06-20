@@ -66,7 +66,7 @@ def xopen(name, /, *, mode="rb", encoding=None):
     return opener(name, mode=mode, encoding=encoding or get_encoding(mode))
 
 
-def decompress(name, obj, /):
+def xfile(name, obj, /):
     if name.endswith(".gz"):
         file = gzip.GzipFile(fileobj=obj)
     elif name.endswith(".bz2"):
@@ -219,8 +219,7 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
 def _find_files_into_zip(filename, pattern, pwd, /):
     with zipfile.ZipFile(filename) as archive:
         for name in fnmatch.filter(archive.namelist(), pattern):
-            with archive.open(name, pwd=pwd) as file:
-                yield file
+            yield archive.open(name, pwd=pwd)
 
 
 def _find_files_into_tar(filename, pattern, /):
@@ -265,5 +264,5 @@ def load_archive(
         raise ValueError(f"Unsupported archive format: {file}")
 
     for file in files:
-        with decompress(file.name, file) as fp:
+        with xfile(file.name, file) as fp:
             yield from load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
