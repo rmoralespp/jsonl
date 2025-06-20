@@ -1,4 +1,3 @@
-
 """Useful functions for working with jsonlines data as described: https://jsonlines.org/."""
 
 __all__ = [
@@ -9,12 +8,15 @@ __all__ = [
 ]
 
 import bz2
+import fnmatch
 import functools
 import gzip
 import json
 import logging
 import lzma
 import os
+import tarfile
+import zipfile
 
 empty = object()
 utf_8 = "utf-8"
@@ -62,6 +64,18 @@ def xopen(name, /, *, mode="rb", encoding=None):
     extension = os.path.splitext(name)[1]
     opener = openers.get(extension, default)
     return opener(name, mode=mode, encoding=encoding or get_encoding(mode))
+
+
+def decompress(name, obj, /):
+    if name.endswith(".gz"):
+        file = gzip.GzipFile(fileobj=obj)
+    elif name.endswith(".bz2"):
+        file = bz2.BZ2File(obj)
+    elif name.endswith(".xz"):
+        file = lzma.LZMAFile(obj)
+    else:
+        file = obj
+    return file
 
 
 def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs):
@@ -200,3 +214,56 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
             yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
     else:
         yield from loader(file, broken, json_loads=json_loads, **json_loads_kwargs)
+
+
+def _find_files_into_zip(filename, pattern, pwd, /):
+    with zipfile.ZipFile(filename) as archive:
+        for name in fnmatch.filter(archive.namelist(), pattern):
+            with archive.open(name, pwd=pwd) as file:
+                yield file
+
+
+def _find_files_into_tar(filename, pattern, /):
+    with tarfile.open(filename) as archive:
+        for name in fnmatch.filter(archive.getnames(), pattern):
+            extracted = archive.extractfile(name)
+            if extracted:
+                yield extracted
+
+
+def load_archive(
+    file,
+    /, *,
+    pattern="*.jsonl",
+    pwd=None,
+    opener=None,
+    broken=False,
+    json_loads=None,
+    **json_loads_kwargs,
+):
+    """
+    Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
+
+    :param str | bytes | os.PathLike | Any file: Archive file to load.
+    :param str pattern: Pattern to match filenames inside the archive,
+        following Unix shell-style wildcard rules as defined by `fnmatch`.
+        For more details, see: https://docs.python.org/3/library/fnmatch.html
+
+    :param Optional[str] pwd: The password to decrypt the archive, if applicable.
+    :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
+    :param bool broken: If true, skip broken lines (only logging a warning).
+    :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
+    :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
+    :rtype: Iterable[Any]
+    """
+
+    if zipfile.is_zipfile(file):
+        files = _find_files_into_zip(file, pattern, pwd)
+    elif tarfile.is_tarfile(file):
+        files = _find_files_into_tar(file, pattern)
+    else:
+        raise ValueError(f"Unsupported archive format: {file}")
+
+    for file in files:
+        with decompress(file.name, file) as fp:
+            yield from load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
