@@ -1,4 +1,3 @@
-
 """Useful functions for working with jsonlines data as described: https://jsonlines.org/."""
 
 __all__ = [
@@ -6,15 +5,20 @@ __all__ = [
     "dumps",
     "dump_fork",
     "load",
+    "load_archive",
 ]
 
 import bz2
+import contextlib
+import fnmatch
 import functools
 import gzip
 import json
 import logging
 import lzma
 import os
+import tarfile
+import zipfile
 
 empty = object()
 utf_8 = "utf-8"
@@ -62,6 +66,32 @@ def xopen(name, /, *, mode="rb", encoding=None):
     extension = os.path.splitext(name)[1]
     opener = openers.get(extension, default)
     return opener(name, mode=mode, encoding=encoding or get_encoding(mode))
+
+
+@contextlib.contextmanager
+def xfile(name, obj, /):
+    """
+    Context manager to handle file-like objects with automatic decompression.
+    Does not close the file if it is the original object passed.
+
+    :param str name: Filename or path to the file.
+    :param obj: File-like object.
+    """
+
+    if name.endswith(".gz"):
+        file = gzip.GzipFile(fileobj=obj)
+    elif name.endswith(".bz2"):
+        file = bz2.BZ2File(obj)
+    elif name.endswith(".xz"):
+        file = lzma.LZMAFile(obj)
+    else:
+        file = obj
+
+    try:
+        yield file
+    finally:
+        if file is not obj:
+            file.close()
 
 
 def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs):
@@ -200,3 +230,61 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
             yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
     else:
         yield from loader(file, broken, json_loads=json_loads, **json_loads_kwargs)
+
+
+def _iterfind_zip_members(filename, pattern, pwd, /):
+    with zipfile.ZipFile(filename) as zf:
+        for name in fnmatch.filter(zf.namelist(), pattern):
+            file = zf.open(name, pwd=pwd)
+            with file:
+                yield file
+
+
+def _iterfind_tar_members(filename, pattern, /):
+    with tarfile.open(filename) as archive:
+        for name in fnmatch.filter(archive.getnames(), pattern):
+            if file := archive.extractfile(name):
+                with file:
+                    yield file
+
+
+def load_archive(
+    file,
+    /,
+    *,
+    pattern="*.jsonl",
+    pwd=None,
+    opener=None,
+    broken=False,
+    json_loads=None,
+    **json_loads_kwargs,
+):
+    """
+    Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
+    Tar archives can be compressed with gzip, bzip2, or xz. (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
+
+    :param str | bytes | os.PathLike | Any file: Archive file to load.
+    :param str pattern: Pattern to match filenames inside the archive,
+        following Unix shell-style wildcard rules as defined by `fnmatch`.
+        For more details, see: https://docs.python.org/3/library/fnmatch.html
+
+    :param Optional[bytes] pwd: The password to decrypt the archive, if applicable.
+    :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
+    :param bool broken: If true, skip broken lines (only logging a warning).
+    :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
+    :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
+    :rtype: Generator[tuple[str, Generator[Any]]]
+    """
+
+    if zipfile.is_zipfile(file):
+        members = _iterfind_zip_members(file, pattern, pwd)
+    elif tarfile.is_tarfile(file):
+        members = _iterfind_tar_members(file, pattern)
+    else:
+        raise ValueError(f"Unsupported archive format: {file}")
+
+    for member in members:
+        filename = member.name
+        with xfile(filename, member) as fp:
+            it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
+            yield (filename, it)
