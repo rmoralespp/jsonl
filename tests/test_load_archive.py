@@ -32,7 +32,7 @@ def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_exte
     archivepath = shutil.make_archive(archivepath, archive_format, root_dir=root_dir, base_dir=".")
 
     expected = [(name, tests.data) for name in match_members]
-    result = list((name, list(data)) for name, data in jsonl.load_archive(archivepath, pattern=pattern))
+    result = [(name, list(data)) for name, data in jsonl.load_archive(archivepath, pattern=pattern)]
     assert result == expected
 
 
