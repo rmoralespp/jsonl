@@ -5,6 +5,7 @@ __all__ = [
     "dumps",
     "dump_fork",
     "load",
+    "load_archive",
 ]
 
 import bz2

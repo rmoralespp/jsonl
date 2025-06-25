@@ -1,7 +1,9 @@
 ## Releases
 
+- **Added**: `load_archive` function to load JSON Lines files from an archive (zip or tar) 
 - **Changed**: Coverage is now 100%.
 - **Changed**: Improved docstrings.
+
 
 ### v1.3.12 (2025-06-09)
 
