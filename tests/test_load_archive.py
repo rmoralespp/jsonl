@@ -24,8 +24,8 @@ def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_exte
     root_dir = tmp_dir / "archive"
     root_dir.mkdir(parents=True, exist_ok=True)
     for member in members:
-        with jsonl.xopen(root_dir / member, mode="wb") as fp:  # write into a binary file
-            content = tests.string_data.encode(jsonl.utf_8)
+        with jsonl._xopen(root_dir / member, mode="wb") as fp:  # write into a binary file
+            content = tests.string_data.encode(jsonl._utf_8)
             fp.write(content)
 
     archivepath = str(root_dir / "myarchive")

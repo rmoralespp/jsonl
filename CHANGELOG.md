@@ -1,9 +1,12 @@
 ## Releases
 
-- **Added**: `load_archive` function to load JSON Lines files from an archive (zip or tar) 
+### v1.3.13 (2025-06-25)
+
+- **Added**: `load_archive` function to load JSON Lines files from an archive (zip or tar)
 - **Changed**: Coverage is now 100%.
 - **Changed**: Improved docstrings.
-
+- **Changed**: Only the functions `dump`, `dumper`, `dumps`, `dump_fork`, `load`, `loader`, and `load_archive` are now
+  public. Everything else is considered internal and private, intended solely for the module's internal functionality.
 
 ### v1.3.12 (2025-06-09)
 

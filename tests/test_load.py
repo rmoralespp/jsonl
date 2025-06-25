@@ -44,7 +44,7 @@ def test_invalid_utf8(broken):
     "iofile",
     [
         io.StringIO(tests.string_data),
-        io.BytesIO(tests.string_data.encode(jsonl.utf_8)),
+        io.BytesIO(tests.string_data.encode(jsonl._utf_8)),
     ],
 )
 def test_memory_file(iofile):
@@ -57,11 +57,11 @@ def test_memory_file(iofile):
 def test_opened_file(filepath, mode, json_loads):
     expected = tuple(tests.data)
     # Prepare a file with JSON lines
-    with jsonl.xopen(filepath, mode="wb") as fp:  # write into a binary file
-        content = tests.string_data.encode(jsonl.utf_8)
+    with jsonl._xopen(filepath, mode="wb") as fp:  # write into a binary file
+        content = tests.string_data.encode(jsonl._utf_8)
         fp.write(content)
     # Load the file in given mode
-    with jsonl.xopen(filepath, mode=mode) as fp:
+    with jsonl._xopen(filepath, mode=mode) as fp:
         result = tuple(jsonl.load(fp, json_loads=json_loads))
     assert result == expected
 

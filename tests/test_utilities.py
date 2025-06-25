@@ -6,7 +6,7 @@ import jsonl
 
 @pytest.mark.parametrize("mode, expected", [("wt", "utf-8"), ("wb", None), ("at", "utf-8")])
 def test_get_encoding(mode, expected):
-    assert jsonl.get_encoding(mode) == expected
+    assert jsonl._get_encoding(mode) == expected
 
 
 @pytest.mark.parametrize(
@@ -19,4 +19,4 @@ def test_get_encoding(mode, expected):
     ],
 )
 def test_get_line(value, text_mode, expected):
-    assert jsonl.get_line(value, text_mode) == expected
+    assert jsonl._get_line(value, text_mode) == expected

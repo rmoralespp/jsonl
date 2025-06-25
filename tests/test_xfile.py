@@ -9,7 +9,7 @@ import jsonl
 
 def test_xfile_object(filepath):
     obj = unittest.mock.Mock()
-    with jsonl.xfile(filepath, obj) as result:
+    with jsonl._xfile(filepath, obj) as result:
         if filepath.endswith(".gz"):
             assert isinstance(result, gzip.GzipFile)
         elif filepath.endswith(".bz2"):
@@ -23,7 +23,7 @@ def test_xfile_object(filepath):
 def test_xfile_close(filepath):
     buffer = io.BytesIO()
 
-    with jsonl.xfile(filepath, buffer) as output:
+    with jsonl._xfile(filepath, buffer) as output:
         assert not output.closed
         assert not buffer.closed
 

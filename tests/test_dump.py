@@ -21,7 +21,7 @@ def test_string_io():
 
 
 def test_bytes_io():
-    expected = tests.string_data.encode(jsonl.utf_8)
+    expected = tests.string_data.encode(jsonl._utf_8)
     with contextlib.closing(io.BytesIO()) as fp:
         jsonl.dump(iter(tests.data), fp, text_mode=False)
         assert fp.getvalue() == expected
@@ -29,7 +29,7 @@ def test_bytes_io():
 
 @pytest.mark.parametrize("mode, text", (("wt", True), ("wb", False), ("ab", False), ("at", True)))
 def test_opened_file(filepath, mode, text):
-    with jsonl.xopen(filepath, mode=mode) as fp:
+    with jsonl._xopen(filepath, mode=mode) as fp:
         jsonl.dump(iter(tests.data), fp, text_mode=text)
     result = tests.read_text(filepath)
     assert result == tests.string_data

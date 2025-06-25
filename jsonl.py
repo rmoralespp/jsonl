@@ -2,9 +2,11 @@
 
 __all__ = [
     "dump",
+    "dumper",
     "dumps",
     "dump_fork",
     "load",
+    "loader",
     "load_archive",
 ]
 
@@ -20,37 +22,36 @@ import os
 import tarfile
 import zipfile
 
-empty = object()
-utf_8 = "utf-8"
-new_line = "\n"
-new_line_bytes = b"\n"
+_utf_8 = "utf-8"
+_new_line = "\n"
+_new_line_bytes = b"\n"
 
-default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
-default_json_loads = json.loads
+_default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
+_default_json_loads = json.loads
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
 
 
-def get_encoding(mode, /):
+def _get_encoding(mode, /):
     """Get the encoding based on the file mode."""
 
-    return utf_8 if "t" in mode else None  # Text mode encoding is required.
+    return _utf_8 if "t" in mode else None  # Text mode encoding is required.
 
 
-def get_line(value, text_mode, /):
+def _get_line(value, text_mode, /):
     """Get a line from the value, ensuring it ends with a newline character."""
 
     if text_mode:
-        line = value.decode(utf_8) if isinstance(value, bytes) else value
-        resp = line + new_line
+        line = value.decode(_utf_8) if isinstance(value, bytes) else value
+        resp = line + _new_line
     else:
-        line = value.encode(utf_8) if isinstance(value, str) else value
-        resp = line + new_line_bytes
+        line = value.encode(_utf_8) if isinstance(value, str) else value
+        resp = line + _new_line_bytes
     return resp
 
 
-def xopen(name, /, *, mode="rb", encoding=None):
+def _xopen(name, /, *, mode="rb", encoding=None):
     """
     Open file depending on a supported file extension.
     If the file extension is not recognized, the default `open` function is used.
@@ -65,17 +66,17 @@ def xopen(name, /, *, mode="rb", encoding=None):
     }
     extension = os.path.splitext(name)[1]
     opener = openers.get(extension, default)
-    return opener(name, mode=mode, encoding=encoding or get_encoding(mode))
+    return opener(name, mode=mode, encoding=encoding or _get_encoding(mode))
 
 
 @contextlib.contextmanager
-def xfile(name, obj, /):
+def _xfile(name, obj, /):
     """
     Context manager to handle file-like objects with automatic decompression.
     Does not close the file if it is the original object passed.
 
     :param str name: Filename or path to the file.
-    :param obj: File-like object.
+    :param obj: File-like an object.
     """
 
     if name.endswith(".gz"):
@@ -94,25 +95,41 @@ def xfile(name, obj, /):
             file.close()
 
 
+def _iterfind_zip_members(filename, pattern, pwd, /):
+    with zipfile.ZipFile(filename) as zf:
+        for name in fnmatch.filter(zf.namelist(), pattern):
+            file = zf.open(name, pwd=pwd)
+            with file:
+                yield file
+
+
+def _iterfind_tar_members(filename, pattern, /):
+    with tarfile.open(filename) as archive:
+        for name in fnmatch.filter(archive.getnames(), pattern):
+            if file := archive.extractfile(name):
+                with file:
+                    yield file
+
+
 def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs):
     """Dump an iterable of objects into JSON Lines format."""
 
-    serialize = functools.partial(json_dumps or default_json_dumps, **json_dumps_kwargs)
+    serialize = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
     for obj in iter(iterable):
         value = serialize(obj)  # can be bytes, like "orjson.dumps".
-        yield get_line(value, text_mode)
+        yield _get_line(value, text_mode)
 
 
 def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
     """Load a JSON Lines formatted stream into an iterable of Python objects."""
 
-    deserialize = functools.partial(json_loads or default_json_loads, **json_loads_kwargs)
+    deserialize = functools.partial(json_loads or _default_json_loads, **json_loads_kwargs)
     for lineno, line in enumerate(stream, start=1):
         try:
-            string_line = line.decode(utf_8) if isinstance(line, bytes) else line
+            string_line = line.decode(_utf_8) if isinstance(line, bytes) else line
             yield deserialize(string_line)
         except Exception as e:
-            logger.warning("Broken line at %s: %s", lineno, e)
+            _logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
 
@@ -149,8 +166,8 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
         fd_mode = "wt" if text_mode else "wb"
-        fd_open = opener or xopen
-        with fd_open(file, mode=fd_mode, encoding=get_encoding(fd_mode)) as fd:
+        fd_open = opener or _xopen
+        with fd_open(file, mode=fd_mode, encoding=_get_encoding(fd_mode)) as fd:
             fd.writelines(lines)
     elif hasattr(file, "writelines"):
         file.writelines(lines)
@@ -177,19 +194,19 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
     def get_writer(dst):
         nothing = True
         fd_mode = "wt" if text_mode else "wb"
-        fd_open = opener or xopen
-        with fd_open(dst, mode=fd_mode, encoding=get_encoding(fd_mode)) as fd:
+        fd_open = opener or _xopen
+        with fd_open(dst, mode=fd_mode, encoding=_get_encoding(fd_mode)) as fd:
             try:
                 while True:
                     obj = yield
                     nothing = False
-                    fd.write(get_line(encoder(obj), text_mode))
+                    fd.write(_get_line(encoder(obj), text_mode))
             except GeneratorExit:
                 pass
         if nothing and not dump_if_empty:
             os.unlink(dst)
 
-    encoder = functools.partial(json_dumps or default_json_dumps, **json_dumps_kwargs)
+    encoder = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
     writers = {}
     try:
         for path, iterable in paths:
@@ -225,27 +242,11 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
     if isinstance(file, os.PathLike):
         file = os.fspath(file)
     if isinstance(file, str):  # No, it's a filename
-        openhook = opener or xopen
+        openhook = opener or _xopen
         with openhook(file, mode="rb", encoding=None) as fd:
             yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
     else:
         yield from loader(file, broken, json_loads=json_loads, **json_loads_kwargs)
-
-
-def _iterfind_zip_members(filename, pattern, pwd, /):
-    with zipfile.ZipFile(filename) as zf:
-        for name in fnmatch.filter(zf.namelist(), pattern):
-            file = zf.open(name, pwd=pwd)
-            with file:
-                yield file
-
-
-def _iterfind_tar_members(filename, pattern, /):
-    with tarfile.open(filename) as archive:
-        for name in fnmatch.filter(archive.getnames(), pattern):
-            if file := archive.extractfile(name):
-                with file:
-                    yield file
 
 
 def load_archive(
@@ -285,6 +286,6 @@ def load_archive(
 
     for member in members:
         filename = member.name
-        with xfile(filename, member) as fp:
+        with _xfile(filename, member) as fp:
             it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
             yield (filename, it)

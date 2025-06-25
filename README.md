@@ -20,6 +20,7 @@ the [JSON Lines format](https://jsonlines.org/).
 - 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
 - 🔧 Can load files with broken lines, skipping any malformed entries.
 - 📦 Includes an easy-to-use utility for writing to multiple JSON Lines files.
+- 📂 Supports loading multiple JSON Lines files from an archive (TAR or ZIP) using Unix shell-style wildcards to match filenames.
 
 ## Installation
 

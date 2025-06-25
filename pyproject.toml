@@ -1,6 +1,6 @@
 [project]
 name = "py-jsonl"
-version = "1.3.12"
+version = "1.3.13"
 description = "A lightweight Python library for handling jsonlines files."
 readme = "README.md"
 license-files = ["LICENSE"]

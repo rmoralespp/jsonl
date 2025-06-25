@@ -21,12 +21,12 @@ compacted_string_data = string_data.replace(", ", ",").replace(": ", ":")
 
 
 def read_text(filename):
-    with jsonl.xopen(filename, mode="rt") as f:
+    with jsonl._xopen(filename, mode="rt") as f:
         return f.read()
 
 
 def write_text(filename, content=""):
-    with jsonl.xopen(filename, mode="wt") as f:
+    with jsonl._xopen(filename, mode="wt") as f:
         f.write(content)
     return filename
 
