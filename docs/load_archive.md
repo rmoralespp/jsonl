@@ -32,7 +32,7 @@ for filename, items in jsonl.load_archive(path):
 import jsonl
 
 path = "path/to/protected.zip"
-for filename, items in jsonl.load_archive(path, password="your_password"):
+for filename, items in jsonl.load_archive(path, password=b"your_password"):
     print("Filename:", filename)
     print("Data:", tuple(items))
 ```
@@ -40,6 +40,7 @@ for filename, items in jsonl.load_archive(path, password="your_password"):
 ## Pattern matching
 
 You can use Unix shell-style wildcards to filter files in the archive. The `pattern` argument supports:
+
 - `*` matches everything
 - `?` matches a single character
 - `[seq]` matches any character in `seq`
