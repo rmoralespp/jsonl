@@ -1,6 +1,6 @@
-# Load JSON Lines Files from an Archive (ZIP or TAR)
+# Load multiple JSON Lines Files from an Archive (ZIP or TAR) incrementally
 
-Allows to load JSON Lines **(.jsonl)** files from a **ZIP** or **TAR** archive.
+Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP** or **TAR** archive.
 
 - Support compressed TAR archives (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 - Support ZIP archives with password protection.

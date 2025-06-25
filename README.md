@@ -58,9 +58,9 @@ iterable = jsonl.load("file.jsonl")
 print(tuple(iterable))
 ```
 
-**Load JSON Lines Files from an Archive (ZIP or TAR)**
+**Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
 
-Use `jsonl.load_archive` to incrementally load JSON Lines files from a ZIP or TAR archive. 
+Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive. 
 This function allows you to filter files using Unix shell-style wildcards.
 
 ```python
