@@ -12,6 +12,7 @@ nav:
   - Introduction: index.md
   - API usage:
       - Load jsonlines file: load.md
+      - Load archive files: load_archive.md
       - Dump to a jsonlines file: dump.md
       - Dump to multiple jsonlines files: dump_fork.md
       - Dump to a string: dumps.md

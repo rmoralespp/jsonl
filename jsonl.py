@@ -249,7 +249,8 @@ def _iterfind_tar_members(filename, pattern, /):
 
 def load_archive(
     file,
-    /, *,
+    /,
+    *,
     pattern="*.jsonl",
     pwd=None,
     opener=None,
@@ -259,18 +260,19 @@ def load_archive(
 ):
     """
     Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
+    Tar archives can be compressed with gzip, bzip2, or xz. (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 
     :param str | bytes | os.PathLike | Any file: Archive file to load.
     :param str pattern: Pattern to match filenames inside the archive,
         following Unix shell-style wildcard rules as defined by `fnmatch`.
         For more details, see: https://docs.python.org/3/library/fnmatch.html
 
-    :param Optional[str] pwd: The password to decrypt the archive, if applicable.
+    :param Optional[bytes] pwd: The password to decrypt the archive, if applicable.
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
-    :rtype: Iterable[Any]
+    :rtype: Generator[tuple[str, Generator[Any]]]
     """
 
     if zipfile.is_zipfile(file):
@@ -281,5 +283,7 @@ def load_archive(
         raise ValueError(f"Unsupported archive format: {file}")
 
     for member in members:
-        with xfile(member.name, member) as fp:
-            yield from load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
+        filename = member.name
+        with xfile(filename, member) as fp:
+            it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
+            yield (filename, it)

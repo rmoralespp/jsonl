@@ -1,6 +1,5 @@
-
 import json
-import os
+import pathlib
 import tempfile
 
 import orjson
@@ -23,10 +22,15 @@ def filename(file_extension):
     return "filename" + file_extension
 
 
+@pytest.fixture()
+def tmp_dir():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        yield pathlib.Path(tmp_dir)
+
+
 @pytest.fixture(scope="function")
-def filepath(filename):
-    with tempfile.TemporaryDirectory() as tmp:
-        yield os.path.join(tmp, filename)
+def filepath(tmp_dir, filename):
+    yield str(tmp_dir / filename)
 
 
 @pytest.fixture(scope="package", params=(orjson.loads, ujson.loads, json.loads, None))
