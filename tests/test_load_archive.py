@@ -1,3 +1,4 @@
+import operator
 import shutil
 
 import pytest
@@ -31,8 +32,10 @@ def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_exte
     archivepath = str(root_dir / "myarchive")
     archivepath = shutil.make_archive(archivepath, archive_format, root_dir=root_dir, base_dir=".")
 
-    expected = [(name, tests.data) for name in match_members]
-    result = [(name, list(data)) for name, data in jsonl.load_archive(archivepath, pattern=pattern)]
+    order_by = operator.itemgetter(0)
+    expected = sorted(((name, tests.data) for name in match_members), key=order_by)
+    result = jsonl.load_archive(archivepath, pattern=pattern)
+    result = sorted(((name, list(data)) for name, data in result), key=order_by)
     assert result == expected
 
 
