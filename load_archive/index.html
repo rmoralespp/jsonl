@@ -117,16 +117,18 @@ for filename, items in jsonl.load_archive(path):
 <pre><code class="language-python">import jsonl
 
 path = &quot;path/to/protected.zip&quot;
-for filename, items in jsonl.load_archive(path, password=&quot;your_password&quot;):
+for filename, items in jsonl.load_archive(path, password=b&quot;your_password&quot;):
     print(&quot;Filename:&quot;, filename)
     print(&quot;Data:&quot;, tuple(items))
 </code></pre>
 <h2 id="pattern-matching">Pattern matching</h2>
-<p>You can use Unix shell-style wildcards to filter files in the archive. The <code>pattern</code> argument supports:
-- <code>*</code> matches everything
-- <code>?</code> matches a single character
-- <code>[seq]</code> matches any character in <code>seq</code>
-- <code>[!seq]</code> matches any character not in <code>seq</code></p>
+<p>You can use Unix shell-style wildcards to filter files in the archive. The <code>pattern</code> argument supports:</p>
+<ul>
+<li><code>*</code> matches everything</li>
+<li><code>?</code> matches a single character</li>
+<li><code>[seq]</code> matches any character in <code>seq</code></li>
+<li><code>[!seq]</code> matches any character not in <code>seq</code></li>
+</ul>
 <p>For more information, refer to the <a href="https://docs.python.org/es/3.12/library/fnmatch.html">fnmatch documentation</a>.</p>
 <pre><code class="language-python">import jsonl
 
