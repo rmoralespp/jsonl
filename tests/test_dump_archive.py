@@ -41,8 +41,8 @@ def test_invalid_extension():
 
 def test_invalid_filepath(tmp_dir):
     arc_path = "archive.zip"
-    filepath = os.path.join(tmp_dir, "file.jsonl")
-    data = [filepath, [{"key": "value"}]]
+    filepath = str(tmp_dir / "file.jsonl")
+    data = [(filepath, [{"key": "value"}])]
     with pytest.raises(ValueError):
         jsonl.dump_archive(arc_path, data)
 
