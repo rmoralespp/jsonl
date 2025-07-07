@@ -1,6 +1,7 @@
 ## Releases
 
 - **Added**: `dump_archive` function to dump JSON Lines files into an archive (zip or tar)
+- **Changed**: Update documentation site during CD pipeline instead of CI pipeline
 
 ### v1.3.13 (2025-06-25)
 
