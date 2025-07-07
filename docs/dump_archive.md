@@ -1,7 +1,6 @@
 # Dump multiple JSON Lines Files into an Archive (ZIP or TAR) incrementally
 
-- Support ZIP or TAR archives.
-- Support compressed TAR archives (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
+- Support ZIP or TAR archives, including compressed TAR archives (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 - Support for both compressed and uncompressed `.jsonl` files inside the archive. (e.g., `*.jsonl.gz` or `*.jsonl.bz2`
   or `*.jsonl.xz`).
 - Optional custom serialization and opener callbacks for advanced use cases.

@@ -17,11 +17,11 @@ Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP
 ```python
 import jsonl
 
-path = "path/to/archive.zip"  # or "path/to/archive.tar.gz"
+path = "path/to/archive.zip"
 # Load all JSON Lines files matching the pattern "*.jsonl" from the archive
-for filename, items in jsonl.load_archive(path):
+for filename, iterator in jsonl.load_archive(path):
     print("Filename:", filename)
-    print("Data:", tuple(items))
+    print("Data:", tuple(iterator))
 ```
 
 ## ZIP password protection
@@ -32,9 +32,9 @@ for filename, items in jsonl.load_archive(path):
 import jsonl
 
 path = "path/to/protected.zip"
-for filename, items in jsonl.load_archive(path, password=b"your_password"):
+for filename, iterator in jsonl.load_archive(path, password=b"your_password"):
     print("Filename:", filename)
-    print("Data:", tuple(items))
+    print("Data:", tuple(iterator))
 ```
 
 ## Pattern matching
@@ -54,7 +54,7 @@ import jsonl
 
 path = "path/to/archive.zip"
 # Load all JSON Lines files matching the pattern "myfile*.jsonl" from the archive
-for filename, items in jsonl.load_archive(path, pattern="myfile*.jsonl"):
+for filename, iterator in jsonl.load_archive(path, pattern="myfile*.jsonl"):
     print("Filename:", filename)
-    print("Data:", tuple(items))
+    print("Data:", tuple(iterator))
 ```

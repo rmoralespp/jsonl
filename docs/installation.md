@@ -3,5 +3,5 @@
 Install **jsonl** via pip:
 
 ```console
-pip install py-jsonl
+pip install py-jsonl --upgrade
 ```

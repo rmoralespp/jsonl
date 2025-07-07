@@ -24,9 +24,9 @@ data = [
 # Save the data to the jsonl file
 jsonl.dump(data, path)
 
-# Load the file as an iterable
-iterable = jsonl.load(path)
-print(tuple(iterable))
+# Load the file as an iterator
+iterator = jsonl.load(path)
+print(tuple(iterator))
 ```
 
 #### Load a compressed file given a path.
@@ -47,9 +47,9 @@ data = [
 # Save the data to the compressed jsonl file
 jsonl.dump(data, path)
 
-# Load the compressed file as an iterable
-iterable = jsonl.load(path)
-print(tuple(iterable))
+# Load the compressed file as an iterator
+iterator = jsonl.load(path)
+print(tuple(iterator))
 ```
 
 #### Load a file from an open file object.
@@ -73,8 +73,8 @@ jsonl.dump(data, path)
 
 # Load the file using an open file object
 with open(path) as fp:
-    iterable = jsonl.load(fp)
-    print(tuple(iterable))
+    iterator = jsonl.load(fp)
+    print(tuple(iterator))
 ```
 
 #### Load a file containing broken lines.
@@ -140,13 +140,13 @@ data = [
 jsonl.dump(data, path)
 
 # Load the file using ujson
-iterable1 = jsonl.load(path, json_loads=ujson.loads)
+iterator1 = jsonl.load(path, json_loads=ujson.loads)
 
 # Load the file using orjson
-iterable2 = jsonl.load(path, json_loads=orjson.loads)
+iterator2 = jsonl.load(path, json_loads=orjson.loads)
 
-print(tuple(iterable1))
-print(tuple(iterable2))
+print(tuple(iterator1))
+print(tuple(iterator2))
 ```
 
 #### Load a file using a custom opener.
@@ -180,6 +180,6 @@ def opener(name, *args, **kwargs):
 
 
 # Load the jsonl file from the ZIP archive using the opener
-iterable = jsonl.load(zip_path, opener=opener)
-print(tuple(iterable))
+iterator = jsonl.load(zip_path, opener=opener)
+print(tuple(iterator))
 ```

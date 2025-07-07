@@ -52,22 +52,8 @@ Use `jsonl.load` to incrementally load a JSON Lines file into an iterable of obj
 ```python
 import jsonl
 
-iterable = jsonl.load("file.jsonl")
-print(tuple(iterable))
-```
-
-**Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
-
-Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive. 
-This function allows you to filter files using Unix shell-style wildcards.
-
-```python
-import jsonl
-
-# Load all JSON Lines files matching the pattern "*.jsonl" from the archive
-for filename, items in jsonl.load_archive("path/to/archive.zip"):
-    print("Filename:", filename)
-    print("Data:", tuple(items))
+iterator = jsonl.load("file.jsonl")
+print(tuple(iterator))
 ```
 
 **Dump multiple JSON Lines Files into an Archive (ZIP or TAR)**
@@ -86,7 +72,21 @@ data = [
     # Append to `file1.jsonl` within the archive
     ("file1.jsonl", [{"name": "Eve", "age": 28}]),
 ]
-jsonl.dump_archive("my_archive.zip", data)
+jsonl.dump_archive("archive.zip", data)
+```
+
+**Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
+
+Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive. 
+This function allows you to filter files using Unix shell-style wildcards.
+
+```python
+import jsonl
+
+# Load all JSON Lines files matching the pattern "*.jsonl" from the archive
+for filename, iterator in jsonl.load_archive("archive.zip"):
+    print("Filename:", filename)
+    print("Data:", tuple(iterator))
 ```
 
 **Dumping data to Multiple JSON Lines Files**
