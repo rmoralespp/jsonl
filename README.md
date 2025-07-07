@@ -16,11 +16,9 @@ the [JSON Lines format](https://jsonlines.org/).
 ### Features
 
 - 🌎 Provides an API similar to Python's standard `json` module.
-- 🚀 Supports custom serialization/deserialization callbacks, with the standard `json` module as the default.
-- 🗜️ Supports compression and decompression using `gzip`, `bzip2`, and `xz` formats.
-- 🔧 Can load files with broken lines, skipping any malformed entries.
-- 📦 Includes an easy-to-use utility for writing to multiple JSON Lines files.
-- 📂 Supports loading multiple JSON Lines files from an archive (TAR or ZIP) using Unix shell-style wildcards to match filenames.
+- 🚀 Supports custom (de)serialization via user-defined callbacks.
+- 🗜️ Built-in support for `gzip`, `bzip2`, `xz` compression formats and `ZIP` or `TAR` archives.
+- 🔧 Skips malformed lines during file loading.
 
 ## Installation
 
@@ -70,6 +68,22 @@ import jsonl
 for filename, items in jsonl.load_archive("path/to/archive.zip"):
     print("Filename:", filename)
     print("Data:", tuple(items))
+```
+
+**Dump multiple JSON Lines Files into an Archive (ZIP or TAR)**
+
+Use `jsonl.dump_archive` to incrementally write structured data to multiple **.jsonl** files, 
+which are then stored in a ZIP or TAR archive.
+
+```python
+import jsonl
+
+data = [
+    ("file1.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
+    ("path/to/file2.jsonl", [{"name": "Charlie", "age": 35}, {"name": "David", "age": 40}]),
+    ("file1.jsonl", [{"name": "Eve", "age": 28}]),  # this will append to the file1.jsonl
+]
+jsonl.dump_archive("my_archive.zip", data)
 ```
 
 **Dumping data to Multiple JSON Lines Files**

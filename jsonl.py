@@ -8,6 +8,7 @@ __all__ = [
     "load",
     "loader",
     "load_archive",
+    "dump_archive",
 ]
 
 import bz2
@@ -19,7 +20,9 @@ import json
 import logging
 import lzma
 import os
+import shutil
 import tarfile
+import tempfile
 import zipfile
 
 _utf_8 = "utf-8"
@@ -93,6 +96,30 @@ def _xfile(name, obj, /):
     finally:
         if file is not obj:
             file.close()
+
+
+def _get_archive_format(path, /):
+    """Return a valid archive format for `shutil.make_archive` based on the filename."""
+
+    formats = {
+        "zip": "zip",
+        "tar": "tar",
+        "tar.gz": "gztar",
+        "tar.bz2": "bztar",
+        "tar.xz": "xztar",
+    }
+    basename = os.path.basename(path)
+    _, _, ext = basename.partition(".")
+    if fmt := formats.get(ext):
+        return fmt
+    else:
+        raise ValueError(f"Unsupported archive extension: {path}")
+
+
+def _del_archive_extension(path, /):
+    dirpath, basename = os.path.split(path)
+    arcpath = os.path.join(dirpath, basename.split(".")[0])
+    return os.path.normpath(arcpath)
 
 
 def _iterfind_zip_members(filename, pattern, pwd, /):
@@ -289,3 +316,65 @@ def load_archive(
         with _xfile(filename, member) as fp:
             it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
             yield (filename, it)
+
+
+def dump_archive(
+    path,
+    items_by_relpath,
+    /,
+    *,
+    opener=None,
+    text_mode=True,
+    dump_if_empty=True,
+    json_dumps=None,
+    **json_dumps_kwargs,
+):
+    """
+    Dump multiple JSON Lines items into an archive file (zip or tar) with the specified path.
+    - If the archive already exists on the given path, it will be overwritten.
+    - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), or xz (`.tar.xz`).
+
+    :param str path: Destination path for the archive file.
+    :param Iterable[tuple[str, Iterable[Any]]] items_by_relpath:
+        Iterable of (relative_path, items), where `relative_path` is the target file path within
+        the archive, and `items` is an iterable of JSON-serializable objects.
+
+    :param Optional[Callable] opener: Custom function to open the given file paths.
+    :param bool text_mode: If false, write bytes to the file.
+    :param bool dump_if_empty: If false, don't create an empty jsonlines file nor an empty archive.
+    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
+    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+
+    :raises ValueError: If a filepath in `items_by_relpath` is absolute, or if the archive extension is unsupported.
+    :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
+    """
+
+    def items_by_abspath(root_dir, /):
+        for file_relpath, data in items_by_relpath:
+            if os.path.isabs(file_relpath):
+                raise ValueError(f"Absolute path is not allowed: {file_relpath}")
+
+            file_abspath = os.path.join(root_dir, file_relpath)
+            file_dirpath = os.path.dirname(file_abspath)
+            if not os.path.exists(file_dirpath):
+                os.makedirs(file_dirpath)  # Ensure the directory exists
+            yield (file_abspath, data)
+
+    # Validate the archive format before proceeding to dump.
+    arc_fmt = _get_archive_format(path)
+    archive = _del_archive_extension(path)
+    # Dump the items to a temporary directory.
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dump_fork(
+            items_by_abspath(tmpdir),
+            opener=opener,
+            text_mode=text_mode,
+            dump_if_empty=dump_if_empty,
+            json_dumps=json_dumps,
+            **json_dumps_kwargs,
+        )
+        if dump_if_empty or os.listdir(tmpdir):
+            # Create the archive from the temporary directory.
+            return shutil.make_archive(archive, arc_fmt, root_dir=tmpdir, logger=_logger)
+        else:
+            return None
