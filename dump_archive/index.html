@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/rmoralespp/jsonl/load_archive/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://github.com/rmoralespp/jsonl/dump_archive/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Load archive files - jsonl</title>
+    <title>Dump archive files - jsonl</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Load archive files";
-        var mkdocs_page_input_path = "load_archive.md";
-        var mkdocs_page_url = "/rmoralespp/jsonl/load_archive/";
+        var mkdocs_page_name = "Dump archive files";
+        var mkdocs_page_input_path = "dump_archive.md";
+        var mkdocs_page_url = "/rmoralespp/jsonl/dump_archive/";
       </script>
     
     <!--[if lt IE 9]>
@@ -47,19 +47,15 @@
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../load/">Load jsonlines file</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Load archive files</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#zip-password-protection">ZIP password protection</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#pattern-matching">Pattern matching</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../load_archive/">Load archive files</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../dump/">Dump to a jsonlines file</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../dump_fork/">Dump to multiple jsonlines files</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../dump_archive/">Dump archive files</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Dump archive files</a>
+    <ul class="current">
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../dumps/">Dump to a string</a>
                   </li>
@@ -83,9 +79,9 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
           <li class="breadcrumb-item">API usage</li>
-      <li class="breadcrumb-item active">Load archive files</li>
+      <li class="breadcrumb-item active">Dump archive files</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/rmoralespp/jsonl/edit/master/docs/load_archive.md">Edit on jsonl</a>
+          <a href="https://github.com/rmoralespp/jsonl/edit/master/docs/dump_archive.md">Edit on jsonl</a>
     </li>
   </ul>
   <hr/>
@@ -93,59 +89,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="load-multiple-json-lines-files-from-an-archive-zip-or-tar-incrementally">Load multiple JSON Lines Files from an Archive (ZIP or TAR) incrementally</h1>
-<p>Allows to load multiple JSON Lines <strong>(.jsonl)</strong> files incrementally from a <strong>ZIP</strong> or <strong>TAR</strong> archive.</p>
+                <h1 id="dump-multiple-json-lines-files-into-an-archive-zip-or-tar-incrementally">Dump multiple JSON Lines Files into an Archive (ZIP or TAR) incrementally</h1>
 <ul>
+<li>Support ZIP or TAR archives.</li>
 <li>Support compressed TAR archives (e.g., <code>.tar.gz</code>, <code>.tar.bz2</code>, <code>.tar.xz</code>).</li>
-<li>Support ZIP archives with password protection.</li>
-<li>Filename filtering using Unix shell-style wildcards via <code>fnmatch</code>. Use a pattern (e.g., *.jsonl) to selectively load
-  only matching files within the archive.</li>
 <li>Support for both compressed and uncompressed <code>.jsonl</code> files inside the archive. (e.g., <code>*.jsonl.gz</code> or <code>*.jsonl.bz2</code>
   or <code>*.jsonl.xz</code>).</li>
-<li>Graceful handling of malformed or broken lines.</li>
-<li>Optional custom deserialization and opener callbacks for advanced use cases.</li>
+<li>Optional custom serialization and opener callbacks for advanced use cases.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If the given archive already exists on the given path, it will be overwritten.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li>Paths provided in the <code>items_by_relpath</code> argument must be relative. Absolute paths are not allowed and will raise an error.</li>
+<li>If <code>items_by_relpath</code> contains multiple items for the same path, they will be appended to the corresponding file within the archive.</li>
+</ul>
+</div>
 <p><strong>Example usage:</strong></p>
 <pre><code class="language-python">import jsonl
 
-path = &quot;path/to/archive.zip&quot;  # or &quot;path/to/archive.tar.gz&quot;
-# Load all JSON Lines files matching the pattern &quot;*.jsonl&quot; from the archive
-for filename, items in jsonl.load_archive(path):
-    print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
-</code></pre>
-<h2 id="zip-password-protection">ZIP password protection</h2>
-<p><code>load_archive</code> can read password-protected ZIP archives. To do so, you need to provide a <code>password</code> argument:</p>
-<pre><code class="language-python">import jsonl
-
-path = &quot;path/to/protected.zip&quot;
-for filename, items in jsonl.load_archive(path, password=b&quot;your_password&quot;):
-    print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
-</code></pre>
-<h2 id="pattern-matching">Pattern matching</h2>
-<p>You can use Unix shell-style wildcards to filter files in the archive. The <code>pattern</code> argument supports:</p>
-<ul>
-<li><code>*</code> matches everything</li>
-<li><code>?</code> matches a single character</li>
-<li><code>[seq]</code> matches any character in <code>seq</code></li>
-<li><code>[!seq]</code> matches any character not in <code>seq</code></li>
-</ul>
-<p>For more information, refer to the <a href="https://docs.python.org/es/3.12/library/fnmatch.html">fnmatch documentation</a>.</p>
-<pre><code class="language-python">import jsonl
-
-path = &quot;path/to/archive.zip&quot;
-# Load all JSON Lines files matching the pattern &quot;myfile*.jsonl&quot; from the archive
-for filename, items in jsonl.load_archive(path, pattern=&quot;myfile*.jsonl&quot;):
-    print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
+data = [
+    # this will create a new file1.jsonl in the archive
+    (&quot;file1.jsonl&quot;, [{&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30}, {&quot;name&quot;: &quot;Bob&quot;, &quot;age&quot;: 25}]),
+    # this will create a new file1.jsonl.gz in the archive
+    (&quot;path/to/file2.jsonl.gz&quot;, [{&quot;name&quot;: &quot;Charlie&quot;, &quot;age&quot;: 35}, {&quot;name&quot;: &quot;David&quot;, &quot;age&quot;: 40}]),
+    # this will append to the file1.jsonl
+    (&quot;file1.jsonl&quot;, [{&quot;name&quot;: &quot;Eve&quot;, &quot;age&quot;: 28}]),
+]
+jsonl.dump_archive(&quot;my_archive.zip&quot;, data)
 </code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../load/" class="btn btn-neutral float-left" title="Load jsonlines file"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../dump/" class="btn btn-neutral float-right" title="Dump to a jsonlines file">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../dump_fork/" class="btn btn-neutral float-left" title="Dump to multiple jsonlines files"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../dumps/" class="btn btn-neutral float-right" title="Dump to a string">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -172,10 +153,10 @@ for filename, items in jsonl.load_archive(path, pattern=&quot;myfile*.jsonl&quot
         </span>
     
     
-      <span><a href="../load/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../dump_fork/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../dump/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../dumps/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

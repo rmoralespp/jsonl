@@ -59,6 +59,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="dump_fork/">Dump to multiple jsonlines files</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dump_archive/">Dump archive files</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="dumps/">Dump to a string</a>
                   </li>
               </ul>
@@ -104,10 +106,9 @@ the <a href="https://jsonlines.org/">JSON Lines format</a>.</p>
 <p><strong>Features:</strong></p>
 <ul>
 <li>🌎 Provides an API similar to Python's standard <code>json</code> module.</li>
-<li>🚀 Supports custom serialization/deserialization callbacks, with the standard <code>json</code> module as the default.</li>
-<li>🗜️ Supports compression and decompression using <code>gzip</code>, <code>bzip2</code>, and <code>xz</code> formats.</li>
-<li>🔧 Can load files with broken lines, skipping any malformed entries.</li>
-<li>📦 Includes an easy-to-use utility for writing to multiple JSON Lines files.</li>
+<li>🚀 Supports custom (de)serialization via user-defined callbacks.</li>
+<li>🗜️ Built-in support for <code>gzip</code>, <code>bzip2</code>, <code>xz</code> compression formats and <code>ZIP</code> or <code>TAR</code> archives.</li>
+<li>🔧 Skips malformed lines during file loading.</li>
 </ul>
 <h2 id="installation-via-pip">Installation (via pip)</h2>
 <p><code>pip install py-jsonl</code></p>
@@ -163,5 +164,5 @@ the <a href="https://jsonlines.org/">JSON Lines format</a>.</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-06-25 14:44:45.146419+00:00
+Build Date UTC : 2025-07-07 11:19:30.212983+00:00
 -->
