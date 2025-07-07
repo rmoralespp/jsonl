@@ -124,9 +124,9 @@ data = [
 # Save the data to the jsonl file
 jsonl.dump(data, path)
 
-# Load the file as an iterable
-iterable = jsonl.load(path)
-print(tuple(iterable))
+# Load the file as an iterator
+iterator = jsonl.load(path)
+print(tuple(iterator))
 </code></pre>
 <h4 id="load-a-compressed-file-given-a-path">Load a compressed file given a path.</h4>
 <p>Check <a href="#note-compression">note</a> for more details</p>
@@ -143,9 +143,9 @@ data = [
 # Save the data to the compressed jsonl file
 jsonl.dump(data, path)
 
-# Load the compressed file as an iterable
-iterable = jsonl.load(path)
-print(tuple(iterable))
+# Load the compressed file as an iterator
+iterator = jsonl.load(path)
+print(tuple(iterator))
 </code></pre>
 <h4 id="load-a-file-from-an-open-file-object">Load a file from an open file object.</h4>
 <div class="admonition tip">
@@ -167,8 +167,8 @@ jsonl.dump(data, path)
 
 # Load the file using an open file object
 with open(path) as fp:
-    iterable = jsonl.load(fp)
-    print(tuple(iterable))
+    iterator = jsonl.load(fp)
+    print(tuple(iterator))
 </code></pre>
 <h4 id="load-a-file-containing-broken-lines">Load a file containing broken lines.</h4>
 <div class="admonition warning">
@@ -222,13 +222,13 @@ data = [
 jsonl.dump(data, path)
 
 # Load the file using ujson
-iterable1 = jsonl.load(path, json_loads=ujson.loads)
+iterator1 = jsonl.load(path, json_loads=ujson.loads)
 
 # Load the file using orjson
-iterable2 = jsonl.load(path, json_loads=orjson.loads)
+iterator2 = jsonl.load(path, json_loads=orjson.loads)
 
-print(tuple(iterable1))
-print(tuple(iterable2))
+print(tuple(iterator1))
+print(tuple(iterator2))
 </code></pre>
 <h4 id="load-a-file-using-a-custom-opener">Load a file using a custom opener.</h4>
 <p>The <code>opener</code> parameter allows loading files from custom sources, such as a ZIP archive. Here’s how to use it:</p>
@@ -258,8 +258,8 @@ def opener(name, *args, **kwargs):
 
 
 # Load the jsonl file from the ZIP archive using the opener
-iterable = jsonl.load(zip_path, opener=opener)
-print(tuple(iterable))
+iterator = jsonl.load(zip_path, opener=opener)
+print(tuple(iterator))
 </code></pre>
               
             </div>

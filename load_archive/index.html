@@ -108,20 +108,20 @@
 <p><strong>Example usage:</strong></p>
 <pre><code class="language-python">import jsonl
 
-path = &quot;path/to/archive.zip&quot;  # or &quot;path/to/archive.tar.gz&quot;
+path = &quot;path/to/archive.zip&quot;
 # Load all JSON Lines files matching the pattern &quot;*.jsonl&quot; from the archive
-for filename, items in jsonl.load_archive(path):
+for filename, iterator in jsonl.load_archive(path):
     print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
+    print(&quot;Data:&quot;, tuple(iterator))
 </code></pre>
 <h2 id="zip-password-protection">ZIP password protection</h2>
 <p><code>load_archive</code> can read password-protected ZIP archives. To do so, you need to provide a <code>password</code> argument:</p>
 <pre><code class="language-python">import jsonl
 
 path = &quot;path/to/protected.zip&quot;
-for filename, items in jsonl.load_archive(path, password=b&quot;your_password&quot;):
+for filename, iterator in jsonl.load_archive(path, password=b&quot;your_password&quot;):
     print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
+    print(&quot;Data:&quot;, tuple(iterator))
 </code></pre>
 <h2 id="pattern-matching">Pattern matching</h2>
 <p>You can use Unix shell-style wildcards to filter files in the archive. The <code>pattern</code> argument supports:</p>
@@ -136,9 +136,9 @@ for filename, items in jsonl.load_archive(path, password=b&quot;your_password&qu
 
 path = &quot;path/to/archive.zip&quot;
 # Load all JSON Lines files matching the pattern &quot;myfile*.jsonl&quot; from the archive
-for filename, items in jsonl.load_archive(path, pattern=&quot;myfile*.jsonl&quot;):
+for filename, iterator in jsonl.load_archive(path, pattern=&quot;myfile*.jsonl&quot;):
     print(&quot;Filename:&quot;, filename)
-    print(&quot;Data:&quot;, tuple(items))
+    print(&quot;Data:&quot;, tuple(iterator))
 </code></pre>
               
             </div>
