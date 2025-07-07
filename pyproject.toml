@@ -56,21 +56,108 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    'D',  # pydocstyle
-    "B",  # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+    # Airflow
+    "AIR",
+
+    # pyflakes
+    "F",
+
+    # pycodestyle
+    "E",
+    "W",
+
+    # isort
+    "I",
+
+    # pydocstyle
+    "D200", # One-line docstring should fit on one line
+    "D201", # No blank lines allowed before function docstring
+    "D204", # 1 blank line required after class docstring
+    "D206", # Docstring should be indented with spaces, not tabs
+    "D207", # Docstring is under-indented
+    "D208", # Docstring is over-indented
+    "D209", # Multi-line docstring closing quotes should be on a separate line
+    "D210", # No whitespaces allowed surrounding docstring text
+    "D211", # No blank lines allowed before class docstring
+    "D403", # First word of the first line should be properly capitalized
+    "D419", # Docstring is empty
+    "D300", # Use """triple double quotes"""
+
+    # pyupgrade
+    "UP003", # Use str instead of type(...)
+    "UP005", # assertEquals is deprecated, use assertEqual
+    "UP008", # Use super() instead of super(__class__, self)
+    "UP011", # Unnecessary parentheses to functools.lru_cache
+    "UP015", # Unnecessary open mode parameters
+    "UP017", # Use datetime.UTC alias
+    "UP018", # Unnecessary call to `str` and `bytes`
+    "UP020", # Use builtin `open` instead
+    "UP021", # universal_newlines is deprecated, use text
+    "UP022", # Sending stdout and stderr to pipe is deprecated, use capture_output
+    "UP034", # Avoid extraneous parentheses
+
+    # flake8-2020
+    "YTT",
+
+    # flake8-bugbear
+    "B",
+
+    # flake8-builtins
+    "A",
+
+    # flake8-comprehensions
+    "C4",
+
+    # flake8-debugger
+    "T10",
+
+    # flake8-import-conventions
+    "ICN",
+
+    # flake8-pytest-style
+    "PT",
+
+    # flake8-simplify
+    "SIM",
+
+    # Pylint
+    "PLC",
+    "PLE",
+    "PLW",
+
+    # flake8-commas
+    "COM812", # Trailing comma missing
+
+    # Ruff-specific rules
+    "RUF024", # Do not pass mutable objects as values to dict.fromkeys
+    "RUF026", # default_factory is a positional-only argument to defaultdict
+    "RUF100", # Unused noqa directive
 ]
+
 ignore = [
-    "D103", #  Missing docstring in public function
-    "D100", #  Missing docstring in public module
-    "D104", #  Missing docstring in public package
-    "D202", #  No blank lines allowed after function docstring
-    "D205", #  1 blank line required between summary line and description
-    "D212", #  Multi-line docstring summary should start at the first line
-    "D211", #  No blank lines allowed before function docstring
+    # Disabled by default. :)
+    # https://github.com/gforcada/flake8-builtins/pull/76
+    "A003", # Class attribute `...` is shadowing a python builtin
+    "A005", # Module "xxx" is shadowing a Python buildint module
+
+    "B905", # `zip()` without an explicit `strict=` parameter
+
+    "C400", # Unnecessary `tuple` call (rewrite as a literal)
+    "C401", # Unnecessary generator (rewrite as a set comprehension)
+    "C408", # Unnecessary `dict` call (rewrite as a literal)
+
+    "ICN001",  # 'xml.etree.ElementTree should be imported as 'ET'
+
+    "PLC0207", # Accessing only the first or last element of `str.split()` without setting `maxsplit=1`
+    "PLC0415", # `import` should be at the top-level of a file
+    "PLW0120", # Else clause on loop without a break statement.
+
+    "SIM102", # Use a single `if` statement instead of nested `if` statements
+    "SIM108", # Use ternary operator ... instead of if-else-block
+    "SIM117", # (Python 3.10) Use a single with statement with multiple contexts instead of nested with statements
+
+    "PT006", # Wrong name(s) type in `@pytest.mark.parametrize`, expected `tuple`
+    "PT007", # Wrong values type in `@pytest.mark.parametrize` expected `list` of `tuple`
+    "PT011", # `pytest.raises(ValueError)` is too broad, set the `match` parameter or use a more specific exception
+    "PT019", # Fixture `_` without value is injected as parameter, use `@pytest.mark.usefixtures` instead
 ]

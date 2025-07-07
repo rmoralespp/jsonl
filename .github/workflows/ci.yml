@@ -22,10 +22,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.13'
-      - name: Install tests dependencies
+      - name: Install tests/lint dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --group=test
+          pip install --group=test --group=lint
+      - name: Run Ruff linter
+        run: ruff check --quiet --output-format=concise
       - name: Run tests and collect coverage
         run: pytest --cov jsonl
       - name: Upload coverage reports to Codecov
