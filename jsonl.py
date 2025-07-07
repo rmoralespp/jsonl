@@ -87,7 +87,7 @@ def _xfile(name, obj, /):
     elif name.endswith(".bz2"):
         file = bz2.BZ2File(obj)
     elif name.endswith(".xz"):
-        file = lzma.LZMAFile(obj)
+        file = lzma.LZMAFile(obj)  # noqa: SIM115
     else:
         file = obj
 
