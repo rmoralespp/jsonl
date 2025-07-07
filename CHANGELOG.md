@@ -1,5 +1,9 @@
 ## Releases
 
+### v1.3.15 (2025-07-07)
+
+- **Improved:** Documentation for better user guidance.
+
 ### v1.3.14 (2025-07-07)
 
 - **Added**: `dump_archive` function to dump JSON Lines files into an archive (zip or tar)
