@@ -1,5 +1,7 @@
 ## Releases
 
+- **Added**: `dump_archive` function to dump JSON Lines files into an archive (zip or tar)
+
 ### v1.3.13 (2025-06-25)
 
 - **Added**: `load_archive` function to load JSON Lines files from an archive (zip or tar)

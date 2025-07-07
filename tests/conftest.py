@@ -17,6 +17,11 @@ def file_extension(request):
     return request.param
 
 
+@pytest.fixture(scope="package", params=(".zip", ".tar", ".tar.gz", ".tar.xz", ".tar.bz2",))
+def archive_extension(request):
+    return request.param
+
+
 @pytest.fixture(scope="package")
 def filename(file_extension):
     return "filename" + file_extension
