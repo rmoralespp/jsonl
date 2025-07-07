@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --group=test --group=lint
       - name: Run Ruff linter
-        run: ruff check .
+        run: ruff check --quiet --output-format=concise
       - name: Run tests and collect coverage
         run: pytest --cov jsonl
       - name: Upload coverage reports to Codecov

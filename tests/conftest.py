@@ -27,15 +27,15 @@ def filename(file_extension):
     return "filename" + file_extension
 
 
-@pytest.fixture()
+@pytest.fixture
 def tmp_dir():
     with tempfile.TemporaryDirectory() as tmp_dir:
         yield pathlib.Path(tmp_dir)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def filepath(tmp_dir, filename):
-    yield str(tmp_dir / filename)
+    return str(tmp_dir / filename)
 
 
 @pytest.fixture(scope="package", params=(orjson.loads, ujson.loads, json.loads, None))
