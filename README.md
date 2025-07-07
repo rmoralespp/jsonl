@@ -72,7 +72,7 @@ for filename, items in jsonl.load_archive("path/to/archive.zip"):
 
 **Dump multiple JSON Lines Files into an Archive (ZIP or TAR)**
 
-Use `jsonl.dump_archive` to incrementally write structured data to multiple **.jsonl** files, 
+Use `jsonl.dump_archive` to incrementally write structured data to multiple JSON Lines files, 
 which are then stored in a ZIP or TAR archive.
 
 ```python
@@ -91,7 +91,7 @@ jsonl.dump_archive("my_archive.zip", data)
 
 **Dumping data to Multiple JSON Lines Files**
 
-Use `jsonl.dump_fork` to incrementally write structured data to multiple **.jsonl** files, 
+Use `jsonl.dump_fork` to incrementally write structured data to multiple JSON Lines files, 
 which can be useful when you want to separate data based on some criteria.
 
 ```python
