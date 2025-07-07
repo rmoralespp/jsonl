@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.14 (2025-07-07)
+
 - **Added**: `dump_archive` function to dump JSON Lines files into an archive (zip or tar)
 - **Changed**: Update documentation site during **CD** pipeline instead of CI pipeline
 - **Changed**: Add Ruff linter integration to **CI** pipeline

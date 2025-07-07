@@ -79,54 +79,33 @@ which are then stored in a ZIP or TAR archive.
 import jsonl
 
 data = [
+    # Create `file1.jsonl` withing the archive
     ("file1.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
+    # Create `file2.jsonl` within the archive
     ("path/to/file2.jsonl", [{"name": "Charlie", "age": 35}, {"name": "David", "age": 40}]),
-    ("file1.jsonl", [{"name": "Eve", "age": 28}]),  # this will append to the file1.jsonl
+    # Append to `file1.jsonl` within the archive
+    ("file1.jsonl", [{"name": "Eve", "age": 28}]),
 ]
 jsonl.dump_archive("my_archive.zip", data)
 ```
 
 **Dumping data to Multiple JSON Lines Files**
 
-Use `jsonl.dump_fork` to incrementally write structured data to multiple **.jsonl** files—one per key (in this case, player name). 
-This helps organize and efficiently store data for separate entities.
-This example creates individual JSON Lines files for each player, storing their respective wins.
+Use `jsonl.dump_fork` to incrementally write structured data to multiple **.jsonl** files, 
+which can be useful when you want to separate data based on some criteria.
 
 ```python
 import jsonl
 
-
-def generate_win_data():
-    """Yield player wins data for multiple players."""
-
-    data = (
-        {
-            "name": "Gilbert",
-            "wins": [
-                {"hand": "straight", "card": "7♣"},
-                {"hand": "one pair", "card": "10♥"},
-            ]
-        },
-        {
-            "name": "May",
-            "wins": [
-                {"hand": "two pair", "card": "9♠"},
-            ]
-        },
-        {
-            "name": "Gilbert",
-            "wins": [
-                {"hand": "three of a kind", "card": "A♦"},
-            ]
-        }
-    )
-    for player in data:
-        name = player["name"]
-        yield (f"{name}.jsonl", player["wins"])
-
-
-# Write the generated data to files in JSON Lines format
-jsonl.dump_fork(generate_win_data())
+data = [
+    # Create `file1.jsonl` or overwrite it if it exists
+    ("file1.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
+    # Create `file2.jsonl` or overwrite it if it exists
+    ("file2.jsonl", [{"name": "Charlie", "age": 35}, {"name": "David", "age": 40}]),
+    # Append to `file1.jsonl`
+    ("file1.jsonl", [{"name": "Eve", "age": 28}]),
+]
+jsonl.dump_fork(data)
 ```
 
 ## Documentation
