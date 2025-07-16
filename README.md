@@ -47,7 +47,7 @@ jsonl.dump(data, "file.jsonl")
 
 **Loading data from a JSON Lines File**
 
-Use `jsonl.load` to incrementally load a JSON Lines file into an iterable of objects:
+Use `jsonl.load` to incrementally load a JSON Lines file into an iterator of dictionaries:
 
 ```python
 import jsonl
