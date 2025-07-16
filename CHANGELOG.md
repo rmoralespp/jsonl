@@ -1,5 +1,7 @@
 ## Releases
 
+- **Added:** Support for `pathlib.Path` objects as file path inputs in `dump_archive` and `dump_fork`.
+
 ### v1.3.15 (2025-07-07)
 
 - **Improved:** Documentation for better user guidance.

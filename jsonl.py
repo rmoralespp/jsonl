@@ -210,7 +210,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
     Incrementally dumps multiple iterables into the specified jsonlines files,
     effectively reducing memory consumption.
 
-    :param Iterable[str, Iterable[Any]] paths: Iterable of iterables by filepath.
+    :param Iterable[str | os.PathLike, Iterable[Any]] paths: Iterable of iterables by filepath.
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
@@ -236,7 +236,8 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
     encoder = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
     writers = {}
     try:
-        for path, iterable in paths:
+        for xpath, iterable in paths:
+            path = os.fspath(xpath) if isinstance(xpath, os.PathLike) else xpath
             if path in writers:
                 writer = writers[path]
             else:
@@ -320,7 +321,7 @@ def load_archive(
 
 def dump_archive(
     path,
-    items_by_relpath,
+    data,
     /,
     *,
     opener=None,
@@ -335,7 +336,7 @@ def dump_archive(
     - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), or xz (`.tar.xz`).
 
     :param str path: Destination path for the archive file.
-    :param Iterable[tuple[str, Iterable[Any]]] items_by_relpath:
+    :param Iterable[tuple[str | os.PathLike, Iterable[Any]]] data:
         Iterable of (relative_path, items), where `relative_path` is the target file path within
         the archive, and `items` is an iterable of JSON-serializable objects.
 
@@ -349,8 +350,9 @@ def dump_archive(
     :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
     """
 
-    def items_by_abspath(root_dir, /):
-        for file_relpath, data in items_by_relpath:
+    def worker(root_dir, /):
+        for relpath, iterable in data:
+            file_relpath = os.fspath(relpath) if isinstance(relpath, os.PathLike) else relpath
             if os.path.isabs(file_relpath):
                 raise ValueError(f"Absolute path is not allowed: {file_relpath}")
 
@@ -358,7 +360,7 @@ def dump_archive(
             file_dirpath = os.path.dirname(file_abspath)
             if not os.path.exists(file_dirpath):
                 os.makedirs(file_dirpath)  # Ensure the directory exists
-            yield (file_abspath, data)
+            yield (file_abspath, iterable)
 
     # Validate the archive format before proceeding to dump.
     arc_fmt = _get_archive_format(path)
@@ -366,7 +368,7 @@ def dump_archive(
     # Dump the items to a temporary directory.
     with tempfile.TemporaryDirectory() as tmpdir:
         dump_fork(
-            items_by_abspath(tmpdir),
+            worker(tmpdir),
             opener=opener,
             text_mode=text_mode,
             dump_if_empty=dump_if_empty,

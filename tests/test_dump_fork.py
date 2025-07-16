@@ -17,11 +17,15 @@ import tests
     ],
 )
 @pytest.mark.parametrize("text_mode", (True, False))
-def test_iter_data(file_extension, text_mode, json_dumps, json_dumps_kwargs):
+def test_iter_data(file_extension, pathlike, text_mode, json_dumps, json_dumps_kwargs):
     with tempfile.TemporaryDirectory() as tmp:
         foo_path = os.path.join(tmp, f"foo{file_extension}")
         var_path = os.path.join(tmp, f"var{file_extension}")
         baz_path = os.path.join(tmp, f"baz{file_extension}")
+        if pathlike:
+            foo_path = pathlib.Path(foo_path)
+            var_path = pathlib.Path(var_path)
+            baz_path = pathlib.Path(baz_path)
 
         path_items = (
             (foo_path, iter(({"foo": 1}, {"ño": 2}))),
@@ -29,6 +33,7 @@ def test_iter_data(file_extension, text_mode, json_dumps, json_dumps_kwargs):
             (var_path, iter(({"foo": 1}, {"ño": 2}))),
             (baz_path, iter(())),
         )
+
         jsonl.dump_fork(iter(path_items), text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs)
 
         assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}\n'

@@ -1,4 +1,5 @@
 import os.path
+import pathlib
 
 import pytest
 
@@ -10,7 +11,7 @@ def _get_loaded_data(path):
     return sorted(loaded, key=lambda x: x[0])
 
 
-def test_dump_archive(tmp_dir, archive_extension):
+def test_dump_archive(tmp_dir, archive_extension, pathlike):
     path = str(tmp_dir / f"archive{archive_extension}")
     data = [
         ("file1.jsonl", [{"key": "value1"}, {"key": "value2"}]),
@@ -19,7 +20,8 @@ def test_dump_archive(tmp_dir, archive_extension):
         ("path/to/file2.jsonl", [{"key": "value4"}]),
     ]
     # Execute the function to dump the archive
-    result = jsonl.dump_archive(path, data)
+    path2dump = pathlib.Path(path) if pathlike else path
+    result = jsonl.dump_archive(path2dump, data)
     # Load the archive to verify its contents
     loaded = _get_loaded_data(result)
     expected_data = [

@@ -93,8 +93,8 @@ with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
     fp.write('{"name": "Richard", "wins": []}\n')
 
 # Load the jsonl file, skipping broken lines
-iterable = jsonl.load("file.jsonl", broken=True)
-print(tuple(iterable))
+iterator = jsonl.load("file.jsonl", broken=True)
+print(tuple(iterator))
 ```
 
 *Output:*

@@ -40,7 +40,6 @@ def test_invalid_object():
         jsonl.dump(iter(tests.data), object())
 
 
-@pytest.mark.parametrize("pathlike", (True, False))
 @pytest.mark.parametrize(
     "json_dumps, json_dumps_kwargs, expected",
     [

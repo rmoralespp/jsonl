@@ -12,6 +12,11 @@ def broken(request):
     return request.param
 
 
+@pytest.fixture(scope="package", params=(True, False))
+def pathlike(request):
+    return request.param
+
+
 @pytest.fixture(scope="package", params=(".jsonl", ".gz", ".bz2", ".xz", ".unknown"))
 def file_extension(request):
     return request.param
