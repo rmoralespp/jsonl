@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.16 (2025-07-23)
+
 - **Added:** The `load` function now supports loading data directly from a URL.
 - **Added:** `dump_archive` and `dump_fork` now accept `pathlib.Path` objects as valid file path inputs.
 

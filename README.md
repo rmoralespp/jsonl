@@ -52,7 +52,6 @@ Use `jsonl.load` to incrementally load a JSON Lines source—such as a filename,
 
 ```python
 import jsonl
-import urllib.request
 
 # Load data from a JSON Lines file
 iterator = jsonl.load("file.jsonl")
@@ -60,11 +59,6 @@ print(tuple(iterator))
 
 # Load data from a URL
 iterator = jsonl.load("https://example.com")
-print(tuple(iterator))
-
-# Load data from a urllib request to handle custom requests
-req = urllib.request.Request("https://example.com", headers={"Accept": "application/jsonl"})
-iterator = jsonl.load(req)
 print(tuple(iterator))
 ```
 
