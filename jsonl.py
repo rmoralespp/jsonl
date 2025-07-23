@@ -42,13 +42,13 @@ _logger.addHandler(logging.NullHandler())
 
 
 def _looks_like_url(value, /):
-    if isinstance(value, urllib.request.Request):
-        value = value.full_url
-    scheme = urllib.parse.urlparse(value)[0]
-    if not scheme:
+    if isinstance(value, (str, urllib.request.Request)):
+        value = value.full_url if isinstance(value, urllib.request.Request) else value
+        scheme = urllib.parse.urlparse(value)[0]
+        # Ensure that does not look like a 'normal' absolute path
+        return not (not scheme or (sys.platform == 'win32' and scheme in string.ascii_letters and len(scheme) == 1))
+    else:
         return False
-    else:  # ensure that does not look like a 'normal' absolute path
-        return not (sys.platform == 'win32' and scheme in string.ascii_letters and len(scheme) == 1)
 
 
 def _get_encoding(mode, /):

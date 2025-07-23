@@ -19,6 +19,7 @@ the [JSON Lines format](https://jsonlines.org/).
 - 🚀 Supports custom (de)serialization via user-defined callbacks.
 - 🗜️ Built-in support for `gzip`, `bzip2`, `xz` compression formats and `ZIP` or `TAR` archives.
 - 🔧 Skips malformed lines during file loading.
+- 📥 Loads from URLs, file paths, or file-like objects.
 
 ## Installation (via pip)
 

@@ -1,4 +1,5 @@
 import os.path
+import urllib.request
 
 import pytest
 
@@ -66,3 +67,13 @@ def test_del_archive_extension(filename, expected):
 def test_get_archive_format_invalid(ext):
     with pytest.raises(ValueError, match=f"Unsupported archive extension: {ext}"):
         jsonl._get_archive_format(ext)
+
+
+@pytest.mark.parametrize("url, expected", [
+    ("http://example.com", True),
+    (urllib.request.Request("http://example.com"), True),  # Request object
+    ("file:///path/to/data.jsonl", True),
+    ("D:/path/to/data.jsonl", False),
+])
+def test_looks_like_url(url, expected):
+    assert jsonl._looks_like_url(url) == expected

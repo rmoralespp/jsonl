@@ -1,7 +1,9 @@
-# Load JSON Lines files
+# Load JSON Lines files 
 
 Load JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats, handling broken
 lines, and allowing custom deserialization and opener callbacks.
+
+It also allows loading from URLs and `urllib` requests.
 
 <a id="note-compression"></a>
 !!! note
@@ -75,6 +77,25 @@ jsonl.dump(data, path)
 with open(path) as fp:
     iterator = jsonl.load(fp)
     print(tuple(iterator))
+```
+
+#### Load from a URL.
+
+You can load a JSON Lines directly from a URL incrementally, if needed you can also create custom 
+requests using `urllib.request.Request`.
+
+```python
+import urllib.request
+import jsonl
+
+# Load data from a URL
+iterator = jsonl.load("https://example.com")
+print(tuple(iterator))
+
+# Load data from a urllib request to handle custom requests
+req = urllib.request.Request("https://example.com", headers={"Accept": "application/jsonl"})
+iterator = jsonl.load(req)
+print(tuple(iterator))
 ```
 
 #### Load a file containing broken lines.
