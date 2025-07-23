@@ -53,6 +53,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#load-a-file-from-an-open-file-object">Load a file from an open file object.</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#load-from-a-url">Load from a URL.</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#load-a-file-containing-broken-lines">Load a file containing broken lines.</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#load-a-file-using-a-custom-deserialization">Load a file using a custom deserialization.</a>
@@ -104,6 +106,7 @@
                 <h1 id="load-json-lines-files">Load JSON Lines files</h1>
 <p>Load JSON Lines <strong>(jsonl)</strong> files incrementally, supporting both uncompressed and compressed formats, handling broken
 lines, and allowing custom deserialization and opener callbacks.</p>
+<p>It also allows loading from URLs and <code>urllib</code> requests.</p>
 <p><a id="note-compression"></a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -170,6 +173,21 @@ with open(path) as fp:
     iterator = jsonl.load(fp)
     print(tuple(iterator))
 </code></pre>
+<h4 id="load-from-a-url">Load from a URL.</h4>
+<p>You can load a JSON Lines directly from a URL incrementally, if needed you can also create custom 
+requests using <code>urllib.request.Request</code>.</p>
+<pre><code class="language-python">import urllib.request
+import jsonl
+
+# Load data from a URL
+iterator = jsonl.load(&quot;https://example.com&quot;)
+print(tuple(iterator))
+
+# Load data from a urllib request to handle custom requests
+req = urllib.request.Request(&quot;https://example.com&quot;, headers={&quot;Accept&quot;: &quot;application/jsonl&quot;})
+iterator = jsonl.load(req)
+print(tuple(iterator))
+</code></pre>
 <h4 id="load-a-file-containing-broken-lines">Load a file containing broken lines.</h4>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -185,8 +203,8 @@ with open(&quot;file.jsonl&quot;, mode=&quot;wt&quot;, encoding=&quot;utf-8&quot
     fp.write('{&quot;name&quot;: &quot;Richard&quot;, &quot;wins&quot;: []}\n')
 
 # Load the jsonl file, skipping broken lines
-iterable = jsonl.load(&quot;file.jsonl&quot;, broken=True)
-print(tuple(iterable))
+iterator = jsonl.load(&quot;file.jsonl&quot;, broken=True)
+print(tuple(iterator))
 </code></pre>
 <p><em>Output:</em></p>
 <pre><code class="language-console">WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
