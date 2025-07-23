@@ -1,4 +1,5 @@
 import os.path
+import sys
 import urllib.request
 
 import pytest
@@ -73,7 +74,11 @@ def test_get_archive_format_invalid(ext):
     ("http://example.com", True),
     (urllib.request.Request("http://example.com"), True),  # Request object
     ("file:///path/to/data.jsonl", True),
-    ("D:/path/to/data.jsonl", False),
 ])
 def test_looks_like_url(url, expected):
     assert jsonl._looks_like_url(url) == expected
+
+
+def test_looks_like_url_filepath():
+    expected = sys.platform != "win32"
+    assert jsonl._looks_like_url("D:/path/to/data.jsonl") == expected
