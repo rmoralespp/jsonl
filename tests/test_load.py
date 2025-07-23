@@ -1,10 +1,11 @@
-
 import contextlib
 import io
 import json
 import os
 import pathlib
 import tempfile
+import unittest.mock
+import urllib.request
 
 import pytest
 
@@ -88,3 +89,23 @@ def test_filepath_using_opener(opener):
 def test_filepath_not_found():
     with pytest.raises(FileNotFoundError):
         tests.consume(jsonl.load("not_found.jsonl"))
+
+
+def test_url_using_opener():
+    with pytest.raises(ValueError):
+        next(jsonl.load("http://foo.com", opener=object()))
+
+
+@pytest.mark.parametrize("charset", ("utf-8", "utf-16"))
+@pytest.mark.parametrize("url_class", (urllib.request.Request, str))
+@unittest.mock.patch("urllib.request.urlopen")
+def test_url(urlopen, url_class, charset):
+    fd = io.BytesIO(tests.string_data.encode(charset))
+    fd.headers = unittest.mock.MagicMock()
+    fd.headers.get_content_charset.return_value = charset
+    urlopen.return_value.__enter__.return_value = fd
+
+    result = tuple(jsonl.load(url_class("http://example.com/data.jsonl")))
+    expected = tuple(tests.data)
+
+    assert result == expected

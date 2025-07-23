@@ -16,13 +16,18 @@ import contextlib
 import fnmatch
 import functools
 import gzip
+import io
 import json
 import logging
 import lzma
 import os
 import shutil
+import string
+import sys
 import tarfile
 import tempfile
+import urllib.parse
+import urllib.request
 import zipfile
 
 _utf_8 = "utf-8"
@@ -34,6 +39,16 @@ _default_json_loads = json.loads
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
+
+
+def _looks_like_url(value, /):
+    if isinstance(value, (str, urllib.request.Request)):
+        value = value.full_url if isinstance(value, urllib.request.Request) else value
+        scheme = urllib.parse.urlparse(value)[0]
+        # Ensure that does not look like a 'normal' absolute path
+        return not (not scheme or (sys.platform == 'win32' and scheme in string.ascii_letters and len(scheme) == 1))
+    else:
+        return False
 
 
 def _get_encoding(mode, /):
@@ -252,14 +267,19 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
             writer.close()
 
 
-def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kwargs):
+def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_kwargs):
     """
-    Deserialize a UTF-8 encoded JSON Lines file into an iterable of Python objects.
+    Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into
+    an iterable of Python objects.
 
     If the file's extension indicates a recognized compression format (.gz, .bz2, .xz),
     the corresponding decompression method is applied; if not, the standard open function is used by default.
 
-    :param str | bytes | os.PathLike | Any file: File to load.
+    :param str | bytes | os.PathLike | urllib.request.Request | Any source:
+        If a URL or `urllib.request.Request` object is provided, the file will be retrieved
+        remotely using `urllib.request.urlopen`.
+        For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
+
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
@@ -267,14 +287,24 @@ def load(file, /, *, opener=None, broken=False, json_loads=None, **json_loads_kw
     :rtype: Iterable[Any]
     """
 
-    if isinstance(file, os.PathLike):
-        file = os.fspath(file)
-    if isinstance(file, str):  # No, it's a filename
+    # URL or Request object handling
+    if _looks_like_url(source):
+        if opener is not None:
+            raise ValueError("Custom opener is not supported for URLs or Request objects.")
+        with urllib.request.urlopen(source) as fd:
+            charset = fd.headers.get_content_charset(failobj=_utf_8)
+            # Wrap the file descriptor to handle text encoding.
+            stream = io.TextIOWrapper(fd, encoding=charset)
+            yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
+    # Filename handling
+    elif isinstance(source, (str, os.PathLike)):
+        filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
         openhook = opener or _xopen
-        with openhook(file, mode="rb", encoding=None) as fd:
+        with openhook(filename, mode="rb", encoding=None) as fd:
             yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
+    # File-like object handling
     else:
-        yield from loader(file, broken, json_loads=json_loads, **json_loads_kwargs)
+        yield from loader(source, broken, json_loads=json_loads, **json_loads_kwargs)
 
 
 def load_archive(
