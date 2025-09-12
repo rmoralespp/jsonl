@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import jsonl
 import tests
 
