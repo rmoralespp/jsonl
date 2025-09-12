@@ -49,8 +49,6 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Load archive files</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#zip-password-protection">ZIP password protection</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#pattern-matching">Pattern matching</a>
     </li>
     </ul>
@@ -97,6 +95,7 @@
 <p>Allows to load multiple JSON Lines <strong>(.jsonl)</strong> files incrementally from a <strong>ZIP</strong> or <strong>TAR</strong> archive.</p>
 <ul>
 <li>Support compressed TAR archives (e.g., <code>.tar.gz</code>, <code>.tar.bz2</code>, <code>.tar.xz</code>).</li>
+<li>Support loading the archive from a URL.</li>
 <li>Support ZIP archives with password protection.</li>
 <li>Filename filtering using Unix shell-style wildcards via <code>fnmatch</code>. Use a pattern (e.g., *.jsonl) to selectively load
   only matching files within the archive.</li>
@@ -105,21 +104,33 @@
 <li>Graceful handling of malformed or broken lines.</li>
 <li>Optional custom deserialization and opener callbacks for advanced use cases.</li>
 </ul>
-<p><strong>Example usage:</strong></p>
+<p><strong>Load from a local archive</strong></p>
 <pre><code class="language-python">import jsonl
 
 path = &quot;path/to/archive.zip&quot;
-# Load all JSON Lines files matching the pattern &quot;*.jsonl&quot; from the archive
+# Load all JSON Lines files matching the pattern &quot;*.jsonl&quot;
 for filename, iterator in jsonl.load_archive(path):
     print(&quot;Filename:&quot;, filename)
     print(&quot;Data:&quot;, tuple(iterator))
 </code></pre>
-<h2 id="zip-password-protection">ZIP password protection</h2>
-<p><code>load_archive</code> can read password-protected ZIP archives. To do so, you need to provide a <code>password</code> argument:</p>
-<pre><code class="language-python">import jsonl
+<p><strong>Load from a remote archive (URL)</strong></p>
+<p>You can load the archive from a URL, if needed you can also create custom requests using <code>urllib.request.Request</code>.</p>
+<pre><code class="language-python">import urllib.request
 
-path = &quot;path/to/protected.zip&quot;
-for filename, iterator in jsonl.load_archive(path, password=b&quot;your_password&quot;):
+import jsonl
+
+# Load all JSON Lines files matching the pattern &quot;*.jsonl&quot; from a remote archive:
+# ------------------------
+
+# Load directly from a URL
+for filename, iterator in jsonl.load_archive(&quot;https://example.com/archive.zip&quot;):
+    print(&quot;Filename:&quot;, filename)
+    print(&quot;Data:&quot;, tuple(iterator))
+
+
+# Load using a custom request
+req = urllib.request.Request(&quot;https://example.com/archive.zip&quot;, headers={&quot;Accept&quot;: &quot;application/zip&quot;})
+for filename, iterator in jsonl.load_archive(req):
     print(&quot;Filename:&quot;, filename)
     print(&quot;Data:&quot;, tuple(iterator))
 </code></pre>
