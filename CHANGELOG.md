@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.17 (2025-09-12)
+
 - **Added:** The `load_archive` function now supports loading data directly from a URL.
 - **Added:** Acceptance tests to check the functionality of `load_archive` and `load` with URLs from a local HTTP server.
 - **Changed:** The `load` function now use internally `urllib.request.urlretrieve` to download the file from a URL to a temporary file before loading it.
