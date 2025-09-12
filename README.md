@@ -19,7 +19,7 @@ the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/n
 - 🚀 Supports custom (de)serialization via user-defined callbacks.
 - 🗜️ Built-in support for `gzip`, `bzip2`, `xz` compression formats and `ZIP` or `TAR` archives.
 - 🔧 Skips malformed lines during file loading.
-- 📥 Loads from URLs, file paths, or file-like objects.
+- 📥 Loads from URLs directly.
 
 ## Installation
 
@@ -83,14 +83,21 @@ jsonl.dump_archive("archive.zip", data)
 
 **Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
 
-Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive. 
-This function allows you to filter files using Unix shell-style wildcards.
+Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive.
+
+- It is possible to load the archive from a URL
+- This function allows you to filter files using Unix shell-style wildcards.
 
 ```python
 import jsonl
 
-# Load all JSON Lines files matching the pattern "*.jsonl" from the archive
+# Load all JSON Lines files matching the pattern "*.jsonl" from a local archive
 for filename, iterator in jsonl.load_archive("archive.zip"):
+    print("Filename:", filename)
+    print("Data:", tuple(iterator))
+
+# Load all JSON Lines files matching the pattern "*.jsonl" from a remote archive
+for filename, iterator in jsonl.load_archive("https://example.com/archive.zip"):
     print("Filename:", filename)
     print("Data:", tuple(iterator))
 ```

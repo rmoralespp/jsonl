@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+
 import operator
 import shutil
+import unittest.mock
+import urllib.request
 
 import pytest
 
@@ -45,3 +48,20 @@ def test_unsupported_archive_format(tmp_dir):
     unsupported_file.write_bytes(b"Not a valid archive")
     with pytest.raises(ValueError, match="Unsupported archive format"):
         next(jsonl.load_archive(unsupported_file))
+
+
+def test_url_using_opener():
+    with pytest.raises(ValueError):
+        next(jsonl.load_archive("http://foo.com", opener=object()))
+
+
+@pytest.mark.parametrize("url_class", (urllib.request.Request, str))
+@unittest.mock.patch("urllib.request.urlretrieve")
+def test_url(urlretrieve, url_class, tmp_dir):
+    path = tmp_dir / "data.zip"
+    urlretrieve.return_value = (path, None)
+    expected = data = (("foo.jsonl", tests.data),)
+    jsonl.dump_archive(path, data)
+    result = jsonl.load_archive(url_class("http://example.com/data.zip"))
+    result = tuple((name, list(data)) for name, data in result)
+    assert result == expected

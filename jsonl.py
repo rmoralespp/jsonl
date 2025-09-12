@@ -18,7 +18,6 @@ import contextlib
 import fnmatch
 import functools
 import gzip
-import io
 import json
 import logging
 import lzma
@@ -289,17 +288,14 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
     :rtype: Iterable[Any]
     """
 
-    # URL or Request object handling
+    # If a URL or Request object is provided, download the archive first.
     if _looks_like_url(source):
         if opener is not None:
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
-        with urllib.request.urlopen(source) as fd:
-            charset = fd.headers.get_content_charset(failobj=_utf_8)
-            # Wrap the file descriptor to handle text encoding.
-            stream = io.TextIOWrapper(fd, encoding=charset)
-            yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
+        source, _ = urllib.request.urlretrieve(source)
+
     # Filename handling
-    elif isinstance(source, (str, os.PathLike)):
+    if isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
         openhook = opener or _xopen
         with openhook(filename, mode="rb", encoding=None) as fd:
@@ -324,7 +320,11 @@ def load_archive(
     Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
     Tar archives can be compressed with gzip, bzip2, or xz. (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 
-    :param str | bytes | os.PathLike | Any file: Archive file to load.
+     :param str | bytes | os.PathLike | urllib.request.Request | Any file: Archive file to load.
+        If a URL or `urllib.request.Request` object is provided, the file will be retrieved
+        remotely using `urllib.request.urlopen`.
+        For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
+
     :param str pattern: Pattern to match filenames inside the archive,
         following Unix shell-style wildcard rules as defined by `fnmatch`.
         For more details, see: https://docs.python.org/3/library/fnmatch.html
@@ -336,6 +336,12 @@ def load_archive(
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
     :rtype: Generator[tuple[str, Generator[Any]]]
     """
+
+    # If a URL or Request object is provided, download the archive first.
+    if _looks_like_url(file):
+        if opener is not None:
+            raise ValueError("Custom opener is not supported for URLs or Request objects.")
+        file, _ = urllib.request.urlretrieve(file)
 
     if zipfile.is_zipfile(file):
         members = _iterfind_zip_members(file, pattern, pwd)

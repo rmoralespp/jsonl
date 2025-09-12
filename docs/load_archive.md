@@ -3,6 +3,7 @@
 Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP** or **TAR** archive.
 
 - Support compressed TAR archives (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
+- Support loading the archive from a URL.
 - Support ZIP archives with password protection.
 - Filename filtering using Unix shell-style wildcards via `fnmatch`. Use a pattern (e.g., *.jsonl) to selectively load
   only matching files within the archive.
@@ -12,27 +13,39 @@ Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP
 - Optional custom deserialization and opener callbacks for advanced use cases.
 
 
-**Example usage:**
+**Load from a local archive**
 
 ```python
 import jsonl
 
 path = "path/to/archive.zip"
-# Load all JSON Lines files matching the pattern "*.jsonl" from the archive
+# Load all JSON Lines files matching the pattern "*.jsonl"
 for filename, iterator in jsonl.load_archive(path):
     print("Filename:", filename)
     print("Data:", tuple(iterator))
 ```
 
-## ZIP password protection
+**Load from a remote archive (URL)**
 
-`load_archive` can read password-protected ZIP archives. To do so, you need to provide a `password` argument:
+You can load the archive from a URL, if needed you can also create custom requests using `urllib.request.Request`.
 
 ```python
+import urllib.request
+
 import jsonl
 
-path = "path/to/protected.zip"
-for filename, iterator in jsonl.load_archive(path, password=b"your_password"):
+# Load all JSON Lines files matching the pattern "*.jsonl" from a remote archive:
+# ------------------------
+
+# Load directly from a URL
+for filename, iterator in jsonl.load_archive("https://example.com/archive.zip"):
+    print("Filename:", filename)
+    print("Data:", tuple(iterator))
+
+    
+# Load using a custom request
+req = urllib.request.Request("https://example.com/archive.zip", headers={"Accept": "application/zip"})
+for filename, iterator in jsonl.load_archive(req):
     print("Filename:", filename)
     print("Data:", tuple(iterator))
 ```

@@ -1,5 +1,8 @@
 ## Releases
 
+- **Added:** The `load_archive` function now supports loading data directly from a URL.
+- **Added:** Acceptance tests to check the functionality of `load_archive` and `load` with URLs from a local HTTP server.
+- **Changed:** The `load` function now use internally `urllib.request.urlretrieve` to download the file from a URL to a temporary file before loading it.
 - **Changed**: Documentation, show that the NDJSON specification is supported
 - **Fixed**: Documentation, a note from `dump_archive.md` referencing a param with an incorrect name.
 

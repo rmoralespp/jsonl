@@ -1,12 +1,57 @@
 # -*- coding: utf-8 -*-
 
+import contextlib
+import functools
+import http.server
 import json
+import os
 import pathlib
 import tempfile
+import threading
 
 import orjson
 import pytest
 import ujson
+
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
+
+
+@contextlib.contextmanager
+def manage_http_server(directory):
+    """
+    Context manager to run a simple HTTP server in a separate thread.
+    Yields the base URI of the server.
+
+    The server serves files from the specified directory.
+    """
+
+    class MyHandler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, fmt, *args):  # pragma: no cover
+            # Overwrite to silence requests
+            pass
+
+    server = http.server.ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        functools.partial(MyHandler, directory=os.path.abspath(directory)),
+    )
+    name, port = server.socket.getsockname()
+    uri = "http://{}:{}/".format(name, port)
+
+    server_thread = threading.Thread(target=server.serve_forever, name="http_server")
+    server_thread.start()
+
+    try:
+        with server.socket:
+            yield uri
+    finally:
+        server.shutdown()
+        server_thread.join()
+
+
+@pytest.fixture(scope="session")
+def http_server_uri():
+    with manage_http_server(DATA_DIR) as uri:
+        yield uri
 
 
 @pytest.fixture(scope="package", params=(True, False))
