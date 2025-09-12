@@ -288,7 +288,7 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
     :rtype: Iterable[Any]
     """
 
-    # If a URL or Request object is provided, download the archive first.
+    # If a URL or Request object is provided, download the file first.
     if _looks_like_url(source):
         if opener is not None:
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
