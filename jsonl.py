@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Useful functions for working with jsonlines data as described: https://jsonlines.org/."""
 
 __all__ = [

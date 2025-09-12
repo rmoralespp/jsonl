@@ -1,5 +1,8 @@
 ## Releases
 
+- **Changed**: Documentation, show that the NDJSON specification is supported
+- **Fixed**: Documentation, a note from `dump_archive.md` referencing a param with an incorrect name.
+
 ### v1.3.16 (2025-07-23)
 
 - **Added:** The `load` function now supports loading data directly from a URL.

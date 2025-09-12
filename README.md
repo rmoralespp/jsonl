@@ -11,7 +11,7 @@
 ## About
 
 **jsonl** is a lightweight Python library designed to simplify working with JSON Lines data, adhering to
-the [JSON Lines format](https://jsonlines.org/).
+the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specifications.
 
 ### Features
 

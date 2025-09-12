@@ -9,8 +9,8 @@
     If the given archive already exists on the given path, it will be overwritten.
 
 !!! note
-    - Paths provided in the `items_by_relpath` argument must be relative. Absolute paths are not allowed and will raise an error.
-    - If `items_by_relpath` contains multiple items for the same path, they will be appended to the corresponding file within the archive.
+    - Paths provided in the `data` argument must be relative. Absolute paths are not allowed and will raise an error.
+    - If `data` contains multiple items for the same path, they will be appended to the corresponding file within the archive.
 
 **Example usage:**
 
