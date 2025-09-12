@@ -89,11 +89,11 @@ import urllib.request
 import jsonl
 
 # Load data from a URL
-iterator = jsonl.load("https://example.com")
+iterator = jsonl.load("https://example.com/file.jsonl")
 print(tuple(iterator))
 
 # Load data from a urllib request to handle custom requests
-req = urllib.request.Request("https://example.com", headers={"Accept": "application/jsonl"})
+req = urllib.request.Request("https://example.com/file.jsonl", headers={"Accept": "application/jsonl"})
 iterator = jsonl.load(req)
 print(tuple(iterator))
 ```

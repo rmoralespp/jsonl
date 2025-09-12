@@ -58,7 +58,7 @@ iterator = jsonl.load("file.jsonl")
 print(tuple(iterator))
 
 # Load data from a URL
-iterator = jsonl.load("https://example.com")
+iterator = jsonl.load("https://example.com/file.jsonl")
 print(tuple(iterator))
 ```
 
