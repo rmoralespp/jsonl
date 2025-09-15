@@ -70,7 +70,7 @@ def _get_fileobj_extension(fileobj, /):
         return None
 
 
-def _get_file_extension(name, mode, /, fileobj=None):
+def _get_file_extension(name, mode, /, *, fileobj=None):
     """Get the file extension based on the filename or file-like object."""
 
     extension = os.path.splitext(name)[1]
@@ -386,7 +386,7 @@ def load_archive(
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
-    :rtype: Generator[tuple[str, Generator[Any]]]
+    :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
     # If a URL or Request object is provided, download the archive first.

@@ -20,6 +20,8 @@ the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/n
 - 🗜️ Built-in support for `gzip`, `bzip2`, `xz` compression formats and `ZIP` or `TAR` archives.
 - 🔧 Skips malformed lines during file loading.
 - 📥 Loads from URLs directly.
+- 🐍 No external dependencies: relies only on the Python standard library.
+
 
 ## Installation
 

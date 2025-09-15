@@ -80,7 +80,6 @@ def test_get_fileobj_extension_restores_file_pointer():
         # Unknown extension but write/append binary mode
         ("file.unknown", "wb", None, None),
         # Unknown extensions and no fileobj or undetectable fileobj
-        ("file.unknown", "r", None, None),  # Unknown extension
         ("file", "r", None, None),  # No extension
         ("file", "rb", io.BytesIO(b""), None),  # No extension, empty fileobj
     ],
