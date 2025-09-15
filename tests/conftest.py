@@ -35,23 +35,23 @@ def manage_http_server(directory):
         functools.partial(MyHandler, directory=os.path.abspath(directory)),
     )
     name, port = server.socket.getsockname()
-    uri = "http://{}:{}/".format(name, port)
+    url = "http://{}:{}/".format(name, port)
 
     server_thread = threading.Thread(target=server.serve_forever, name="http_server")
     server_thread.start()
 
     try:
         with server.socket:
-            yield uri
+            yield url
     finally:
         server.shutdown()
         server_thread.join()
 
 
 @pytest.fixture(scope="session")
-def http_server_uri():
-    with manage_http_server(DATA_DIR) as uri:
-        yield uri
+def http_server():
+    with manage_http_server(DATA_DIR) as url:
+        yield url
 
 
 @pytest.fixture(scope="package", params=(True, False))

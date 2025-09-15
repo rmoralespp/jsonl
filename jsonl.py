@@ -18,6 +18,7 @@ import contextlib
 import fnmatch
 import functools
 import gzip
+import io
 import json
 import logging
 import lzma
@@ -138,16 +139,22 @@ def _del_archive_extension(path, /):
     return os.path.normpath(arcpath)
 
 
-def _iterfind_zip_members(filename, pattern, pwd, /):
-    with zipfile.ZipFile(filename) as zf:
+def _iterfind_zip_members(name_or_obj, pattern, pwd, /):
+    with zipfile.ZipFile(name_or_obj) as zf:
         for name in fnmatch.filter(zf.namelist(), pattern):
             file = zf.open(name, pwd=pwd)
             with file:
                 yield file
 
 
-def _iterfind_tar_members(filename, pattern, /):
-    with tarfile.open(filename) as archive:
+def _iterfind_tar_members(name_or_obj, pattern, /):
+    args, kwargs = (), {}
+    if isinstance(name_or_obj, io.BytesIO):
+        name_or_obj.seek(0)  # Ensure the pointer is at the start
+        kwargs = {"fileobj": name_or_obj, "mode": "r:*"}
+    else:
+        args = (name_or_obj,)
+    with tarfile.open(*args, **kwargs) as archive:
         for name in fnmatch.filter(archive.getnames(), pattern):
             if file := archive.extractfile(name):
                 with file:
@@ -288,14 +295,17 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
     :rtype: Iterable[Any]
     """
 
-    # If a URL or Request object is provided, download the file first.
+    # URL or Request object handling
     if _looks_like_url(source):
         if opener is not None:
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
-        source, _ = urllib.request.urlretrieve(source)
-
+        with urllib.request.urlopen(source) as fd:
+            charset = fd.headers.get_content_charset(failobj=_utf_8)
+            # Wrap the file descriptor to handle text encoding.
+            stream = io.TextIOWrapper(fd, encoding=charset)
+            yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
     # Filename handling
-    if isinstance(source, (str, os.PathLike)):
+    elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
         openhook = opener or _xopen
         with openhook(filename, mode="rb", encoding=None) as fd:
@@ -341,14 +351,15 @@ def load_archive(
     if _looks_like_url(file):
         if opener is not None:
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
-        file, _ = urllib.request.urlretrieve(file)
+        with urllib.request.urlopen(file) as file:
+            file = io.BytesIO(file.read())  # noqa: PLW2901
 
     if zipfile.is_zipfile(file):
         members = _iterfind_zip_members(file, pattern, pwd)
     elif tarfile.is_tarfile(file):
         members = _iterfind_tar_members(file, pattern)
     else:
-        raise ValueError(f"Unsupported archive format: {file}")
+        raise ValueError("Unsupported archive format")
 
     for member in members:
         filename = member.name
@@ -358,15 +369,15 @@ def load_archive(
 
 
 def dump_archive(
-    path,
-    data,
-    /,
-    *,
-    opener=None,
-    text_mode=True,
-    dump_if_empty=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
+        path,
+        data,
+        /,
+        *,
+        opener=None,
+        text_mode=True,
+        dump_if_empty=True,
+        json_dumps=None,
+        **json_dumps_kwargs,
 ):
     """
     Dump multiple JSON Lines items into an archive file (zip or tar) with the specified path.

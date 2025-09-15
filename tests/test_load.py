@@ -98,12 +98,17 @@ def test_url_using_opener():
         next(jsonl.load("http://foo.com", opener=object()))
 
 
+@pytest.mark.parametrize("charset", ("utf-8", "utf-16"))
 @pytest.mark.parametrize("url_class", (urllib.request.Request, str))
-@unittest.mock.patch("urllib.request.urlretrieve")
-def test_url(urlretrieve, url_class, tmp_dir):
-    path = tmp_dir / "data.jsonl"
-    urlretrieve.return_value = (path, None)
-    jsonl.dump(tests.data, path)
-    result = tuple(jsonl.load(url_class("http://example.com/data.jsonl")))
-    expected = tuple(tests.data)
-    assert result == expected
+@unittest.mock.patch("urllib.request.urlopen")
+def test_url(urlopen, url_class, charset):
+    fd = io.BytesIO(tests.string_data.encode(charset))
+    fd.headers = unittest.mock.MagicMock()
+    fd.headers.get_content_charset.return_value = charset
+    urlopen.return_value.__enter__.return_value = fd
+
+
+def test_http_server_url(http_server):
+    url = http_server + "foo.jsonl"
+    data = list(jsonl.load(url))
+    assert data == tests.data

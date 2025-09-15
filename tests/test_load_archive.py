@@ -2,8 +2,6 @@
 
 import operator
 import shutil
-import unittest.mock
-import urllib.request
 
 import pytest
 
@@ -55,13 +53,9 @@ def test_url_using_opener():
         next(jsonl.load_archive("http://foo.com", opener=object()))
 
 
-@pytest.mark.parametrize("url_class", (urllib.request.Request, str))
-@unittest.mock.patch("urllib.request.urlretrieve")
-def test_url(urlretrieve, url_class, tmp_dir):
-    path = tmp_dir / "data.zip"
-    urlretrieve.return_value = (path, None)
-    expected = data = (("foo.jsonl", tests.data),)
-    jsonl.dump_archive(path, data)
-    result = jsonl.load_archive(url_class("http://example.com/data.zip"))
-    result = tuple((name, list(data)) for name, data in result)
-    assert result == expected
+@pytest.mark.parametrize("filename", ("archive.zip", "archive.tar"))
+def test_http_server_uri_url(http_server, filename):
+    url = http_server + "/" + filename
+    loaded = jsonl.load_archive(url)
+    loaded = [(name, list(data)) for name, data in loaded]
+    assert loaded == [('foo.jsonl', tests.data), ('var.jsonl', tests.data)]

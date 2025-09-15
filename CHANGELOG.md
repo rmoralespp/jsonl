@@ -1,5 +1,7 @@
 ## Releases
 
+- **Changed**: Replace the deprecated `urllib.request.urlretrieve` because it is legacy.
+
 ### v1.3.17 (2025-09-12)
 
 - **Added:** The `load_archive` function now supports loading data directly from a URL.
