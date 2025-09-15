@@ -78,6 +78,15 @@ def test_filepath(filepath, json_loads, pathlike):
     assert result == expected
 
 
+def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_loads):
+    expected = tuple(tests.data)
+    tests.write_text(filepath, content=tests.string_data)  # Write compressed data first
+    new_filepath = filepath + ".unknown"
+    os.rename(filepath, new_filepath)
+    result = tuple(jsonl.load(new_filepath, json_loads=json_loads))
+    assert result == expected
+
+
 @pytest.mark.parametrize("opener", (open, None))
 def test_filepath_using_opener(opener):
     expected = tuple(tests.data)
