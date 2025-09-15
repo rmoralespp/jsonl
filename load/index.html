@@ -180,11 +180,11 @@ requests using <code>urllib.request.Request</code>.</p>
 import jsonl
 
 # Load data from a URL
-iterator = jsonl.load(&quot;https://example.com&quot;)
+iterator = jsonl.load(&quot;https://example.com/file.jsonl&quot;)
 print(tuple(iterator))
 
 # Load data from a urllib request to handle custom requests
-req = urllib.request.Request(&quot;https://example.com&quot;, headers={&quot;Accept&quot;: &quot;application/jsonl&quot;})
+req = urllib.request.Request(&quot;https://example.com/file.jsonl&quot;, headers={&quot;Accept&quot;: &quot;application/jsonl&quot;})
 iterator = jsonl.load(req)
 print(tuple(iterator))
 </code></pre>
