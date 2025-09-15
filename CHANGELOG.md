@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.18 (2025-09-15)
+
 - **Changed**: Replace the deprecated `urllib.request.urlretrieve` because it is legacy.
 
 ### v1.3.17 (2025-09-12)
