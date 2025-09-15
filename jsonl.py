@@ -369,15 +369,15 @@ def load_archive(
 
 
 def dump_archive(
-        path,
-        data,
-        /,
-        *,
-        opener=None,
-        text_mode=True,
-        dump_if_empty=True,
-        json_dumps=None,
-        **json_dumps_kwargs,
+    path,
+    data,
+    /,
+    *,
+    opener=None,
+    text_mode=True,
+    dump_if_empty=True,
+    json_dumps=None,
+    **json_dumps_kwargs,
 ):
     """
     Dump multiple JSON Lines items into an archive file (zip or tar) with the specified path.
