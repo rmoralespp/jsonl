@@ -8,7 +8,11 @@ It also allows loading from URLs and `urllib` requests.
 <a id="note-compression"></a>
 !!! note
     Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
-    If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
+    
+    If a file extension is not provided or is not recognized, the compression format will be automatically detected by reading the file's **"magic number."**
+    
+    If the detection fails, the file is considered uncompressed.
+```
 
 #### Load an uncompressed file given a path.
 

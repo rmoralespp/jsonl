@@ -8,7 +8,7 @@ Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP
 - Filename filtering using Unix shell-style wildcards via `fnmatch`. Use a pattern (e.g., *.jsonl) to selectively load
   only matching files within the archive.
 - Support for both compressed and uncompressed `.jsonl` files inside the archive. (e.g., `*.jsonl.gz` or `*.jsonl.bz2`
-  or `*.jsonl.xz`).
+  or `*.jsonl.xz` **(Check [note](load.md#note-compression) for more details)**.
 - Graceful handling of malformed or broken lines.
 - Optional custom deserialization and opener callbacks for advanced use cases.
 
