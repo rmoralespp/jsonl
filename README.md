@@ -22,7 +22,6 @@ the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/n
 - 📥 Loads from URLs directly.
 - 🐍 No external dependencies: relies only on the Python standard library.
 
-
 ## Installation
 
 To install **jsonl** using `pip`, run the following command:
