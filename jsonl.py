@@ -42,6 +42,48 @@ _default_json_loads = json.loads
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
+ext_jsonl = ".jsonl"
+ext_gz = ".gz"
+ext_bz2 = ".bz2"
+ext_xz = ".xz"
+extensions = frozenset((ext_jsonl, ext_gz, ext_bz2, ext_xz))
+
+
+def _get_fileobj_extension(fileobj, /):
+    """Get the file extension based on the initial bytes of a file-like object."""
+
+    fd_position = fileobj.tell()  # Save current position
+    fileobj.seek(0)  # Go to the start of the file
+    bytes_ = fileobj.read(6)  # Read enough bytes to detect compression
+    fileobj.seek(fd_position)  # Restore the original position
+
+    if bytes_[:2] == b"\x1f\x8b":
+        # https://tools.ietf.org/html/rfc1952#page-6
+        return ext_gz
+    elif bytes_[:3] == b"\x42\x5a\x68":
+        # https://en.wikipedia.org/wiki/List_of_file_signatures
+        return ext_bz2
+    elif bytes_[:6] == b"\xfd\x37\x7a\x58\x5a\x00":
+        # https://tukaani.org/xz/xz-file-format.txt
+        return ext_xz
+    else:
+        return None
+
+
+def _get_file_extension(name, mode, /, *, fileobj=None):
+    """Get the file extension based on the filename or file-like object."""
+
+    extension = os.path.splitext(name)[1]
+    if extension in extensions:
+        return extension
+    elif mode == "rb" and fileobj:
+        return _get_fileobj_extension(fileobj)
+    elif "r" in mode:  # if not fileobj, try to open the file and detect from content
+        with open(name, "rb") as fd:
+            return _get_fileobj_extension(fd)
+    else:
+        return None
+
 
 def _looks_like_url(value, /):
     if isinstance(value, (str, urllib.request.Request)):
@@ -79,12 +121,12 @@ def _xopen(name, /, *, mode="rb", encoding=None):
 
     default = open
     openers = {
-        ".jsonl": default,
-        ".gz": gzip.open,
-        ".bz2": bz2.open,
-        ".xz": lzma.open,
+        ext_jsonl: default,
+        ext_gz: gzip.open,
+        ext_bz2: bz2.open,
+        ext_xz: lzma.open,
     }
-    extension = os.path.splitext(name)[1]
+    extension = _get_file_extension(name, mode)
     opener = openers.get(extension, default)
     return opener(name, mode=mode, encoding=encoding or _get_encoding(mode))
 
@@ -99,15 +141,15 @@ def _xfile(name, obj, /):
     :param obj: File-like an object.
     """
 
-    if name.endswith(".gz"):
+    ext = _get_file_extension(name, "rb", fileobj=obj)
+    if ext == ext_gz:
         file = gzip.GzipFile(fileobj=obj)
-    elif name.endswith(".bz2"):
+    elif ext == ext_bz2:
         file = bz2.BZ2File(obj)
-    elif name.endswith(".xz"):
+    elif ext == ext_xz:
         file = lzma.LZMAFile(obj)  # noqa: SIM115
     else:
         file = obj
-
     try:
         yield file
     finally:
@@ -344,7 +386,7 @@ def load_archive(
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
-    :rtype: Generator[tuple[str, Generator[Any]]]
+    :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
     # If a URL or Request object is provided, download the archive first.

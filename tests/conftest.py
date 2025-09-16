@@ -13,6 +13,8 @@ import orjson
 import pytest
 import ujson
 
+import jsonl
+
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
 
 
@@ -39,6 +41,8 @@ def manage_http_server(directory):
 
     server_thread = threading.Thread(target=server.serve_forever, name="http_server")
     server_thread.start()
+    # Fix: warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+    threading.excepthook = lambda args: server.shutdown()
 
     try:
         with server.socket:
@@ -64,7 +68,7 @@ def pathlike(request):
     return request.param
 
 
-@pytest.fixture(scope="package", params=(".jsonl", ".gz", ".bz2", ".xz", ".unknown"))
+@pytest.fixture(scope="package", params=jsonl.extensions)
 def file_extension(request):
     return request.param
 
