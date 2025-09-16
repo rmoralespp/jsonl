@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import operator
+import os
 import shutil
 
 import pytest
@@ -14,9 +15,11 @@ import tests
     ("file1", ["file1"]),
     ("file*", ["file1", "file2"]),
 ])
+@pytest.mark.parametrize("with_unknown_ext", [True, False])
 @pytest.mark.parametrize("archive_format", ["tar", "zip"])
-def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_extension):
+def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_extension, with_unknown_ext):
     pattern += file_extension
+
     if archive_format == "tar":
         pattern = "./" + pattern  # tar requires a leading slash for patterns
         match_members = [f"./{member}" for member in match_members]
@@ -31,6 +34,14 @@ def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_exte
             content = tests.string_data.encode(jsonl._utf_8)
             fp.write(content)
 
+    if with_unknown_ext:
+        # Rename files to have an unknown extension after writing valid data
+        for member in members:
+            new_member = member + ".unknown"
+            os.rename(root_dir / member, root_dir / new_member)
+        # Adjust pattern to match the new extension
+        pattern += ".unknown"
+
     archivepath = str(root_dir / "myarchive")
     archivepath = shutil.make_archive(archivepath, archive_format, root_dir=root_dir, base_dir=".")
 
@@ -38,6 +49,9 @@ def test_load_archive(pattern, match_members, tmp_dir, archive_format, file_exte
     expected = sorted(((name, tests.data) for name in match_members), key=order_by)
     result = jsonl.load_archive(archivepath, pattern=pattern)
     result = sorted(((name, list(data)) for name, data in result), key=order_by)
+    if with_unknown_ext:
+        # Adjust expected names to have the .unknown extension
+        expected = [(name + ".unknown", data) for name, data in expected]
     assert result == expected
 
 

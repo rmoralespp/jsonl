@@ -24,8 +24,8 @@ def test_invalid_json_lines(broken):
         "[4]\n"
         "suffix\n"  # bad JSON line
     )
-    with contextlib.closing(io.StringIO(lines)) as iofile:
-        result = jsonl.load(iofile, broken=broken)
+    with contextlib.closing(io.StringIO(lines)) as fd:
+        result = jsonl.load(fd, broken=broken)
         if broken:
             assert tuple(result) == ([1, 2], [3], [4])
         else:
@@ -34,8 +34,8 @@ def test_invalid_json_lines(broken):
 
 
 def test_invalid_utf8(broken):
-    with contextlib.closing(io.BytesIO(b"\xff\xff\n[1, 2]")) as iofile:
-        result = jsonl.load(iofile, broken=broken)
+    with contextlib.closing(io.BytesIO(b"\xff\xff\n[1, 2]")) as fd:
+        result = jsonl.load(fd, broken=broken)
         if broken:
             assert tuple(result) == ([1, 2],)
         else:
@@ -75,6 +75,17 @@ def test_filepath(filepath, json_loads, pathlike):
     expected = tuple(tests.data)
     tests.write_text(filepath, content=tests.string_data)
     result = tuple(jsonl.load(filepath, json_loads=json_loads))
+    assert result == expected
+
+
+def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_loads):
+    expected = tuple(tests.data)
+    tests.write_text(filepath, content=tests.string_data)  # Write compressed data first
+    # Rename to have an unknown extension after writing valid data
+    new_filepath = filepath + ".unknown"
+    os.rename(filepath, new_filepath)
+
+    result = tuple(jsonl.load(new_filepath, json_loads=json_loads))
     assert result == expected
 
 
