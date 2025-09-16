@@ -47,8 +47,6 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Load jsonlines file</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#load-an-uncompressed-file-given-a-path">Load an uncompressed file given a path.</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#load-a-compressed-file-given-a-path">Load a compressed file given a path.</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#load-a-file-from-an-open-file-object">Load a file from an open file object.</a>
@@ -110,11 +108,15 @@ lines, and allowing custom deserialization and opener callbacks.</p>
 <p><a id="note-compression"></a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Supported compression formats are: <strong>gzip (.gz), bzip2 (.bz2), xz (.xz)</strong>
-If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.</p>
+<p>Supported compression formats are: <strong>gzip (.gz), bzip2 (.bz2), xz (.xz)</strong></p>
+<p>If a file extension is not provided or is not recognized, the compression format will be automatically detected by reading the file's <strong>"magic number."</strong></p>
+<p>If the detection fails, the file is considered uncompressed.</p>
 </div>
-<h4 id="load-an-uncompressed-file-given-a-path">Load an uncompressed file given a path.</h4>
-<pre><code class="language-python">import jsonl
+<pre><code>
+#### Load an uncompressed file given a path.
+
+```python
+import jsonl
 
 path = &quot;file.jsonl&quot;
 
