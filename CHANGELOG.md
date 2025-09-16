@@ -1,5 +1,10 @@
 ## Releases
 
+### v1.3.19 (2025-09-16)
+
+- **Changed:** The `load_archive` and `load` functions use number detection as a fallback when the file extension is not recognized.
+- **Changed**: Documentation, indicate that **No external dependencies** are required.
+
 ### v1.3.18 (2025-09-15)
 
 - **Changed**: Replace the deprecated `urllib.request.urlretrieve` because it is legacy.
