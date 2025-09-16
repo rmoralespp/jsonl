@@ -13,7 +13,7 @@ import tests
 
 
 def test_xfile_object(filepath):
-    obj = unittest.mock.MagicMock()  # subscriptable object
+    obj = unittest.mock.MagicMock()  # subscribable object
     with jsonl._xfile(filepath, obj) as result:
         if filepath.endswith(".gz"):
             assert isinstance(result, gzip.GzipFile)
