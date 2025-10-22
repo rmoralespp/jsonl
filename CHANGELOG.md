@@ -1,5 +1,10 @@
 ## Releases
 
+### v1.3.20 (2025-10-22)
+
+- **Added:** Added: Support por Python 3.14.
+- **Changed:** Update Publish to PyPI GitHub Action in the CD pipeline.
+
 ### v1.3.19 (2025-09-16)
 
 - **Changed:** The `load_archive` and `load` functions use number detection as a fallback when the file extension is not recognized.
