@@ -103,7 +103,7 @@ jsonl.dump_archive("archive.zip", data)
 > [!TIP]
 >
 > - It is possible to load the archive from a URL
-> - This function allows you to filter files using Unix shell-style wildcards.
+> - This function allows you to filter files using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html).
 
 ```python
 # -*- coding: utf-8 -*-
