@@ -1,5 +1,6 @@
 # jsonl
 
+[![GitHub tag](https://img.shields.io/github/tag/rmoralespp/jsonl?include_prereleases=&sort=semver&color=black)](https://github.com/rmoralespp/jsonl/releases/)
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
 [![pypi](https://img.shields.io/pypi/v/py-jsonl.svg)](https://pypi.python.org/pypi/py-jsonl)
 [![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
@@ -13,7 +14,7 @@
 **jsonl** is a lightweight Python library designed to simplify working with JSON Lines data, adhering to
 the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specifications.
 
-**Features:**
+### 🎯 Features
 
 - 🌎 Provides an API similar to Python's standard `json` module.
 - 🚀 Supports custom (de)serialization via user-defined callbacks.

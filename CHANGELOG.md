@@ -1,5 +1,11 @@
 ## Releases
 
+### v1.3.21 (2025-11-04)
+
+- **Changed:** **CI/CD** pipelines to apply (`sphinx-linter`, `pymport`) linters.
+- **Changed:** `README.md` to include badges for GitHub Tag, GitHub Alerts and others for better visibility.
+- **Changed:** `pyproject.toml` to include new linters (`sphinx-linter`, `pymport`).
+
 ### v1.3.20 (2025-10-22)
 
 - **Added:** Added: Support por Python 3.14.

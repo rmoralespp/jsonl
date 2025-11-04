@@ -1,5 +1,6 @@
 # jsonl
 
+[![GitHub tag](https://img.shields.io/github/tag/rmoralespp/jsonl?include_prereleases=&sort=semver&color=black)](https://github.com/rmoralespp/jsonl/releases/)
 [![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
 [![pypi](https://img.shields.io/pypi/v/py-jsonl.svg)](https://pypi.python.org/pypi/py-jsonl)
 [![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
@@ -8,12 +9,14 @@
 [![Linter: ruff](https://img.shields.io/badge/linter-_ruff-orange)](https://github.com/charliermarsh/ruff)
 [![Downloads](https://pepy.tech/badge/py-jsonl)](https://pepy.tech/project/py-jsonl)
 
+---
+
 ## About
 
 **jsonl** is a lightweight Python library designed to simplify working with JSON Lines data, adhering to
 the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specifications.
 
-### Features
+### 🎯 Features
 
 - 🌎 Provides an API similar to Python's standard `json` module.
 - 🚀 Supports custom (de)serialization via user-defined callbacks.
@@ -22,7 +25,7 @@ the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/n
 - 📥 Loads from URLs directly.
 - 🐍 No external dependencies: relies only on the Python standard library.
 
-## Installation
+## 📦 Installation
 
 To install **jsonl** using `pip`, run the following command:
 
@@ -30,11 +33,13 @@ To install **jsonl** using `pip`, run the following command:
 pip install py-jsonl
 ```
 
-## Getting Started
+## ⚡ Quick Start
 
 **Dumping data to a JSON Lines File**
 
-Use `jsonl.dump` to incrementally write an iterable of dictionaries to a JSON Lines file:
+> [!NOTE]
+>
+> Use `jsonl.dump` to incrementally write an iterable of dictionaries to a JSON Lines file:
 
 ```python
 import jsonl
@@ -49,7 +54,10 @@ jsonl.dump(data, "file.jsonl")
 
 **Loading data from a JSON Lines source**
 
-Use `jsonl.load` to incrementally load a JSON Lines source—such as a filename, URL, or file-like object—into as an iterator of dictionaries:
+> [!NOTE]
+>
+> Use `jsonl.load` to incrementally load a JSON Lines source—such as a **filename, URL, or file-like object—into** as an
+> iterator of dictionaries:
 
 ```python
 import jsonl
@@ -65,10 +73,14 @@ print(tuple(iterator))
 
 **Dump multiple JSON Lines Files into an Archive (ZIP or TAR)**
 
-Use `jsonl.dump_archive` to incrementally write structured data to multiple JSON Lines files, 
-which are then stored in a ZIP or TAR archive.
+> [!NOTE]
+>
+> Use `jsonl.dump_archive` to incrementally write structured data to multiple JSON Lines files,
+> which are then stored in a ZIP or TAR archive.
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [
@@ -84,12 +96,18 @@ jsonl.dump_archive("archive.zip", data)
 
 **Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
 
-Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive.
+> [!NOTE]
+>
+> Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive.
 
-- It is possible to load the archive from a URL
-- This function allows you to filter files using Unix shell-style wildcards.
+> [!TIP]
+>
+> - It is possible to load the archive from a URL
+> - This function allows you to filter files using Unix shell-style wildcards.
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 # Load all JSON Lines files matching the pattern "*.jsonl" from a local archive
@@ -105,10 +123,14 @@ for filename, iterator in jsonl.load_archive("https://example.com/archive.zip"):
 
 **Dumping data to Multiple JSON Lines Files**
 
-Use `jsonl.dump_fork` to incrementally write structured data to multiple JSON Lines files, 
-which can be useful when you want to separate data based on some criteria.
+> [!NOTE]
+>
+> Use `jsonl.dump_fork` to incrementally write structured data to multiple JSON Lines files,
+> which can be useful when you want to separate data based on some criteria.
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [
@@ -122,46 +144,52 @@ data = [
 jsonl.dump_fork(data)
 ```
 
-## Documentation
+---
+
+## 📚 Documentation
 
 For more detailed information and usage examples, refer to the
 project [documentation](https://rmoralespp.github.io/jsonl/)
 
-## Development
+## 🛠️ Development
 
 To contribute to the project, you can run the following commands for testing and documentation:
 
 First, ensure you have the latest version of `pip`:
 
-```python -m pip install --upgrade pip```
+```bash
+python -m pip install --upgrade pip
+```
 
 ### Running Unit Tests
 
 Install the development dependencies and run the tests:
 
-```
-pip install --group=test  # Install test dependencies
-pytest tests/ # Run all tests
-pytest --cov jsonl # Run tests with coverage
+```bash
+pip install --group=test  --upgrade # Install test dependencies, skip if already installed
+python -m pytest tests/ # Run all tests
+python -m pytest tests/ --cov # Run tests with coverage
 ```
 
-### Running Linter
+### Running Linters
 
-```
-pip install --group=lint  # Install linter dependencies
+```bash
+pip install --group=lint --upgrade  # Install lint dependencies, skip if already installed
 ruff check . # Run linter
+spxl . # Run sphinx-linter for docstring issues
+pymport . # Check for import issues
 ```
 
 ### Building the Documentation
 
 To build the documentation locally, use the following commands:
 
-```
-pip install --group=doc  # Install documentation dependencies
+```bash
+pip install --group=doc --upgrade  # Install doc dependencies, skip if already installed
 mkdocs serve # Start live-reloading docs server
 mkdocs build # Build the documentation site
 ```
 
-## License
+## 🗒️ License
 
 This project is licensed under the [MIT license](LICENSE).

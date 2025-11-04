@@ -1,6 +1,6 @@
 [project]
 name = "py-jsonl"
-version = "1.3.20"
+version = "1.3.21"
 description = "A lightweight Python library for handling jsonlines files."
 readme = "README.md"
 license-files = ["LICENSE"]
@@ -38,7 +38,9 @@ test = [
     "orjson"
 ]
 lint = [
-    "ruff"
+    "ruff",
+    "sphinx-linter",
+    "pymport"
 ]
 
 [project.urls]
@@ -47,6 +49,17 @@ Homepage = "https://github.com/rmoralespp/jsonl"
 Changelog = "https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md"
 Issues = "https://github.com/rmoralespp/jsonl/issues"
 Documentation = "https://rmoralespp.github.io/jsonl/"
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
+skip_covered = true
+show_missing = true
+exclude_also = [
+  "if __name__ == .__main__.",
+]
 
 [tool.black]
 line-length = 120
@@ -57,9 +70,6 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
-    # Airflow
-    "AIR",
-
     # pyflakes
     "F",
 
@@ -80,6 +90,7 @@ select = [
     "D209", # Multi-line docstring closing quotes should be on a separate line
     "D210", # No whitespaces allowed surrounding docstring text
     "D211", # No blank lines allowed before class docstring
+    "D213", # Multi-line docstring summary should start at the second line
     "D403", # First word of the first line should be properly capitalized
     "D419", # Docstring is empty
     "D300", # Use """triple double quotes"""
