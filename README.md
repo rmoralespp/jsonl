@@ -42,6 +42,8 @@ pip install py-jsonl
 > Use `jsonl.dump` to incrementally write an iterable of dictionaries to a JSON Lines file:
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [
@@ -60,6 +62,8 @@ jsonl.dump(data, "file.jsonl")
 > iterator of dictionaries:
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 # Load data from a JSON Lines file
