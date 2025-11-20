@@ -1,6 +1,6 @@
 # Dump an iterable to a JSON Lines file incrementally.
 
-Dump JSON Lines (jsonl) files incrementally, supporting both uncompressed and compressed formats and allowing
+Dump JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats and allowing
 custom serialization and opener callbacks.
 
 #### Dump the data to an uncompressed file at the specified path
@@ -133,6 +133,8 @@ jsonl.dump(data, MyCustomFile2(), text_mode=True)
 
 #### Dump data with a custom serialization
 
+##### Passing a `json_dumps` function
+
 The `json_dumps` parameter allows for custom serialization and must take a Python object and return a
 JSON-formatted string.
 
@@ -161,8 +163,27 @@ jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
 
 # Dump the data using the orjson library.
 jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps)
+```
 
-# Dumping data into a JSON file with compact output using separators (',', ':')
-# to remove unnecessary whitespaces.
-jsonl.dump(data, "bar.jsonl", separators=(',', ':'))
+##### Passing additional keyword arguments
+
+The  `jsonl.dump` function accepts additional keyword arguments that are passed directly to the underlying
+serialization function (by default, `json.dumps`). This allows for customization of the serialization process,
+such as controlling indentation, sorting keys, or handling special data types.
+
+Here’s an example that demonstrates how to use additional keyword arguments to customize the JSON serialization:
+
+```python
+# -*- coding: utf-8 -*-
+
+import json
+
+import jsonl
+
+data = [
+    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
+    {"name": "May", "wins": []},
+]
+# Dump the data with compact separators to minimize file size.
+jsonl.dump(data, "compact.jsonl", separators=(',', ':'))
 ```

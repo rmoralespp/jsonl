@@ -1,4 +1,4 @@
-# Load JSON Lines files 
+# Load JSON Lines files
 
 Load JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats, handling broken
 lines, and allowing custom deserialization and opener callbacks.
@@ -45,7 +45,7 @@ Check [note](#note-compression) for more details
 
 import jsonl
 
-path = "file.jsonl.gz" # gzip compressed file, but it can be ".bz2" or ".xz"
+path = "file.jsonl.gz"  # gzip compressed file, but it can be ".bz2" or ".xz"
 
 # Example data to save in the file
 data = [
@@ -90,7 +90,7 @@ with open(path) as fp:
 
 #### Load from a URL
 
-You can load a JSON Lines directly from a URL incrementally, if needed you can also create custom 
+You can load a JSON Lines directly from a URL incrementally, if needed you can also create custom
 requests using `urllib.request.Request`.
 
 ```python
@@ -140,6 +140,8 @@ WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28
 
 #### Load a file using a custom deserialization
 
+##### Passing a `json_loads` function
+
 The `json_loads` parameter allows for custom deserialization and must take a JSON-formatted
 string as input and return a Python object.
 
@@ -183,6 +185,37 @@ iterator2 = jsonl.load(path, json_loads=orjson.loads)
 
 print(tuple(iterator1))
 print(tuple(iterator2))
+```
+
+##### Passing additional keyword arguments
+
+The  `jsonl.load` function also accepts additional keyword arguments that are passed to the underlying
+JSON deserialization function (by default, `json.loads`). This is useful when you want to customize the behavior of the
+deserialization
+
+Here’s an example using the built-in `json` module to parse float values as `decimal.Decimal`:
+
+```python
+# -*- coding: utf-8 -*-
+
+import decimal
+
+import jsonl
+
+path = "file.jsonl"
+
+# Example data to save in the file with `float` values
+data = [
+    {"name": "Gilbert", "wins_avg": 2.5},
+    {"name": "May", "wins_avg": 3.75},
+]
+
+# Save the data to the jsonl file
+jsonl.dump(data, path)
+
+# Load the data back, parsing `float` values as `decimal.Decimal` using the `parse_float` keyword argument
+iterator = jsonl.load(path, parse_float=decimal.Decimal)
+print(tuple(iterator))
 ```
 
 #### Load a file using a custom opener
