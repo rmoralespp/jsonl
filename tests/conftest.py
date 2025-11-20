@@ -23,8 +23,8 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
 def manage_http_server(directory):
     """
     Context manager to run a simple HTTP server in a separate thread.
-    Yields the base URI of the server.
 
+    Yields the base URI of the server.
     The server serves files from the specified directory.
     """
 

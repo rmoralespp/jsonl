@@ -116,6 +116,7 @@ def _get_line(value, text_mode, /):
 def _xopen(name, /, *, mode="rb", encoding=None):
     """
     Open file depending on a supported file extension.
+
     If the file extension is not recognized, the default `open` function is used.
     """
 
@@ -135,6 +136,7 @@ def _xopen(name, /, *, mode="rb", encoding=None):
 def _xfile(name, obj, /):
     """
     Context manager to handle file-like objects with automatic decompression.
+
     Does not close the file if it is the original object passed.
 
     :param str name: Filename or path to the file.
@@ -272,8 +274,7 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
 
 def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json_dumps=None, **json_dumps_kwargs):
     """
-    Incrementally dumps multiple iterables into the specified jsonlines files,
-    effectively reducing memory consumption.
+    Incrementally dumps multiple iterables into the specified jsonlines files, effectively reducing memory consumption.
 
     :param Iterable[str | os.PathLike, Iterable[Any]] paths: Iterable of iterables by filepath.
     :param Optional[Callable] opener: Custom function to open the given file paths.
@@ -319,8 +320,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
 
 def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_kwargs):
     """
-    Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into
-    an iterable of Python objects.
+    Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into an object iterator.
 
     If the file's extension indicates a recognized compression format (.gz, .bz2, .xz),
     the corresponding decompression method is applied; if not, the standard open function is used by default.
@@ -329,12 +329,11 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
         If a URL or `urllib.request.Request` object is provided, the file will be retrieved
         remotely using `urllib.request.urlopen`.
         For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
-
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
-    :rtype: Iterable[Any]
+    :rtype: Iterator[Any]
     """
 
     # URL or Request object handling
@@ -370,9 +369,10 @@ def load_archive(
 ):
     """
     Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
+
     Tar archives can be compressed with gzip, bzip2, or xz. (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 
-     :param str | bytes | os.PathLike | urllib.request.Request | Any file: Archive file to load.
+    :param str | bytes | os.PathLike | urllib.request.Request | Any file: Archive file to load.
         If a URL or `urllib.request.Request` object is provided, the file will be retrieved
         remotely using `urllib.request.urlopen`.
         For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
@@ -423,6 +423,7 @@ def dump_archive(
 ):
     """
     Dump multiple JSON Lines items into an archive file (zip or tar) with the specified path.
+
     - If the archive already exists on the given path, it will be overwritten.
     - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), or xz (`.tar.xz`).
 
