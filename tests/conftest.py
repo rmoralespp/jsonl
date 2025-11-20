@@ -4,6 +4,7 @@ import contextlib
 import functools
 import http.server
 import json
+import logging
 import os
 import pathlib
 import tempfile
@@ -41,15 +42,14 @@ def manage_http_server(directory):
 
     server_thread = threading.Thread(target=server.serve_forever, name="http_server")
     server_thread.start()
-    # Fix: warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
-    threading.excepthook = lambda args: server.shutdown()
 
-    try:
-        with server.socket:
+    logging.debug("Serving: %s", directory)
+    with server:  # Ensure server socket and request threads are properly closed
+        try:
             yield url
-    finally:
-        server.shutdown()
-        server_thread.join()
+        finally:
+            server.shutdown()  # signal server_thread to exit
+            server_thread.join()
 
 
 @pytest.fixture(scope="session")

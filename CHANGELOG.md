@@ -1,5 +1,7 @@
 ## Releases
 
+- **Fixed:** Delay the closing of the `http_server` fixture socket to ensure that the request thread closes properly.
+
 ### v1.3.21 (2025-11-04)
 
 - **Changed:** **CI/CD** pipelines to apply (`sphinx-linter`, `pymport`) linters.
