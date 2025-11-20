@@ -97,7 +97,9 @@ dumped to a text file.</p>
 <p>This example uses <code>jsonl.dump_fork</code> to incrementally write structured data to multiple <strong>.jsonl</strong> files—one per key (in this case, player name). 
 This helps organize and efficiently store data for separate entities.
 This example creates individual JSON Lines files for each player, storing their respective wins.</p>
-<pre><code class="language-python">import jsonl
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import jsonl
 
 
 def generate_win_data():
@@ -135,9 +137,11 @@ jsonl.dump_fork(generate_win_data())
 <p><strong>Example #2</strong></p>
 <p>This example demonstrates how to dump data using different JSON libraries.
 You can install <code>orjson</code> and <code>ujson</code> to run the following example.</p>
-<pre><code class="language-console">pip install orjson ujson # Ignore this command if these libraries are already installed.
+<pre><code class="language-bash">pip install orjson ujson # Ignore this command if these libraries are already installed.
 </code></pre>
-<pre><code class="language-python">import orjson
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import orjson
 import ujson
 import jsonl
 

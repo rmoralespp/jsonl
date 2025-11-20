@@ -89,8 +89,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h5 id="serialize-an-iterable-into-a-json-lines-formatted-string">Serialize an iterable into a JSON Lines formatted string.</h5>
-<pre><code class="language-python">import jsonl
+                <h5 id="serialize-an-iterable-into-a-json-lines-formatted-string">Serialize an iterable into a JSON Lines formatted string</h5>
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import jsonl
 
 data = ({'foo': 1}, {'bar': 2})
 result = jsonl.dumps(data)

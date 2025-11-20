@@ -100,12 +100,14 @@
 <li>Filename filtering using Unix shell-style wildcards via <code>fnmatch</code>. Use a pattern (e.g., *.jsonl) to selectively load
   only matching files within the archive.</li>
 <li>Support for both compressed and uncompressed <code>.jsonl</code> files inside the archive. (e.g., <code>*.jsonl.gz</code> or <code>*.jsonl.bz2</code>
-  or <code>*.jsonl.xz</code> <strong>(Check <a href="../load/#note-compression">note</a> for more details)</strong>.</li>
+  or <code>*.jsonl.xz</code>) <strong>Check <a href="../load/#note-compression">note</a> for more details</strong>.</li>
 <li>Graceful handling of malformed or broken lines.</li>
 <li>Optional custom deserialization and opener callbacks for advanced use cases.</li>
 </ul>
 <p><strong>Load from a local archive</strong></p>
-<pre><code class="language-python">import jsonl
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import jsonl
 
 path = &quot;path/to/archive.zip&quot;
 # Load all JSON Lines files matching the pattern &quot;*.jsonl&quot;
@@ -115,7 +117,9 @@ for filename, iterator in jsonl.load_archive(path):
 </code></pre>
 <p><strong>Load from a remote archive (URL)</strong></p>
 <p>You can load the archive from a URL, if needed you can also create custom requests using <code>urllib.request.Request</code>.</p>
-<pre><code class="language-python">import urllib.request
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import urllib.request
 
 import jsonl
 
@@ -143,7 +147,9 @@ for filename, iterator in jsonl.load_archive(req):
 <li><code>[!seq]</code> matches any character not in <code>seq</code></li>
 </ul>
 <p>For more information, refer to the <a href="https://docs.python.org/es/3.12/library/fnmatch.html">fnmatch documentation</a>.</p>
-<pre><code class="language-python">import jsonl
+<pre><code class="language-python"># -*- coding: utf-8 -*-
+
+import jsonl
 
 path = &quot;path/to/archive.zip&quot;
 # Load all JSON Lines files matching the pattern &quot;myfile*.jsonl&quot; from the archive
