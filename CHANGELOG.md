@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.22 (2025-11-20)
+
 - **Changed:** Documentation - Update the examples with `json.dump` and `json.load` by passing additional keyword arguments.
 - **Changed:** Documentation - Add UTF-8 headers to the Python code snippets shown.
 - **Changed:** Enable more `ruff` rules and pass all checks.
