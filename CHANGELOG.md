@@ -1,7 +1,8 @@
 ## Releases
 
-- **Changed:** Enable more `ruff` rules and pass all checks
-- **Changed:** Docstrings - Enable all `sphinx-linter` rules and pass all checks
+- **Changed:** Documentation - Add UTF-8 headers to the Python code snippets shown.
+- **Changed:** Enable more `ruff` rules and pass all checks.
+- **Changed:** Docstrings - Enable all `sphinx-linter` rules and pass all checks.
 - **Fixed:** Tests - Delay the closing of the `http_server` fixture socket to ensure that the thread closes properly.
 
 ### v1.3.21 (2025-11-04)

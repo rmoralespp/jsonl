@@ -8,7 +8,7 @@ Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP
 - Filename filtering using Unix shell-style wildcards via `fnmatch`. Use a pattern (e.g., *.jsonl) to selectively load
   only matching files within the archive.
 - Support for both compressed and uncompressed `.jsonl` files inside the archive. (e.g., `*.jsonl.gz` or `*.jsonl.bz2`
-  or `*.jsonl.xz` **(Check [note](load.md#note-compression) for more details)**.
+  or `*.jsonl.xz`) **Check [note](load.md#note-compression) for more details**.
 - Graceful handling of malformed or broken lines.
 - Optional custom deserialization and opener callbacks for advanced use cases.
 
@@ -16,6 +16,8 @@ Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP
 **Load from a local archive**
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 path = "path/to/archive.zip"
@@ -30,6 +32,8 @@ for filename, iterator in jsonl.load_archive(path):
 You can load the archive from a URL, if needed you can also create custom requests using `urllib.request.Request`.
 
 ```python
+# -*- coding: utf-8 -*-
+
 import urllib.request
 
 import jsonl
@@ -63,6 +67,8 @@ For more information, refer to the [fnmatch documentation](https://docs.python.o
 
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 path = "path/to/archive.zip"

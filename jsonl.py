@@ -215,7 +215,7 @@ def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs)
 
 
 def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
-    """Load a JSON Lines formatted stream into an iterable of Python objects."""
+    """Load a JSON Lines formatted stream into an object iterator."""
 
     deserialize = functools.partial(json_loads or _default_json_loads, **json_loads_kwargs)
     for lineno, line in enumerate(stream, start=1):

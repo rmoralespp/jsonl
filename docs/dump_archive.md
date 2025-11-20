@@ -15,6 +15,8 @@
 **Example usage:**
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [

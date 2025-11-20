@@ -13,6 +13,8 @@ This example creates individual JSON Lines files for each player, storing their 
 
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 
@@ -54,11 +56,13 @@ jsonl.dump_fork(generate_win_data())
 This example demonstrates how to dump data using different JSON libraries.
 You can install `orjson` and `ujson` to run the following example.
 
-```console
+```bash
 pip install orjson ujson # Ignore this command if these libraries are already installed.
 ```
 
 ```python
+# -*- coding: utf-8 -*-
+
 import orjson
 import ujson
 import jsonl

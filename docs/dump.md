@@ -3,9 +3,11 @@
 Dump JSON Lines (jsonl) files incrementally, supporting both uncompressed and compressed formats and allowing
 custom serialization and opener callbacks.
 
-#### Dump the data to an uncompressed file at the specified path.
+#### Dump the data to an uncompressed file at the specified path
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [
@@ -16,13 +18,15 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-#### Dump the data to a compressed file at the specified path.
+#### Dump the data to a compressed file at the specified path
 
 !!! note
     Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
     If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
 
 ```python
+# -*- coding: utf-8 -*-
+
 import jsonl
 
 data = [
@@ -43,9 +47,11 @@ jsonl.dump(data, "file.jsonl.xz")
 jsonl.dump(data, "file.jsonl.foo")
 ```
 
-#### Dump the data to the already opened file.
+#### Dump the data to the already opened file
 
 ```python
+# -*- coding: utf-8 -*-
+
 import gzip
 
 import jsonl
@@ -64,9 +70,11 @@ with gzip.open("file.jsonl.gz", mode="wb") as fd:
     jsonl.dump(data, fd, text_mode=False)
 ```
 
-#### Append the data to the end of the existing file.
+#### Append the data to the end of the existing file
 
 ```python
+# -*- coding: utf-8 -*-
+
 import gzip
 
 import jsonl
@@ -85,13 +93,14 @@ with open("file.jsonl", mode="at", encoding="utf-8") as fp:
     jsonl.dump(data, fp, text_mode=True)
 ```
 
-#### Dump the data to a custom file object.
+#### Dump the data to a custom file object
 
 !!! tip
     Use this feature when you need to write the data to a custom file object.
     The custom file object must have a `write` or `writelines` method.
 
 ```python
+# -*- coding: utf-8 -*-
 
 import jsonl
 
@@ -122,7 +131,7 @@ jsonl.dump(data, MyCustomFile1(), text_mode=True)
 jsonl.dump(data, MyCustomFile2(), text_mode=True)
 ```
 
-#### Dump data with a custom serialization.
+#### Dump data with a custom serialization
 
 The `json_dumps` parameter allows for custom serialization and must take a Python object and return a
 JSON-formatted string.
@@ -130,11 +139,13 @@ JSON-formatted string.
 The following example shows how to use the `json_dumps` parameter to serialize data with the `orjson` and `ujson `
 libraries. Make sure to install these libraries to run the example.
 
-```console
+```bash
 pip install orjson ujson # Ignore this command if these libraries are already installed.
 ```
 
 ```python
+# -*- coding: utf-8 -*-
+
 import orjson
 import ujson
 
