@@ -39,7 +39,7 @@ def test_iter_data(file_extension, pathlike, text_mode, json_dumps, json_dumps_k
 
         assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}\n'
         assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}\n'
-        assert tests.read_text(baz_path) == ""
+        assert not tests.read_text(baz_path)
 
 
 @pytest.mark.parametrize("pathlike", (True, False))
@@ -49,6 +49,6 @@ def test_empty_data(filepath, dump_if_empty, pathlike):
     path_items = ((filepath, ()),)
     jsonl.dump_fork(iter(path_items), dump_if_empty=dump_if_empty)
     if dump_if_empty:
-        assert tests.read_text(filepath) == ""
+        assert not tests.read_text(filepath)
     else:
         assert not os.path.exists(filepath)

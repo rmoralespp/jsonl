@@ -1,5 +1,6 @@
 ## Releases
 
+- **Changed:** Enable more `ruff` rules and pass all checks
 - **Changed:** Docstrings - Enable all `sphinx-linter` rules and pass all checks
 - **Fixed:** Tests - Delay the closing of the `http_server` fixture socket to ensure that the thread closes properly.
 

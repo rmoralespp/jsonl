@@ -67,6 +67,7 @@ skip-string-normalization = true
 
 [tool.ruff]
 line-length = 120
+preview = true
 
 [tool.ruff.lint]
 select = [
@@ -91,9 +92,12 @@ select = [
     "D210", # No whitespaces allowed surrounding docstring text
     "D211", # No blank lines allowed before class docstring
     "D213", # Multi-line docstring summary should start at the second line
-    "D403", # First word of the first line should be properly capitalized
-    "D419", # Docstring is empty
     "D300", # Use """triple double quotes"""
+    "D301", # Use r""" if any backslashes in a docstring
+    "D402", # First line should not be the function's signature
+    "D403", # First word of the first line should be properly capitalized
+    "D404", # First word of the docstring should not be "This"
+    "D419", # Docstring is empty
 
     # pyupgrade
     "UP003", # Use str instead of type(...)
