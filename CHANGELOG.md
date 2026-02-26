@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.23 (2026-02-26)
+
 - **Changed:** Documentation - Use `zensical` instead `mkdocs` for documentation generation.
 
 ### v1.3.22 (2025-11-20)
