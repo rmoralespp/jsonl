@@ -1,13 +1,54 @@
-# Dump an iterable to a JSON Lines file incrementally.
+# jsonl.dump
 
-Dump JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats and allowing
-custom serialization and opener callbacks.
+Write an iterable of objects to a JSON Lines file. Supports filenames (with automatic compression),
+`os.PathLike` objects, and file-like objects with `write` or `writelines` methods.
 
-#### Dump the data to an uncompressed file at the specified path
+## Function Signature
 
 ```python
-# -*- coding: utf-8 -*-
+jsonl.dump(
+    iterable,
+    file,
+    *,
+    opener=None,
+    text_mode=True,
+    json_dumps=None,
+    **json_dumps_kwargs,
+)
+```
 
+### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `iterable` | `Iterable[Any]` | *(required)* | Iterable of JSON-serializable objects |
+| `file` | `str`, `PathLike`, file-like | *(required)* | Destination file path or file-like object |
+| `opener` | `Callable` or `None` | `None` | Custom function to open the file (used only when `file` is a path) |
+| `text_mode` | `bool` | `True` | If `False`, write bytes instead of text |
+| `json_dumps` | `Callable` or `None` | `None` | Custom serialization function. Defaults to `json.dumps` |
+| `**json_dumps_kwargs` | | | Additional keyword arguments passed to the serialization function |
+
+### Raises
+
+| Exception | Condition |
+|---|---|
+| `ValueError` | If the file object is missing both `writelines` and `write` methods |
+
+### Compression Detection
+
+!!! note
+    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+
+    When a filename is provided, the compression format is determined by its extension.
+    If the extension is not recognized, the file is written as plain text.
+
+---
+
+## Examples
+
+### Write to a file
+
+```python
 import jsonl
 
 data = [
@@ -18,15 +59,9 @@ data = [
 jsonl.dump(data, "file.jsonl")
 ```
 
-#### Dump the data to a compressed file at the specified path
-
-!!! note
-    Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
-    If a file extension is not provided or is unrecognized, the file will be assumed to be uncompressed.
+### Write to a compressed file
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
 data = [
@@ -34,26 +69,18 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Dump to a gzip compressed file.
-jsonl.dump(data, "file.jsonl.gz")
-
-# Dump to a bzip2 compressed file.
-jsonl.dump(data, "file.jsonl.bz2")
-
-# Dump to a xz compressed file.
-jsonl.dump(data, "file.jsonl.xz")
-
-# Dump to a text file because the extension is not recognized.
-jsonl.dump(data, "file.jsonl.foo")
+jsonl.dump(data, "file.jsonl.gz")    # gzip
+jsonl.dump(data, "file.jsonl.bz2")   # bzip2
+jsonl.dump(data, "file.jsonl.xz")    # xz
 ```
 
-#### Dump the data to the already opened file
+### Write to an open file object
+
+!!! tip
+    Useful when you need fine-grained control over how the file is opened, or when appending to an existing file.
 
 ```python
-# -*- coding: utf-8 -*-
-
 import gzip
-
 import jsonl
 
 data = [
@@ -61,22 +88,19 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Dump to an opened file, Text mode is True because it is a text file.
+# Text file
 with open("file.jsonl", mode="wt", encoding="utf-8") as fd:
     jsonl.dump(data, fd, text_mode=True)
 
-# Dump to an opened gzip file, Text mode is false because it is a binary file.
+# Binary compressed file
 with gzip.open("file.jsonl.gz", mode="wb") as fd:
     jsonl.dump(data, fd, text_mode=False)
 ```
 
-#### Append the data to the end of the existing file
+### Append to an existing file
 
 ```python
-# -*- coding: utf-8 -*-
-
 import gzip
-
 import jsonl
 
 data = [
@@ -84,73 +108,45 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Compressed file: Text mode is false because it is a binary file.
+# Append to a compressed file
 with gzip.open("file.jsonl.gz", mode="ab") as fp:
     jsonl.dump(data, fp, text_mode=False)
 
-# Uncompressed file: Text mode is true because it is a text file.
+# Append to an uncompressed file
 with open("file.jsonl", mode="at", encoding="utf-8") as fp:
     jsonl.dump(data, fp, text_mode=True)
 ```
 
-#### Dump the data to a custom file object
+### Write to a custom file object
 
 !!! tip
-    Use this feature when you need to write the data to a custom file object.
-    The custom file object must have a `write` or `writelines` method.
+    The custom file object must implement a `write` or `writelines` method.
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
 
-class MyCustomFile1:
-    """A custom file object that has a write method."""
-
-    def write(self, line):
-        print(line)
-
-
-class MyCustomFile2:
-    """A custom file object that has a writelines method."""
+class MyWriter:
+    """A custom file object with a writelines method."""
 
     def writelines(self, lines):
-        print("".join(lines))
+        for line in lines:
+            print(line, end="")
 
 
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
+data = [{"name": "Alice"}, {"name": "Bob"}]
 
-# Dump the data to the custom file object using the write method.
-jsonl.dump(data, MyCustomFile1(), text_mode=True)
-
-# Dump the data to the custom file object using the writelines method.
-jsonl.dump(data, MyCustomFile2(), text_mode=True)
+jsonl.dump(data, MyWriter(), text_mode=True)
 ```
 
-#### Dump data with a custom serialization
+### Custom serialization
 
-##### Passing a `json_dumps` function
+#### Using a third-party library
 
-The `json_dumps` parameter allows for custom serialization and must take a Python object and return a
-JSON-formatted string.
-
-The following example shows how to use the `json_dumps` parameter to serialize data with the `orjson` and `ujson `
-libraries. Make sure to install these libraries to run the example.
-
-```bash
-pip install orjson ujson # Ignore this command if these libraries are already installed.
-```
+[`orjson`](https://github.com/ijl/orjson) is a high-performance JSON library that returns bytes:
 
 ```python
-# -*- coding: utf-8 -*-
-
 import orjson
-import ujson
-
 import jsonl
 
 data = [
@@ -158,32 +154,33 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# Dump the data using the ujson library.
-jsonl.dump(data, "foo.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
-
-# Dump the data using the orjson library.
-jsonl.dump(data, "var.jsonl", json_dumps=orjson.dumps)
+# orjson returns bytes — set text_mode=False
+jsonl.dump(data, "file.jsonl", json_dumps=orjson.dumps, text_mode=False)
 ```
 
-##### Passing additional keyword arguments
-
-The  `jsonl.dump` function accepts additional keyword arguments that are passed directly to the underlying
-serialization function (by default, `json.dumps`). This allows for customization of the serialization process,
-such as controlling indentation, sorting keys, or handling special data types.
-
-Here’s an example that demonstrates how to use additional keyword arguments to customize the JSON serialization:
+[`ujson`](https://github.com/ultrajson/ultrajson) is another popular alternative:
 
 ```python
-# -*- coding: utf-8 -*-
-
-import json
-
+import ujson
 import jsonl
 
-data = [
-    {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
-    {"name": "May", "wins": []},
-]
-# Dump the data with compact separators to minimize file size.
-jsonl.dump(data, "compact.jsonl", separators=(',', ':'))
+data = [{"name": "Alice"}, {"name": "Bob"}]
+
+jsonl.dump(data, "file.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
+```
+
+#### Passing additional keyword arguments
+
+Extra keyword arguments are forwarded directly to the serialization function (by default, `json.dumps`):
+
+```python
+import jsonl
+
+data = [{"name": "Alice", "score": 9.5}, {"name": "Bob", "score": 7.2}]
+
+# Compact output (minimal whitespace)
+jsonl.dump(data, "compact.jsonl", separators=(",", ":"))
+
+# Sorted keys for deterministic output
+jsonl.dump(data, "sorted.jsonl", sort_keys=True)
 ```

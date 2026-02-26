@@ -1,79 +1,109 @@
-# Load multiple JSON Lines Files from an Archive (ZIP or TAR) incrementally
+# jsonl.load_archive
 
-Allows to load multiple JSON Lines **(.jsonl)** files incrementally from a **ZIP** or **TAR** archive.
+Load multiple JSON Lines files from a ZIP or TAR archive incrementally.
 
-- Support compressed TAR archives (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
-- Support loading the archive from a URL.
-- Support ZIP archives with password protection.
-- Filename filtering using Unix shell-style wildcards via `fnmatch`. Use a pattern (e.g., *.jsonl) to selectively load
-  only matching files within the archive.
-- Support for both compressed and uncompressed `.jsonl` files inside the archive. (e.g., `*.jsonl.gz` or `*.jsonl.bz2`
-  or `*.jsonl.xz`) **Check [note](load.md#note-compression) for more details**.
-- Graceful handling of malformed or broken lines.
-- Optional custom deserialization and opener callbacks for advanced use cases.
-
-
-**Load from a local archive**
+## Function Signature
 
 ```python
-# -*- coding: utf-8 -*-
-
-import jsonl
-
-path = "path/to/archive.zip"
-# Load all JSON Lines files matching the pattern "*.jsonl"
-for filename, iterator in jsonl.load_archive(path):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
+jsonl.load_archive(
+    file,
+    *,
+    pattern="*.jsonl",
+    pwd=None,
+    opener=None,
+    broken=False,
+    json_loads=None,
+    **json_loads_kwargs,
+)
 ```
 
-**Load from a remote archive (URL)**
+### Parameters
 
-You can load the archive from a URL, if needed you can also create custom requests using `urllib.request.Request`.
+| Parameter             | Type                                           | Default      | Description                                                              |
+|-----------------------|------------------------------------------------|--------------|--------------------------------------------------------------------------|
+| `file`                | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | Archive file to load from                                                |
+| `pattern`             | `str`                                          | `"*.jsonl"`  | Unix shell-style wildcard pattern to filter filenames inside the archive |
+| `pwd`                 | `bytes` or `None`                              | `None`       | Password to decrypt the archive (ZIP only)                               |
+| `opener`              | `Callable` or `None`                           | `None`       | Custom function to open the file (not supported for URLs)                |
+| `broken`              | `bool`                                         | `False`      | If `True`, skip malformed lines and log a warning                        |
+| `json_loads`          | `Callable` or `None`                           | `None`       | Custom deserialization function. Defaults to `json.loads`                |
+| `**json_loads_kwargs` |                                                |              | Additional keyword arguments passed to the deserialization function      |
+
+### Returns
+
+`Iterator[tuple[str, Iterator[Any]]]` — An iterator of `(filename, items)` tuples, where `items` is an iterator of
+deserialized objects.
+
+### Supported Archive Formats
+
+- **ZIP** archives (`.zip`)
+- **TAR** archives (`.tar`), including compressed variants: `.tar.gz`, `.tar.bz2`, `.tar.xz`
+
+### Key Features
+
+- Load from local files or remote URLs
+- Filter files inside the archive using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html)
+- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`).
+  Check [compression detection](load.md#note-compression) for details.
+- ZIP archives with password protection
+- Graceful handling of malformed lines via the `broken` parameter
+
+---
+
+## Examples
+
+### Load from a local archive
 
 ```python
-# -*- coding: utf-8 -*-
-
-import urllib.request
-
 import jsonl
 
-# Load all JSON Lines files matching the pattern "*.jsonl" from a remote archive:
-# ------------------------
+for filename, items in jsonl.load_archive("archive.zip"):
+    print(f"--- {filename} ---")
+    for item in items:
+        print(item)
+```
+
+### Load from a remote archive (URL)
+
+You can load archives from a URL. For custom request headers, use `urllib.request.Request`:
+
+```python
+import urllib.request
+import jsonl
 
 # Load directly from a URL
-for filename, iterator in jsonl.load_archive("https://example.com/archive.zip"):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
+for filename, items in jsonl.load_archive("https://example.com/archive.zip"):
+    print(f"--- {filename} ---")
+    for item in items:
+        print(item)
 
-    
-# Load using a custom request
+# Load using a custom request with headers
 req = urllib.request.Request("https://example.com/archive.zip", headers={"Accept": "application/zip"})
-for filename, iterator in jsonl.load_archive(req):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
+for filename, items in jsonl.load_archive(req):
+    print(f"--- {filename} ---")
+    for item in items:
+        print(item)
 ```
 
-## Pattern matching
+### Filter files with pattern matching
 
-You can use Unix shell-style wildcards to filter files in the archive. The `pattern` argument supports:
+Use Unix shell-style wildcards to select specific files within the archive:
 
-- `*` matches everything
-- `?` matches a single character
-- `[seq]` matches any character in `seq`
-- `[!seq]` matches any character not in `seq`
+| Pattern            | Matches                                   |
+|--------------------|-------------------------------------------|
+| `*.jsonl`          | All `.jsonl` files (default)              |
+| `users*.jsonl`     | Files starting with `users`               |
+| `data/[ab]*.jsonl` | Files in `data/` starting with `a` or `b` |
+| `*`                | All files                                 |
 
-For more information, refer to the [fnmatch documentation](https://docs.python.org/es/3.12/library/fnmatch.html).
-
+For more details, see the [fnmatch documentation](https://docs.python.org/3/library/fnmatch.html).
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-path = "path/to/archive.zip"
-# Load all JSON Lines files matching the pattern "myfile*.jsonl" from the archive
-for filename, iterator in jsonl.load_archive(path, pattern="myfile*.jsonl"):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
+# Load only files matching a specific pattern
+for filename, items in jsonl.load_archive("archive.zip", pattern="users*.jsonl"):
+    print(f"--- {filename} ---")
+    for item in items:
+        print(item)
 ```

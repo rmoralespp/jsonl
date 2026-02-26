@@ -42,7 +42,7 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
 
-  mkdocs:
+  deploy-docsite:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -56,7 +56,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --group=doc
       - name: Build the documentation
-        run: mkdocs build
+        run: zensical build --clean
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:

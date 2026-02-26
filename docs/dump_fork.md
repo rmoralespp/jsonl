@@ -1,86 +1,92 @@
-# Dump to multiple jsonlines files
+# jsonl.dump_fork
 
-Dump multiple iterables incrementally to the specified jsonlines file paths, optimizing memory usage.
+Write data to multiple JSON Lines files simultaneously. This is useful when you need to split data
+across different files based on some criteria, while minimizing memory usage through incremental writing.
 
-The files can be compressed using `gzip`, `bzip2`, or `xz` formats. If the file extension is not recognized, it will be
-dumped to a text file.
-
-**Example #1**
-
-This example uses `jsonl.dump_fork` to incrementally write structured data to multiple **.jsonl** files—one per key (in this case, player name). 
-This helps organize and efficiently store data for separate entities.
-This example creates individual JSON Lines files for each player, storing their respective wins.
-
+## Function Signature
 
 ```python
-# -*- coding: utf-8 -*-
+jsonl.dump_fork(
+    paths,
+    *,
+    opener=None,
+    text_mode=True,
+    dump_if_empty=True,
+    json_dumps=None,
+    **json_dumps_kwargs,
+)
+```
 
+### Parameters
+
+| Parameter             | Type                                  | Default      | Description                                                       |
+|-----------------------|---------------------------------------|--------------|-------------------------------------------------------------------|
+| `paths`               | `Iterable[tuple[str, Iterable[Any]]]` | *(required)* | Iterable of `(filepath, items)` tuples                            |
+| `opener`              | `Callable` or `None`                  | `None`       | Custom function to open the given file paths                      |
+| `text_mode`           | `bool`                                | `True`       | If `False`, write bytes instead of text                           |
+| `dump_if_empty`       | `bool`                                | `True`       | If `False`, don't create empty files                              |
+| `json_dumps`          | `Callable` or `None`                  | `None`       | Custom serialization function. Defaults to `json.dumps`           |
+| `**json_dumps_kwargs` |                                       |              | Additional keyword arguments passed to the serialization function |
+
+### Behavior
+
+- If the same filepath appears multiple times, subsequent data is **appended** to the file.
+- Files can use compression extensions (`.gz`, `.bz2`, `.xz`) and will be compressed accordingly.
+- When `dump_if_empty=False`, files with no data are not created.
+
+---
+
+## Examples
+
+### Split data into separate files
+
+```python
 import jsonl
 
 
-def generate_win_data():
-    """Yield player wins data for multiple players."""
+def generate_player_files():
+    """Yield (filepath, records) tuples — one file per player."""
 
-    data = (
-        {
-            "name": "Gilbert",
-            "wins": [
-                {"hand": "straight", "card": "7♣"},
-                {"hand": "one pair", "card": "10♥"},
-            ]
-        },
-        {
-            "name": "May",
-            "wins": [
-                {"hand": "two pair", "card": "9♠"},
-            ]
-        },
-        {
-            "name": "Gilbert",
-            "wins": [
-                {"hand": "three of a kind", "card": "A♦"},
-            ]
-        }
-    )
+    data = [
+        {"name": "Gilbert", "wins": [{"hand": "straight", "card": "7♣"}]},
+        {"name": "May", "wins": [{"hand": "two pair", "card": "9♠"}]},
+        {"name": "Gilbert", "wins": [{"hand": "three of a kind", "card": "A♦"}]},
+    ]
     for player in data:
-        name = player["name"]
-        yield (f"{name}.jsonl", player["wins"])
+        yield (f"{player['name']}.jsonl", player["wins"])
 
 
-# Write the generated data to files in JSON Lines format
-jsonl.dump_fork(generate_win_data())
+jsonl.dump_fork(generate_player_files())
+# Creates: Gilbert.jsonl (with 2 entries), May.jsonl (with 1 entry)
 ```
 
-**Example #2**
-
-This example demonstrates how to dump data using different JSON libraries.
-You can install `orjson` and `ujson` to run the following example.
-
-```bash
-pip install orjson ujson # Ignore this command if these libraries are already installed.
-```
+### Write to multiple files with static data
 
 ```python
-# -*- coding: utf-8 -*-
+import jsonl
 
+data = [
+    ("users.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
+    ("orders.jsonl", [{"id": 1, "total": 99.90}, {"id": 2, "total": 45.00}]),
+    ("users.jsonl", [{"name": "Eve", "age": 28}]),  # Appends to users.jsonl
+]
+
+jsonl.dump_fork(data)
+```
+
+### Custom serialization
+
+```python
 import orjson
-import ujson
 import jsonl
 
 
 def worker():
-    yield ("num.jsonl", ({"value": 1}, {"value": 2}))
-    yield ("foo.jsonl", iter(({"a": "1"}, {"b": 2})))
-    yield ("num.jsonl", [{"value": 3}])
-    yield ("foo.jsonl", ())
+    yield ("numbers.jsonl", ({"value": 1}, {"value": 2}))
+    yield ("strings.jsonl", iter(({"a": "1"}, {"b": "2"})))
+    yield ("numbers.jsonl", [{"value": 3}])
 
 
-# Dump the data using the default json.dumps function.
-jsonl.dump_fork(worker())
-
-# Dump the data using the ujson library.
-jsonl.dump_fork(worker(), json_dumps=ujson.dumps, ensure_ascii=False)
-
-# Dump the data using the orjson library.
-jsonl.dump_fork(worker(), json_dumps=orjson.dumps)  # using (orjson)
+# Using orjson for faster serialization
+jsonl.dump_fork(worker(), json_dumps=orjson.dumps, text_mode=False)
 ```

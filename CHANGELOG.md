@@ -1,5 +1,7 @@
 ## Releases
 
+- **Changed:** Documentation - Use `zensical` instead `mkdocs` for documentation generation.
+
 ### v1.3.22 (2025-11-20)
 
 - **Changed:** Documentation - Update the examples with `json.dump` and `json.load` by passing additional keyword arguments.

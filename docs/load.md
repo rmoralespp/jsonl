@@ -1,256 +1,221 @@
-# Load JSON Lines files
+# jsonl.load
 
-Load JSON Lines **(jsonl)** files incrementally, supporting both uncompressed and compressed formats, handling broken
-lines, and allowing custom deserialization and opener callbacks.
+Deserialize a JSON Lines source into an iterator of Python objects. Supports filenames, URLs,
+`urllib.request.Request` objects, and file-like objects.
 
-It also allows loading from URLs and `urllib` requests.
+## Function Signature
+
+```python
+jsonl.load(
+    source,
+    *,
+    opener=None,
+    broken=False,
+    json_loads=None,
+    **json_loads_kwargs,
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `source` | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | The JSON Lines source to read from |
+| `opener` | `Callable` or `None` | `None` | Custom function to open the file (not supported for URLs) |
+| `broken` | `bool` | `False` | If `True`, skip malformed lines and log a warning instead of raising an exception |
+| `json_loads` | `Callable` or `None` | `None` | Custom deserialization function. Defaults to `json.loads` |
+| `**json_loads_kwargs` | | | Additional keyword arguments passed to the deserialization function |
+
+### Returns
+
+`Iterator[Any]` — An iterator yielding deserialized Python objects, one per line.
+
+### Compression Detection
 
 <a id="note-compression"></a>
 !!! note
-    Supported compression formats are: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
-    
-    If a file extension is not provided or is not recognized, the compression format will be automatically detected by reading the file's **"magic number."**
-    
-    If the detection fails, the file is considered uncompressed.
+    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
 
-#### Load an uncompressed file given a path
+    The compression format is resolved using two strategies:
+
+    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`), that format is used directly.
+    2. **By magic numbers** — when the extension is not recognized, **jsonl** inspects the first bytes of the file
+       ([magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures)) to auto-detect the compression format.
+
+    If neither method identifies a known format, the file is treated as uncompressed.
+
+---
+
+## Examples
+
+### Load from a file path
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-path = "file.jsonl"
-
-# Example data to save in the file
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
 
-# Save the data to the jsonl file
-jsonl.dump(data, path)
+jsonl.dump(data, "file.jsonl")
 
-# Load the file as an iterator
-iterator = jsonl.load(path)
-print(tuple(iterator))
+for item in jsonl.load("file.jsonl"):
+    print(item)
 ```
 
-#### Load a compressed file given a path
-
-Check [note](#note-compression) for more details
+### Load from a compressed file
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-path = "file.jsonl.gz"  # gzip compressed file, but it can be ".bz2" or ".xz"
-
-# Example data to save in the file
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
 
-# Save the data to the compressed jsonl file
-jsonl.dump(data, path)
+# Write to a gzip-compressed file
+jsonl.dump(data, "file.jsonl.gz")
 
-# Load the compressed file as an iterator
-iterator = jsonl.load(path)
-print(tuple(iterator))
+# Load automatically detects the compression format
+for item in jsonl.load("file.jsonl.gz"):
+    print(item)
 ```
 
-#### Load a file from an open file object
+### Load from an open file object
 
 !!! tip
-    This is useful when you need to load a file from a custom source.
+    Useful when you need to read from a custom source or control how the file is opened.
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-path = "file.jsonl"
-
-# Example data to save in the file
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
 
-# Save the data to the compressed jsonl file
-jsonl.dump(data, path)
+jsonl.dump(data, "file.jsonl")
 
-# Load the file using an open file object
-with open(path) as fp:
-    iterator = jsonl.load(fp)
-    print(tuple(iterator))
+with open("file.jsonl") as fp:
+    for item in jsonl.load(fp):
+        print(item)
 ```
 
-#### Load from a URL
+### Load from a URL
 
-You can load a JSON Lines directly from a URL incrementally, if needed you can also create custom
-requests using `urllib.request.Request`.
+You can load JSON Lines directly from a remote URL. For custom request headers, use `urllib.request.Request`:
 
 ```python
-# -*- coding: utf-8 -*-
-
 import urllib.request
 import jsonl
 
-# Load data from a URL
-iterator = jsonl.load("https://example.com/file.jsonl")
-print(tuple(iterator))
+# Load directly from a URL
+for item in jsonl.load("https://example.com/file.jsonl"):
+    print(item)
 
-# Load data from a urllib request to handle custom requests
-req = urllib.request.Request("https://example.com/file.jsonl", headers={"Accept": "application/jsonl"})
-iterator = jsonl.load(req)
-print(tuple(iterator))
+# Load using a custom request with headers
+req = urllib.request.Request(
+    "https://example.com/file.jsonl",
+    headers={"Accept": "application/jsonl"},
+)
+for item in jsonl.load(req):
+    print(item)
 ```
 
-#### Load a file containing broken lines
+### Handle broken lines
 
 !!! warning
-    If the **broken** parameter is set to `False`, the function will raise an `Exception` when it encounters a broken line.
-    If set to `True`, the function will skip the broken line, continue reading the file, and log a warning message.
+    When `broken=False` (the default), an exception is raised on the first malformed line.
+    When `broken=True`, malformed lines are skipped and a warning is logged.
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-# Create a file with broken JSON lines
+# Create a file with a broken JSON line
 with open("file.jsonl", mode="wt", encoding="utf-8") as fp:
-    fp.write('{"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]}\n')
-    fp.write('{"name": "May", "wins": []\n')  # missing closing bracket
-    fp.write('{"name": "Richard", "wins": []}\n')
+    fp.write('{"name": "Gilbert"}\n')
+    fp.write('{"name": "May", "wins": []\n')  # Missing closing brace
+    fp.write('{"name": "Richard"}\n')
 
-# Load the jsonl file, skipping broken lines
-iterator = jsonl.load("file.jsonl", broken=True)
-print(tuple(iterator))
+# Skip broken lines
+for item in jsonl.load("file.jsonl", broken=True):
+    print(item)
 ```
 
 *Output:*
 
 ```text
-WARNING:root:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
-({'name': 'Gilbert', 'wins': [['straight', '7♣'], ['one pair', '10♥']]}, {'name': 'Richard', 'wins': []})
+WARNING:jsonl:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 28)
+{'name': 'Gilbert'}
+{'name': 'Richard'}
 ```
 
-#### Load a file using a custom deserialization
+### Custom deserialization
 
-##### Passing a `json_loads` function
+#### Using a third-party library
 
-The `json_loads` parameter allows for custom deserialization and must take a JSON-formatted
-string as input and return a Python object.
-
-!!! tip
-    Commonly, libraries like `orjson` or `ujson` are used for faster performance, or you can implement your own
-    custom deserialization function for specific needs.
-
-The following example demonstrates how to use the `json_loads` parameter to deserialize the data
-using the `orjson` and `ujson` libraries. Make sure to install these libraries to run the example.
-
-```bash
-pip install orjson ujson # Ignore this command if these libraries are already installed.
-```
-
-Now, you can use these libraries to load the JSON lines:
+[`orjson`](https://github.com/ijl/orjson) is a popular high-performance JSON library:
 
 ```python
-# -*- coding: utf-8 -*-
-
 import orjson
-import ujson
-
 import jsonl
 
-path = "file.jsonl"
-
-# Example data to save in the file
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
 
-# Save the data to the jsonl file
-jsonl.dump(data, path)
+jsonl.dump(data, "file.jsonl")
 
-# Load the file using ujson
-iterator1 = jsonl.load(path, json_loads=ujson.loads)
-
-# Load the file using orjson
-iterator2 = jsonl.load(path, json_loads=orjson.loads)
-
-print(tuple(iterator1))
-print(tuple(iterator2))
+for item in jsonl.load("file.jsonl", json_loads=orjson.loads):
+    print(item)
 ```
 
-##### Passing additional keyword arguments
+#### Passing additional keyword arguments
 
-The  `jsonl.load` function also accepts additional keyword arguments that are passed to the underlying
-JSON deserialization function (by default, `json.loads`). This is useful when you want to customize the behavior of the
-deserialization
-
-Here’s an example using the built-in `json` module to parse float values as `decimal.Decimal`:
+Extra keyword arguments are forwarded to the deserialization function (by default, `json.loads`).
+For example, parse float values as `decimal.Decimal`:
 
 ```python
-# -*- coding: utf-8 -*-
-
 import decimal
-
 import jsonl
 
-path = "file.jsonl"
-
-# Example data to save in the file with `float` values
 data = [
     {"name": "Gilbert", "wins_avg": 2.5},
     {"name": "May", "wins_avg": 3.75},
 ]
 
-# Save the data to the jsonl file
-jsonl.dump(data, path)
+jsonl.dump(data, "file.jsonl")
 
-# Load the data back, parsing `float` values as `decimal.Decimal` using the `parse_float` keyword argument
-iterator = jsonl.load(path, parse_float=decimal.Decimal)
-print(tuple(iterator))
+for item in jsonl.load("file.jsonl", parse_float=decimal.Decimal):
+    print(item)
+    # float values are now decimal.Decimal instances
 ```
 
-#### Load a file using a custom opener
+### Custom opener
 
-The `opener` parameter allows loading files from custom sources, such as a ZIP archive. Here’s how to use it:
+The `opener` parameter lets you control how the file is opened. For example, reading from a ZIP archive:
 
 ```python
-# -*- coding: utf-8 -*-
-
 import zipfile
-
 import jsonl
 
-# Create a ZIP file containing a jsonlines file
-zip_path = "data.zip"
-jsonl_path = "file.jsonl"
 data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
 
-# Save the data to the jsonl file
-jsonl.dump(data, jsonl_path)
-
-# Create a ZIP file and add the jsonl file to it
-with zipfile.ZipFile(zip_path, 'w') as zf:
-    zf.write(jsonl_path)
+# Create a ZIP archive containing a jsonl file
+jsonl.dump(data, "file.jsonl")
+with zipfile.ZipFile("data.zip", "w") as zf:
+    zf.write("file.jsonl")
 
 
-# Define a custom opener function to read from the ZIP file
 def opener(name, *args, **kwargs):
-    return zipfile.ZipFile(name).open(jsonl_path)
+    return zipfile.ZipFile(name).open("file.jsonl")
 
 
-# Load the jsonl file from the ZIP archive using the opener
-iterator = jsonl.load(zip_path, opener=opener)
-print(tuple(iterator))
+for item in jsonl.load("data.zip", opener=opener):
+    print(item)
 ```

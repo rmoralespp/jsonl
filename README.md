@@ -1,49 +1,63 @@
-# jsonl
+<p align="center">
+  <strong>jsonl</strong>
+</p>
 
-[![GitHub tag](https://img.shields.io/github/tag/rmoralespp/jsonl?include_prereleases=&sort=semver&color=black)](https://github.com/rmoralespp/jsonl/releases/)
-[![CI](https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg)](https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI)
-[![pypi](https://img.shields.io/pypi/v/py-jsonl.svg)](https://pypi.python.org/pypi/py-jsonl)
-[![versions](https://img.shields.io/pypi/pyversions/py-jsonl.svg)](https://github.com/rmoralespp/jsonl)
-[![codecov](https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/rmoralespp/jsonl)
-[![license](https://img.shields.io/github/license/rmoralespp/jsonl.svg)](https://github.com/rmoralespp/jsonl/blob/main/LICENSE)
-[![Linter: ruff](https://img.shields.io/badge/linter-_ruff-orange)](https://github.com/charliermarsh/ruff)
-[![Downloads](https://pepy.tech/badge/py-jsonl)](https://pepy.tech/project/py-jsonl)
+<p align="center">
+  <em>A lightweight, dependency-free Python library for JSON Lines — read, write, compress, and stream with ease.</em>
+</p>
+
+<p align="center">
+  <a href="https://pypi.python.org/pypi/py-jsonl"><img src="https://img.shields.io/pypi/v/py-jsonl.svg" alt="PyPI version"></a>
+  <a href="https://github.com/rmoralespp/jsonl"><img src="https://img.shields.io/pypi/pyversions/py-jsonl.svg" alt="Python versions"></a>
+  <a href="https://github.com/rmoralespp/jsonl/actions?query=event%3Arelease+workflow%3ACI"><img src="https://github.com/rmoralespp/jsonl/workflows/CI/badge.svg" alt="CI"></a>
+  <a href="https://app.codecov.io/gh/rmoralespp/jsonl"><img src="https://codecov.io/gh/rmoralespp/jsonl/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/rmoralespp/jsonl/blob/main/LICENSE"><img src="https://img.shields.io/github/license/rmoralespp/jsonl.svg" alt="License"></a>
+  <a href="https://pepy.tech/project/py-jsonl"><img src="https://pepy.tech/badge/py-jsonl" alt="Downloads"></a>
+</p>
+
+<p align="center">
+  <a href="https://rmoralespp.github.io/jsonl/">Documentation</a>
+  ·
+  <a href="https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md">Changelog</a>
+  ·
+  <a href="https://github.com/rmoralespp/jsonl/issues">Issues</a>
+</p>
 
 ---
 
-## About
+**jsonl** provides a simple, Pythonic API for working with [JSON Lines](https://jsonlines.org/) data.
+It follows the conventions of Python's standard `json` module — if you know `json.dump` and `json.load`,
+you already know how to use **jsonl**.
 
-**jsonl** is a lightweight Python library designed to simplify working with JSON Lines data, adhering to
-the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specifications.
+Fully compliant with the [jsonlines](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec)
+specifications.
 
-### 🎯 Features
+## Features
 
-- 🌎 Provides an API similar to Python's standard `json` module.
-- 🚀 Supports custom (de)serialization via user-defined callbacks.
-- 🗜️ Built-in support for `gzip`, `bzip2`, `xz` compression formats and `ZIP` or `TAR` archives.
-- 🔧 Skips malformed lines during file loading.
-- 📥 Loads from URLs directly.
-- 🐍 No external dependencies: relies only on the Python standard library.
+| Feature                        | Description                                                                |
+|--------------------------------|----------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)  |
+| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low       |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, and `xz`                          |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`) |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                        |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library     |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                        |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                       |
 
-## 📦 Installation
-
-To install **jsonl** using `pip`, run the following command:
+## Installation
 
 ```bash
 pip install py-jsonl
 ```
 
-## ⚡ Quick Start
+> Requires **Python 3.8+**. No external dependencies.
 
-**Dumping data to a JSON Lines File**
+## Quick Start
 
-> [!NOTE]
->
-> Use `jsonl.dump` to incrementally write an iterable of dictionaries to a JSON Lines file:
+### Write
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
 data = [
@@ -51,149 +65,162 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "file.jsonl")
+jsonl.dump(data, "players.jsonl")
 ```
 
-**Loading data from a JSON Lines source**
-
-> [!NOTE]
->
-> Use `jsonl.load` to incrementally load a JSON Lines source—such as a **filename, URL, or file-like object—into** as an
-> iterator of dictionaries:
+### Read
 
 ```python
-# -*- coding: utf-8 -*-
-
 import jsonl
 
-# Load data from a JSON Lines file
-iterator = jsonl.load("file.jsonl")
-print(tuple(iterator))
-
-# Load data from a URL
-iterator = jsonl.load("https://example.com/file.jsonl")
-print(tuple(iterator))
+for item in jsonl.load("players.jsonl"):
+    print(item)
 ```
 
-**Dump multiple JSON Lines Files into an Archive (ZIP or TAR)**
-
-> [!NOTE]
->
-> Use `jsonl.dump_archive` to incrementally write structured data to multiple JSON Lines files,
-> which are then stored in a ZIP or TAR archive.
+### Read from a URL
 
 ```python
-# -*- coding: utf-8 -*-
+import jsonl
 
+for item in jsonl.load("https://example.com/data.jsonl"):
+    print(item)
+```
+
+### Compressed files
+
+The compression format is determined automatically — by file extension when writing,
+and by [magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures) when reading:
+
+```python
+import jsonl
+
+data = [{"key": "value"}]
+
+jsonl.dump(data, "file.jsonl.gz")  # gzip
+jsonl.dump(data, "file.jsonl.bz2")  # bzip2
+jsonl.dump(data, "file.jsonl.xz")  # xz
+
+for item in jsonl.load("file.jsonl.gz"):
+    print(item)
+```
+
+### Archives (ZIP / TAR)
+
+```python
+import jsonl
+
+# Write multiple files into an archive
+data = [
+    ("users.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
+    ("orders.jsonl", [{"id": 1, "total": 99.90}, {"id": 2, "total": 45.00}]),
+]
+jsonl.dump_archive("data.tar.gz", data)
+
+# Read them back
+for filename, items in jsonl.load_archive("data.tar.gz"):
+    print(f"--- {filename} ---")
+    for item in items:
+        print(item)
+```
+
+### Multiple output files
+
+```python
 import jsonl
 
 data = [
-    # Create `file1.jsonl` withing the archive
-    ("file1.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
-    # Create `file2.jsonl` within the archive
-    ("path/to/file2.jsonl", [{"name": "Charlie", "age": 35}, {"name": "David", "age": 40}]),
-    # Append to `file1.jsonl` within the archive
-    ("file1.jsonl", [{"name": "Eve", "age": 28}]),
+    ("file1.jsonl", [{"name": "Alice"}, {"name": "Bob"}]),
+    ("file2.jsonl", [{"name": "Charlie"}]),
+    ("file1.jsonl", [{"name": "Eve"}]),  # appended to file1.jsonl
 ]
-jsonl.dump_archive("archive.zip", data)
-```
 
-**Load multiple JSON Lines Files from an Archive (ZIP or TAR)**
-
-> [!NOTE]
->
-> Use `jsonl.load_archive` to incrementally load multiple JSON Lines files from a ZIP or TAR archive.
-
-> [!TIP]
->
-> - It is possible to load the archive from a URL
-> - This function allows you to filter files using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html).
-
-```python
-# -*- coding: utf-8 -*-
-
-import jsonl
-
-# Load all JSON Lines files matching the pattern "*.jsonl" from a local archive
-for filename, iterator in jsonl.load_archive("archive.zip"):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
-
-# Load all JSON Lines files matching the pattern "*.jsonl" from a remote archive
-for filename, iterator in jsonl.load_archive("https://example.com/archive.zip"):
-    print("Filename:", filename)
-    print("Data:", tuple(iterator))
-```
-
-**Dumping data to Multiple JSON Lines Files**
-
-> [!NOTE]
->
-> Use `jsonl.dump_fork` to incrementally write structured data to multiple JSON Lines files,
-> which can be useful when you want to separate data based on some criteria.
-
-```python
-# -*- coding: utf-8 -*-
-
-import jsonl
-
-data = [
-    # Create `file1.jsonl` or overwrite it if it exists
-    ("file1.jsonl", [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]),
-    # Create `file2.jsonl` or overwrite it if it exists
-    ("file2.jsonl", [{"name": "Charlie", "age": 35}, {"name": "David", "age": 40}]),
-    # Append to `file1.jsonl`
-    ("file1.jsonl", [{"name": "Eve", "age": 28}]),
-]
 jsonl.dump_fork(data)
 ```
 
----
+## API Reference
 
-## 📚 Documentation
+| Function                               | Description                                              |
+|----------------------------------------|----------------------------------------------------------|
+| `jsonl.dump(iterable, file, **kw)`     | Write objects to a JSON Lines file                       |
+| `jsonl.load(source, **kw)`             | Read from a file, URL, or file-like object               |
+| `jsonl.dumps(iterable, **kw)`          | Serialize to a JSON Lines string                         |
+| `jsonl.dump_fork(paths, **kw)`         | Write to multiple JSON Lines files at once               |
+| `jsonl.dump_archive(path, data, **kw)` | Pack multiple JSON Lines files into a ZIP or TAR archive |
+| `jsonl.load_archive(file, **kw)`       | Unpack JSON Lines files from a ZIP or TAR archive        |
+| `jsonl.dumper(iterable, **kw)`         | Low-level generator yielding formatted lines             |
+| `jsonl.loader(stream, broken, **kw)`   | Low-level generator deserializing a line stream          |
 
-For more detailed information and usage examples, refer to the
-project [documentation](https://rmoralespp.github.io/jsonl/)
+> [!TIP]
+> **Write functions** accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
+> **Read functions** accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
 
-## 🛠️ Development
+For complete parameter documentation, see the [full docs →](https://rmoralespp.github.io/jsonl/)
 
-To contribute to the project, you can run the following commands for testing and documentation:
+## Custom Serialization
 
-First, ensure you have the latest version of `pip`:
+Plug in any JSON-compatible serializer. For example, [`orjson`](https://github.com/ijl/orjson)
+for high-performance encoding:
 
-```bash
-python -m pip install --upgrade pip
+```python
+import orjson  # ensure orjson is installed: pip install orjson
+import jsonl
+
+data = [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]
+
+# Write with orjson (returns bytes → set text_mode=False)
+jsonl.dump(data, "fast.jsonl", json_dumps=orjson.dumps, text_mode=False)
+
+# Read with orjson
+for item in jsonl.load("fast.jsonl", json_loads=orjson.loads):
+    print(item)
 ```
 
-### Running Unit Tests
+Extra keyword arguments are forwarded to the underlying serializer:
 
-Install the development dependencies and run the tests:
+```python
+import jsonl
 
-```bash
-pip install --group=test  --upgrade # Install test dependencies, skip if already installed
-python -m pytest tests/ # Run all tests
-python -m pytest tests/ --cov # Run tests with coverage
+data = [{"name": "Alice", "score": 9.5}, {"name": "Bob", "score": 7.2}]
+
+jsonl.dump(data, "compact.jsonl", separators=(",", ":"))  # compact output
+jsonl.dump(data, "sorted.jsonl", sort_keys=True)  # deterministic keys
 ```
 
-### Running Linters
+## Supported Formats
+
+| Type        | Extensions                               |
+|-------------|------------------------------------------|
+| Plain       | `.jsonl`                                 |
+| Compressed  | `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`   |
+| ZIP archive | `.zip`                                   |
+| TAR archive | `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz` |
+
+> When reading, if the file extension is not recognized, **jsonl** falls back to
+> [magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)
+> to identify the compression format automatically.
+
+## Contributing
 
 ```bash
-pip install --group=lint --upgrade  # Install lint dependencies, skip if already installed
-ruff check . # Run linter
-spxl . # Run sphinx-linter for docstring issues
-pymport . # Check for import issues
+# Install dev dependencies
+pip install --group=test --upgrade
+
+# Run tests
+python -m pytest tests/
+python -m pytest tests/ --cov  # run with coverage reporting
+
+# Lint
+pip install --group=lint --upgrade
+ruff check .
+
+# Docs
+pip install --group=doc --upgrade
+
+# zensical usage: https://zensical.org/docs/usage/
+zensical build 
+zensical serve
 ```
 
-### Building the Documentation
+## License
 
-To build the documentation locally, use the following commands:
-
-```bash
-pip install --group=doc --upgrade  # Install doc dependencies, skip if already installed
-mkdocs serve # Start live-reloading docs server
-mkdocs build # Build the documentation site
-```
-
-## 🗒️ License
-
-This project is licensed under the [MIT license](LICENSE).
+MIT — see [LICENSE](LICENSE) for details.
