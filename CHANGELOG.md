@@ -1,5 +1,9 @@
 ## Releases
 
+- **Changed:** Moved internal `_openers` variable to module level for improved performance, eliminating dictionary allocation overhead on each function call.
+- **Changed:** Removed redundant `iter()` call to streamline code execution.
+- **Changed:** Enhanced readability of `_looks_like_url` function with improved code structure and clarity.
+
 ### v1.3.23 (2026-02-26)
 
 - **Changed:** Documentation - Use `zensical` instead `mkdocs` for documentation generation.

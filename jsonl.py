@@ -48,6 +48,13 @@ ext_bz2 = ".bz2"
 ext_xz = ".xz"
 extensions = frozenset((ext_jsonl, ext_gz, ext_bz2, ext_xz))
 
+_openers = {
+    ext_jsonl: open,
+    ext_gz: gzip.open,
+    ext_bz2: bz2.open,
+    ext_xz: lzma.open,
+}
+
 
 def _get_fileobj_extension(fileobj, /):
     """Get the file extension based on the initial bytes of a file-like object."""
@@ -86,13 +93,17 @@ def _get_file_extension(name, mode, /, *, fileobj=None):
 
 
 def _looks_like_url(value, /):
-    if isinstance(value, (str, urllib.request.Request)):
-        value = value.full_url if isinstance(value, urllib.request.Request) else value
-        scheme = urllib.parse.urlparse(value)[0]
-        # Ensure that does not look like a 'normal' absolute path
-        return not (not scheme or (sys.platform == 'win32' and scheme in string.ascii_letters and len(scheme) == 1))
-    else:
+    if isinstance(value, urllib.request.Request):
+        value = value.full_url
+    if not isinstance(value, str):
         return False
+    scheme = urllib.parse.urlparse(value)[0]
+    if not scheme:
+        return False
+    # On Windows, a single-letter scheme like "C" in "C:/path" is a drive letter, not a URL
+    if sys.platform == 'win32' and len(scheme) == 1 and scheme in string.ascii_letters:
+        return False
+    return True
 
 
 def _get_encoding(mode, /):
@@ -120,15 +131,8 @@ def _xopen(name, /, *, mode="rb", encoding=None):
     If the file extension is not recognized, the default `open` function is used.
     """
 
-    default = open
-    openers = {
-        ext_jsonl: default,
-        ext_gz: gzip.open,
-        ext_bz2: bz2.open,
-        ext_xz: lzma.open,
-    }
     extension = _get_file_extension(name, mode)
-    opener = openers.get(extension, default)
+    opener = _openers.get(extension, open)
     return opener(name, mode=mode, encoding=encoding or _get_encoding(mode))
 
 
@@ -209,7 +213,7 @@ def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs)
     """Dump an iterable of objects into JSON Lines format."""
 
     serialize = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
-    for obj in iter(iterable):
+    for obj in iterable:
         value = serialize(obj)  # can be bytes, like "orjson.dumps".
         yield _get_line(value, text_mode)
 
