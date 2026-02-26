@@ -7,7 +7,8 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
-- **Changed:** Documentation - Use `zensical` instead of `mkdocs` for documentation generation.
+### v1.3.24
+
 - **Improved:** `_looks_like_url` with fast-path check (`"://" not in value`) before calling `urlparse`.
 - **Improved:** Moved internal `_openers` variable to module level, eliminating per-call dictionary allocation.
 - **Improved:** `loader` by caching `isinstance(line, bytes)` check, evaluating only once instead of per iteration.

@@ -19,7 +19,8 @@
 It follows the conventions of Python's standard `json` module — if you know `json.dump` and `json.load`,
 you already know how to use **jsonl**.
 
-Fully compliant with the [JSON Lines](https://jsonlines.org/) and [NDJSON](https://github.com/ndjson/ndjson-spec) specifications.
+Fully compliant with the [JSON Lines](https://jsonlines.org/) and [NDJSON](https://github.com/ndjson/ndjson-spec)
+specifications.
 
 ---
 
@@ -31,16 +32,16 @@ inspired by Python's standard `json` module — with zero external dependencies.
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| 🌎 **Familiar API** | Interface similar to the standard `json` module (`dump`, `load`, `dumps`) |
-| ⚡ **Streaming by default** | Read and write incrementally via iterators, keeping memory usage low |
-| 🗜️ **Built-in compression** | Transparent support for `gzip`, `bzip2`, and `xz` |
-| 📦 **Archive support** | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`) |
-| 📥 **Load from URLs** | Pass a URL directly to `load()` or `load_archive()` |
-| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), [`ujson`](https://github.com/ultrajson/ultrajson), or any JSON library |
-| 🔧 **Error tolerance** | Optionally skip malformed lines instead of crashing |
-| 🐍 **Zero dependencies** | Uses only the Python standard library — nothing else |
+| Feature                        | Description                                                                |
+|--------------------------------|----------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)  |
+| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low       |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, and `xz`                          |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`) |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                        |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library     |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                        |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                       |
 
 ## Quick Start
 
@@ -51,7 +52,7 @@ pip install py-jsonl
 ```
 
 !!! note
-    Requires **Python 3.8** or higher. No external dependencies needed.
+Requires **Python 3.8** or higher. No external dependencies needed.
 
 ### Write data
 
@@ -94,9 +95,9 @@ import jsonl
 
 data = [{"key": "value"}]
 
-jsonl.dump(data, "file.jsonl.gz")     # gzip
-jsonl.dump(data, "file.jsonl.bz2")    # bzip2
-jsonl.dump(data, "file.jsonl.xz")     # xz
+jsonl.dump(data, "file.jsonl.gz")  # gzip
+jsonl.dump(data, "file.jsonl.bz2")  # bzip2
+jsonl.dump(data, "file.jsonl.xz")  # xz
 
 for item in jsonl.load("file.jsonl.gz"):
     print(item)
@@ -127,37 +128,37 @@ for filename, items in jsonl.load_archive("data.tar.gz"):
 
 ### Reading
 
-| Function | Description |
-|---|---|
-| [`jsonl.load`](load.md) | Read a file, URL, or file-like object as an iterator of objects |
-| [`jsonl.load_archive`](load_archive.md) | Read JSON Lines files from a ZIP or TAR archive |
+| Function                                | Description                                                     |
+|-----------------------------------------|-----------------------------------------------------------------|
+| [`jsonl.load`](load.md)                 | Read a file, URL, or file-like object as an iterator of objects |
+| [`jsonl.load_archive`](load_archive.md) | Read JSON Lines files from a ZIP or TAR archive                 |
 
 ### Writing
 
-| Function | Description |
-|---|---|
-| [`jsonl.dump`](dump.md) | Write an iterable of objects to a JSON Lines file |
-| [`jsonl.dumps`](dumps.md) | Serialize an iterable into a JSON Lines string |
-| [`jsonl.dump_fork`](dump_fork.md) | Write to multiple JSON Lines files simultaneously |
+| Function                                | Description                                              |
+|-----------------------------------------|----------------------------------------------------------|
+| [`jsonl.dump`](dump.md)                 | Write an iterable of objects to a JSON Lines file        |
+| [`jsonl.dumps`](dumps.md)               | Serialize an iterable into a JSON Lines string           |
+| [`jsonl.dump_fork`](dump_fork.md)       | Write to multiple JSON Lines files simultaneously        |
 | [`jsonl.dump_archive`](dump_archive.md) | Pack multiple JSON Lines files into a ZIP or TAR archive |
 
 !!! tip "Custom Serialization"
-    All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
-    All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
+All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
 
 ## Supported Formats
 
-| Type | Extensions |
-|---|---|
-| Plain | `.jsonl` |
-| Compressed | `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz` |
-| ZIP archive | `.zip` |
+| Type        | Extensions                               |
+|-------------|------------------------------------------|
+| Plain       | `.jsonl`                                 |
+| Compressed  | `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`   |
+| ZIP archive | `.zip`                                   |
 | TAR archive | `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz` |
 
 !!! info
-    When reading, if the file extension is not recognized, **jsonl** falls back to
-    [magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)
-    to identify the compression format automatically.
+When reading, if the file extension is not recognized, **jsonl** falls back to
+[magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)
+to identify the compression format automatically.
 
 ## License
 

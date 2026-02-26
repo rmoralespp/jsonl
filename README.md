@@ -137,22 +137,29 @@ data = [
 jsonl.dump_fork(data)
 ```
 
-## API Reference
+## API Overview
+
+### Reading
+
+| Function                             | Description                                       |
+|--------------------------------------|---------------------------------------------------|
+| `jsonl.load(source, **kw)`           | Read from a file, URL, or file-like object        |
+| `jsonl.load_archive(file, **kw)`     | Unpack JSON Lines files from a ZIP or TAR archive |
+| `jsonl.loader(stream, broken, **kw)` | Low-level generator deserializing a line stream   |
+
+### Writing
 
 | Function                               | Description                                              |
 |----------------------------------------|----------------------------------------------------------|
 | `jsonl.dump(iterable, file, **kw)`     | Write objects to a JSON Lines file                       |
-| `jsonl.load(source, **kw)`             | Read from a file, URL, or file-like object               |
 | `jsonl.dumps(iterable, **kw)`          | Serialize to a JSON Lines string                         |
 | `jsonl.dump_fork(paths, **kw)`         | Write to multiple JSON Lines files at once               |
 | `jsonl.dump_archive(path, data, **kw)` | Pack multiple JSON Lines files into a ZIP or TAR archive |
-| `jsonl.load_archive(file, **kw)`       | Unpack JSON Lines files from a ZIP or TAR archive        |
 | `jsonl.dumper(iterable, **kw)`         | Low-level generator yielding formatted lines             |
-| `jsonl.loader(stream, broken, **kw)`   | Low-level generator deserializing a line stream          |
 
 > [!TIP]
-> **Write functions** accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
-> **Read functions** accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+> All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
+> All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
 
 For complete parameter documentation, see the [full docs →](https://rmoralespp.github.io/jsonl/)
 

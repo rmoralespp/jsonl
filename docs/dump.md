@@ -158,17 +158,6 @@ data = [
 jsonl.dump(data, "file.jsonl", json_dumps=orjson.dumps, text_mode=False)
 ```
 
-[`ujson`](https://github.com/ultrajson/ultrajson) is another popular alternative:
-
-```python
-import ujson
-import jsonl
-
-data = [{"name": "Alice"}, {"name": "Bob"}]
-
-jsonl.dump(data, "file.jsonl", json_dumps=ujson.dumps, ensure_ascii=False)
-```
-
 #### Passing additional keyword arguments
 
 Extra keyword arguments are forwarded directly to the serialization function (by default, `json.dumps`):
