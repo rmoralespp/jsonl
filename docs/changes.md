@@ -7,6 +7,10 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.3.23
+
+- **Changed:** Documentation - Use `zensical` instead `mkdocs` for documentation generation.
+
 ### v1.3.22
 
 - Improved documentation examples for `json.dump` and `json.load` keyword arguments.
