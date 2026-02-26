@@ -710,6 +710,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#v1324" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.24
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v1323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.23
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v1322" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -861,6 +883,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#v1324" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.24
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v1323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.23
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v1322" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -987,6 +1031,18 @@
 <a href="https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md">CHANGELOG.md</a> file on GitHub.</p>
 <hr />
 <h2 id="latest-releases">Latest Releases<a class="headerlink" href="#latest-releases" title="Permanent link">&para;</a></h2>
+<h3 id="v1324">v1.3.24<a class="headerlink" href="#v1324" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Improved:</strong> Moved internal <code>_openers</code> variable to module level, eliminating per-call dictionary allocation.</li>
+<li><strong>Improved:</strong> <code>loader</code> by caching <code>isinstance(line, bytes)</code> check, evaluating only once instead of per iteration.</li>
+<li><strong>Improved:</strong> <code>dump_archive</code> worker using <code>os.makedirs(exist_ok=True)</code> to eliminate race conditions and reduce syscalls.</li>
+<li><strong>Improved:</strong> Streamlined <code>dump</code> function by combining <code>isinstance(file, (str, os.PathLike))</code> check with <code>os.fspath</code>.</li>
+<li><strong>Improved:</strong> Removed redundant <code>iter()</code> call and improved <code>_looks_like_url</code> code structure for better readability.</li>
+</ul>
+<h3 id="v1323">v1.3.23<a class="headerlink" href="#v1323" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Changed:</strong> Documentation - Use <code>zensical</code> instead <code>mkdocs</code> for documentation generation.</li>
+</ul>
 <h3 id="v1322">v1.3.22<a class="headerlink" href="#v1322" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Improved documentation examples for <code>json.dump</code> and <code>json.load</code> keyword arguments.</li>
