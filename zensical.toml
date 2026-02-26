@@ -1,0 +1,80 @@
+site_name = "jsonl"
+site_description = "A lightweight, dependency-free Python library for JSON Lines."
+site_url = "https://rmoralespp.github.io/jsonl/"
+repo_url = "https://github.com/rmoralespp/jsonl"
+repo_name = "rmoralespp/jsonl"
+
+[theme]
+name = "material"
+
+# Palette for light mode
+[[theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "indigo"
+accent = "amber"
+
+# Toggle for light/dark mode
+[theme.palette.toggle]
+icon = "material/brightness-7"
+name = "Switch to dark mode"
+
+# Palette for dark mode
+[[theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "indigo"
+accent = "amber"
+
+# Toggle for light/dark mode
+[theme.palette.toggle]
+icon = "material/brightness-4"
+name = "Switch to light mode"
+
+[theme.features]
+"content.code.copy" = true
+"navigation.instant" = true
+"navigation.sections" = true
+"navigation.expand" = true
+"navigation.top" = true
+"toc.follow" = true
+
+[markdown.extensions]
+admonition = {}
+"pymdownx.details" = {}
+"pymdownx.superfences" = {}
+"pymdownx.inlinehilite" = {}
+attr_list = {}
+md_in_html = {}
+
+[markdown.extensions."pymdownx.highlight"]
+anchor_linenums = true
+
+[markdown.extensions."pymdownx.tabbed"]
+alternate_style = true
+
+[markdown.extensions.toc]
+permalink = true
+
+[[nav]]
+Home = "index.md"
+
+[[nav]]
+Installation = "installation.md"
+
+[[nav]]
+"API Reference" = [
+    { Reading = [
+        { "jsonl.load" = "load.md" },
+        { "jsonl.load_archive" = "load_archive.md" },
+    ]},
+    { Writing = [
+        { "jsonl.dump" = "dump.md" },
+        { "jsonl.dumps" = "dumps.md" },
+        { "jsonl.dump_fork" = "dump_fork.md" },
+        { "jsonl.dump_archive" = "dump_archive.md" },
+    ]},
+]
+
+[[nav]]
+Changelog = "changes.md"
