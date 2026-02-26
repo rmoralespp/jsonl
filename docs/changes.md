@@ -7,6 +7,14 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+- **Changed:** Documentation - Use `zensical` instead of `mkdocs` for documentation generation.
+- **Improved:** `_looks_like_url` with fast-path check (`"://" not in value`) before calling `urlparse`.
+- **Improved:** Moved internal `_openers` variable to module level, eliminating per-call dictionary allocation.
+- **Improved:** `loader` by caching `isinstance(line, bytes)` check, evaluating only once instead of per iteration.
+- **Improved:** `dump_archive` worker using `os.makedirs(exist_ok=True)` to eliminate race conditions and reduce syscalls.
+- **Improved:** Streamlined `dump` function by combining `isinstance(file, (str, os.PathLike))` check with `os.fspath`.
+- **Improved:** Removed redundant `iter()` call and improved `_looks_like_url` code structure for better readability.
+
 ### v1.3.23
 
 - **Changed:** Documentation - Use `zensical` instead `mkdocs` for documentation generation.

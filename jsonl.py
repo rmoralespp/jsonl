@@ -97,6 +97,8 @@ def _looks_like_url(value, /):
         value = value.full_url
     if not isinstance(value, str):
         return False
+    if "://" not in value:
+        return False
     scheme = urllib.parse.urlparse(value)[0]
     if not scheme:
         return False
@@ -222,10 +224,12 @@ def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
     """Load a JSON Lines formatted stream into an object iterator."""
 
     deserialize = functools.partial(json_loads or _default_json_loads, **json_loads_kwargs)
+    is_bytes = None
     for lineno, line in enumerate(stream, start=1):
         try:
-            string_line = line.decode(_utf_8) if isinstance(line, bytes) else line
-            yield deserialize(string_line)
+            if is_bytes is None:  # Avoid "isinstance" check on every line after the first one.
+                is_bytes = isinstance(line, bytes)
+            yield deserialize(line.decode(_utf_8) if is_bytes else line)
         except Exception as e:
             _logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
@@ -260,9 +264,8 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
     """
 
     lines = dumper(iterable, text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs)
-    if isinstance(file, os.PathLike):
+    if isinstance(file, (str, os.PathLike)):
         file = os.fspath(file)
-    if isinstance(file, str):  # No, it's a filename
         fd_mode = "wt" if text_mode else "wb"
         fd_open = opener or _xopen
         with fd_open(file, mode=fd_mode, encoding=_get_encoding(fd_mode)) as fd:
@@ -454,8 +457,7 @@ def dump_archive(
 
             file_abspath = os.path.join(root_dir, file_relpath)
             file_dirpath = os.path.dirname(file_abspath)
-            if not os.path.exists(file_dirpath):
-                os.makedirs(file_dirpath)  # Ensure the directory exists
+            os.makedirs(file_dirpath, exist_ok=True)
             yield (file_abspath, iterable)
 
     # Validate the archive format before proceeding to dump.
