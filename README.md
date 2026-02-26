@@ -147,6 +147,9 @@ jsonl.dump_fork(data)
 | `jsonl.load_archive(file, **kw)`     | Unpack JSON Lines files from a ZIP or TAR archive |
 | `jsonl.loader(stream, broken, **kw)` | Low-level generator deserializing a line stream   |
 
+> [!TIP]
+> - All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+
 ### Writing
 
 | Function                               | Description                                              |
@@ -158,9 +161,7 @@ jsonl.dump_fork(data)
 | `jsonl.dumper(iterable, **kw)`         | Low-level generator yielding formatted lines             |
 
 > [!TIP]
->
 > - All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
-> - All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
 
 For complete parameter documentation, see the [full docs →](https://rmoralespp.github.io/jsonl/)
 
