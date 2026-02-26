@@ -2,7 +2,6 @@
 
 ### v1.3.24 (2026-02-26)
 
-- **Improved:** `_looks_like_url` with fast-path check (`"://" not in value`) before calling `urlparse`.
 - **Improved:** Moved internal `_openers` variable to module level, eliminating per-call dictionary allocation.
 - **Improved:** `loader` by caching `isinstance(line, bytes)` check, evaluating only once instead of per iteration.
 - **Improved:** `dump_archive` worker using `os.makedirs(exist_ok=True)` to eliminate race conditions and reduce syscalls.

@@ -97,8 +97,6 @@ def _looks_like_url(value, /):
         value = value.full_url
     if not isinstance(value, str):
         return False
-    if "://" not in value:
-        return False
     scheme = urllib.parse.urlparse(value)[0]
     if not scheme:
         return False
