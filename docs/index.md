@@ -88,7 +88,8 @@ for item in jsonl.load("https://example.com/data.jsonl"):
 ### Compressed files
 
 The compression format is detected automatically — by file extension when writing,
-and by [magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures) when reading:
+and by [magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures) when reading
+if the file extension is not recognized:
 
 ```python
 import jsonl
