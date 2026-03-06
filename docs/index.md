@@ -52,7 +52,7 @@ pip install py-jsonl
 ```
 
 !!! note
-Requires **Python 3.8** or higher. No external dependencies needed.
+    Requires **Python 3.8** or higher. No external dependencies needed.
 
 ### Write data
 
@@ -134,6 +134,9 @@ for filename, items in jsonl.load_archive("data.tar.gz"):
 | [`jsonl.load`](load.md)                 | Read a file, URL, or file-like object as an iterator of objects |
 | [`jsonl.load_archive`](load_archive.md) | Read JSON Lines files from a ZIP or TAR archive                 |
 
+!!! tip "Custom Serialization"
+    All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+
 ### Writing
 
 | Function                                | Description                                              |
@@ -144,8 +147,7 @@ for filename, items in jsonl.load_archive("data.tar.gz"):
 | [`jsonl.dump_archive`](dump_archive.md) | Pack multiple JSON Lines files into a ZIP or TAR archive |
 
 !!! tip "Custom Serialization"
-All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
-All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+    All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
 
 ## Supported Formats
 
@@ -157,9 +159,9 @@ All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom 
 | TAR archive | `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz` |
 
 !!! info
-When reading, if the file extension is not recognized, **jsonl** falls back to
-[magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)
-to identify the compression format automatically.
+    When reading, if the file extension is not recognized, **jsonl** falls back to
+    [magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)
+    to identify the compression format automatically.
 
 ## License
 
