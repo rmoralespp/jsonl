@@ -1182,7 +1182,8 @@ inspired by Python's standard <code>json</code> module — with zero external de
 </span></code></pre></div>
 <h3 id="compressed-files">Compressed files<a class="headerlink" href="#compressed-files" title="Permanent link">&para;</a></h3>
 <p>The compression format is detected automatically — by file extension when writing,
-and by <a href="https://en.wikipedia.org/wiki/List_of_file_signatures">magic numbers</a> when reading:</p>
+and by <a href="https://en.wikipedia.org/wiki/List_of_file_signatures">magic numbers</a> when reading
+if the file extension is not recognized:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jsonl</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">}]</span>
