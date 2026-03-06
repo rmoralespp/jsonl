@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.25 (2026-03-06)
+
 - **Improved:** `load_archive` from URL no longer loads the file into RAM, reducing memory consumption. 
   Instead, the data is efficiently downloaded in chunks to a temporary file for loading.
 
