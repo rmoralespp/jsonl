@@ -13,21 +13,23 @@ jsonl.load_archive(
     opener=None,
     broken=False,
     json_loads=None,
+    chunk_size=64 * 1024,
     **json_loads_kwargs,
 )
 ```
 
 ### Parameters
 
-| Parameter             | Type                                           | Default      | Description                                                              |
-|-----------------------|------------------------------------------------|--------------|--------------------------------------------------------------------------|
-| `file`                | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | Archive file to load from                                                |
-| `pattern`             | `str`                                          | `"*.jsonl"`  | Unix shell-style wildcard pattern to filter filenames inside the archive |
-| `pwd`                 | `bytes` or `None`                              | `None`       | Password to decrypt the archive (ZIP only)                               |
-| `opener`              | `Callable` or `None`                           | `None`       | Custom function to open the file (not supported for URLs)                |
-| `broken`              | `bool`                                         | `False`      | If `True`, skip malformed lines and log a warning                        |
-| `json_loads`          | `Callable` or `None`                           | `None`       | Custom deserialization function. Defaults to `json.loads`                |
-| `**json_loads_kwargs` |                                                |              | Additional keyword arguments passed to the deserialization function      |
+| Parameter             | Type                                           | Default      | Description                                                                                                 |
+|-----------------------|------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------|
+| `file`                | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | Archive file to load from                                                                                   |
+| `pattern`             | `str`                                          | `"*.jsonl"`  | Unix shell-style wildcard pattern to filter filenames inside the archive                                    |
+| `pwd`                 | `bytes` or `None`                              | `None`       | Password to decrypt the archive (ZIP only)                                                                  |
+| `opener`              | `Callable` or `None`                           | `None`       | Custom function to open the file (not supported for URLs)                                                   |
+| `broken`              | `bool`                                         | `False`      | If `True`, skip malformed lines and log a warning                                                           |
+| `json_loads`          | `Callable` or `None`                           | `None`       | Custom deserialization function. Defaults to `json.loads`                                                   |
+| `chunk_size`          | `int`                                          | 64 * 1024    | The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once. |
+| `**json_loads_kwargs` |                                                |              | Additional keyword arguments passed to the deserialization function                                         |
 
 ### Returns
 
@@ -79,7 +81,7 @@ for filename, items in jsonl.load_archive("https://example.com/archive.zip"):
 
 # Load using a custom request with headers
 req = urllib.request.Request("https://example.com/archive.zip", headers={"Accept": "application/zip"})
-for filename, items in jsonl.load_archive(req):
+for filename, items in jsonl.load_archive(req, chunk_size=128 * 1024):  # increase chunk size for larger files if needed
     print(f"--- {filename} ---")
     for item in items:
         print(item)

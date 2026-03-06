@@ -1,5 +1,8 @@
 ## Releases
 
+- **Improved:** `load_archive` from URL no longer loads the file into RAM, reducing memory consumption. 
+  Instead, the data is efficiently downloaded in chunks to a temporary file for loading.
+
 ### v1.3.24 (2026-02-26)
 
 - **Improved:** Moved internal `_openers` variable to module level, eliminating per-call dictionary allocation.

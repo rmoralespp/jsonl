@@ -224,9 +224,9 @@ def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
     deserialize = functools.partial(json_loads or _default_json_loads, **json_loads_kwargs)
     is_bytes = None
     for lineno, line in enumerate(stream, start=1):
+        if is_bytes is None:  # Avoid "isinstance" check on every line after the first one.
+            is_bytes = isinstance(line, bytes)
         try:
-            if is_bytes is None:  # Avoid "isinstance" check on every line after the first one.
-                is_bytes = isinstance(line, bytes)
             yield deserialize(line.decode(_utf_8) if is_bytes else line)
         except Exception as e:
             _logger.warning("Broken line at %s: %s", lineno, e)
@@ -370,6 +370,7 @@ def load_archive(
     opener=None,
     broken=False,
     json_loads=None,
+    chunk_size=64 * 1024,
     **json_loads_kwargs,
 ):
     """
@@ -390,29 +391,39 @@ def load_archive(
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
     :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
+    :param int chunk_size:
+        The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once.
+        Default is 64 KB (64 * 1024 bytes).
     :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
     :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
-    # If a URL or Request object is provided, download the archive first.
-    if _looks_like_url(file):
-        if opener is not None:
-            raise ValueError("Custom opener is not supported for URLs or Request objects.")
-        with urllib.request.urlopen(file) as file:
-            file = io.BytesIO(file.read())  # noqa: PLW2901
+    with tempfile.TemporaryDirectory() as tmp:
 
-    if zipfile.is_zipfile(file):
-        members = _iterfind_zip_members(file, pattern, pwd)
-    elif tarfile.is_tarfile(file):
-        members = _iterfind_tar_members(file, pattern)
-    else:
-        raise ValueError("Unsupported archive format")
+        if _looks_like_url(file):
+            if opener is not None:
+                raise ValueError("Custom opener is not supported for URLs or Request objects.")
 
-    for member in members:
-        filename = member.name
-        with _xfile(filename, member) as fp:
-            it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
-            yield (filename, it)
+            # If a URL or request obj is provided, first download the file incrementally
+            # to avoid loading the entire file into memory.
+            tmp_path = os.path.join(tmp, "archive")
+            with urllib.request.urlopen(file) as src_fd, open(tmp_path, mode="wb") as tmp_fd:
+                for block in iter(functools.partial(src_fd.read, chunk_size), b''):
+                    tmp_fd.write(block)
+            file = tmp_path
+
+        if zipfile.is_zipfile(file):
+            members = _iterfind_zip_members(file, pattern, pwd)
+        elif tarfile.is_tarfile(file):
+            members = _iterfind_tar_members(file, pattern)
+        else:
+            raise ValueError("Unsupported archive format")
+
+        for member in members:
+            filename = member.name
+            with _xfile(filename, member) as fp:
+                it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
+                yield (filename, it)
 
 
 def dump_archive(
