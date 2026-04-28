@@ -348,8 +348,8 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
         with urllib.request.urlopen(source) as fd:
             charset = fd.headers.get_content_charset(failobj=_utf_8)
             # Wrap the file descriptor to handle text encoding.
-            stream = io.TextIOWrapper(fd, encoding=charset)
-            yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
+            with io.TextIOWrapper(fd, encoding=charset) as stream:
+                yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
     # Filename handling
     elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
