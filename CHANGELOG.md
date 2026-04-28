@@ -2,7 +2,7 @@
 
 ### v1.3.26 (2026-04-28)
 
-- **Added:* More tests to cover 100% of the codebase.
+- **Added:** More tests to cover 100% of the codebase.
 - **Fixed:** `load` Use context manager to close `TextIOWrapper` stream when loading from a URL.
 
 ### v1.3.25 (2026-03-06)
