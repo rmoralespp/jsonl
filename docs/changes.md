@@ -7,6 +7,11 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.3.26 (2026-04-28)
+
+- **Added:* More tests to cover 100% of the codebase.
+- **Fixed:** `load` Use context manager to close `TextIOWrapper` stream when loading from a URL.
+
 ### v1.3.25 (2026-03-06)
 
 - **Improved:** `load_archive` from URL no longer loads the file into RAM, reducing memory consumption. 
