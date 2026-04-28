@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import io
 import operator
 import os
 import shutil
+import tarfile
 
 import pytest
 
@@ -72,4 +74,36 @@ def test_http_server_uri_url(http_server, filename):
     url = http_server + "/" + filename
     loaded = jsonl.load_archive(url)
     loaded = [(name, list(data)) for name, data in loaded]
-    assert loaded == [('foo.jsonl', tests.data), ('var.jsonl', tests.data)]
+    expected = [('foo.jsonl', tests.data), ('var.jsonl', tests.data)]
+    assert loaded == expected
+
+
+def test_load_archive_from_bytesio_tar():
+    content = tests.string_data.encode(jsonl._utf_8)
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        info = tarfile.TarInfo(name="file1.jsonl")
+        info.size = len(content)
+        tar.addfile(info, io.BytesIO(content))
+    buf.seek(0)
+
+    expected = [("file1.jsonl", tests.data)]
+    result = [(name, list(data)) for name, data in jsonl.load_archive(buf, pattern="*.jsonl")]
+    assert result == expected
+
+
+def test_load_archive_tar_skips_directory_members(tmp_dir):
+    content = tests.string_data.encode(jsonl._utf_8)
+    archive_path = str(tmp_dir / "test.tar")
+    with tarfile.open(archive_path, "w") as tar:
+        dir_info = tarfile.TarInfo(name="subdir.jsonl")
+        dir_info.type = tarfile.DIRTYPE
+        tar.addfile(dir_info)
+
+        file_info = tarfile.TarInfo(name="file1.jsonl")
+        file_info.size = len(content)
+        tar.addfile(file_info, io.BytesIO(content))
+
+    expected = [("file1.jsonl", tests.data)]
+    result = [(name, list(data)) for name, data in jsonl.load_archive(archive_path, pattern="*.jsonl")]
+    assert result == expected
