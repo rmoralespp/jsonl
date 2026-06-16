@@ -73,9 +73,9 @@ def file_extension(request):
     return request.param
 
 
-@pytest.fixture(scope="package", params=(".zip", ".tar", ".tar.gz", ".tar.xz", ".tar.bz2",))
+@pytest.fixture(scope="package", params=jsonl._archive_formats)
 def archive_extension(request):
-    return request.param
+    return "." + request.param
 
 
 @pytest.fixture(scope="package")

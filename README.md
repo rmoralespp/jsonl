@@ -34,16 +34,16 @@ specifications.
 
 ## Features
 
-| Feature                        | Description                                                                |
-|--------------------------------|----------------------------------------------------------------------------|
-| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)  |
-| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low       |
-| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, and `xz`                          |
-| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`) |
-| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                        |
-| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library     |
-| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                        |
-| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                       |
+| Feature                        | Description                                                                                                   |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                     |
+| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low                                          |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                      |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, , and `.tar.zst` (Python ≥ 3.14) ) |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                           |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                        |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                           |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                          |
 
 ## Installation
 
@@ -89,7 +89,7 @@ for item in jsonl.load("https://example.com/data.jsonl"):
 ### Compressed files
 
 The compression format is determined automatically — by file extension when writing,
-and by [magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures) when reading 
+and by [magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures) when reading
 if the file extension is not recognized:
 
 ```python
@@ -100,6 +100,7 @@ data = [{"key": "value"}]
 jsonl.dump(data, "file.jsonl.gz")  # gzip
 jsonl.dump(data, "file.jsonl.bz2")  # bzip2
 jsonl.dump(data, "file.jsonl.xz")  # xz
+jsonl.dump(data, "file.jsonl.zst")  # zst (Python ≥ 3.14) 
 
 for item in jsonl.load("file.jsonl.gz"):
     print(item)
@@ -198,12 +199,12 @@ jsonl.dump(data, "sorted.jsonl", sort_keys=True)  # deterministic keys
 
 ## Supported Formats
 
-| Type        | Extensions                               |
-|-------------|------------------------------------------|
-| Plain       | `.jsonl`                                 |
-| Compressed  | `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`   |
-| ZIP archive | `.zip`                                   |
-| TAR archive | `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz` |
+| Type        | Extensions                                                           |
+|-------------|----------------------------------------------------------------------|
+| Plain       | `.jsonl`                                                             |
+| Compressed  | `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (Python ≥ 3.14) |
+| ZIP archive | `.zip`                                                               |
+| TAR archive | `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar.zst` (Python ≥ 3.14) |
 
 > When reading, if the file extension is not recognized, **jsonl** falls back to
 > [magic-number detection](https://en.wikipedia.org/wiki/List_of_file_signatures)

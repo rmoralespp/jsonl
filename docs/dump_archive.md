@@ -20,15 +20,15 @@ jsonl.dump_archive(
 
 ### Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `path` | `str` | *(required)* | Destination path for the archive file |
-| `data` | `Iterable[tuple[str, Iterable[Any]]]` | *(required)* | Iterable of `(relative_path, items)` tuples |
-| `opener` | `Callable` or `None` | `None` | Custom function to open the given file paths |
-| `text_mode` | `bool` | `True` | If `False`, write bytes instead of text |
-| `dump_if_empty` | `bool` | `True` | If `False`, don't create empty files or an empty archive |
-| `json_dumps` | `Callable` or `None` | `None` | Custom serialization function. Defaults to `json.dumps` |
-| `**json_dumps_kwargs` | | | Additional keyword arguments passed to the serialization function |
+| Parameter             | Type                                  | Default      | Description                                                       |
+|-----------------------|---------------------------------------|--------------|-------------------------------------------------------------------|
+| `path`                | `str`                                 | *(required)* | Destination path for the archive file                             |
+| `data`                | `Iterable[tuple[str, Iterable[Any]]]` | *(required)* | Iterable of `(relative_path, items)` tuples                       |
+| `opener`              | `Callable` or `None`                  | `None`       | Custom function to open the given file paths                      |
+| `text_mode`           | `bool`                                | `True`       | If `False`, write bytes instead of text                           |
+| `dump_if_empty`       | `bool`                                | `True`       | If `False`, don't create empty files or an empty archive          |
+| `json_dumps`          | `Callable` or `None`                  | `None`       | Custom serialization function. Defaults to `json.dumps`           |
+| `**json_dumps_kwargs` |                                       |              | Additional keyword arguments passed to the serialization function |
 
 ### Returns
 
@@ -36,20 +36,22 @@ jsonl.dump_archive(
 
 ### Supported Archive Formats
 
-| Extension | Format |
-|---|---|
-| `.zip` | ZIP |
-| `.tar` | TAR (uncompressed) |
-| `.tar.gz` | TAR + gzip |
-| `.tar.bz2` | TAR + bzip2 |
-| `.tar.xz` | TAR + xz |
+| Extension  | Format                    |
+|------------|---------------------------|
+| `.zip`     | ZIP                       |
+| `.tar`     | TAR (uncompressed)        |
+| `.tar.gz`  | TAR + gzip                |
+| `.tar.bz2` | TAR + bzip2               |
+| `.tar.xz`  | TAR + xz                  |
+| `.tar.zst` | TAR + zst (Python ≥ 3.14) |
 
 !!! warning
-    If the archive already exists at the given path, it will be **overwritten**.
+If the archive already exists at the given path, it will be **overwritten**.
 
 !!! note
-    - Paths in the `data` argument must be **relative**. Absolute paths will raise a `ValueError`.
-    - If `data` contains multiple items for the same path, they are **appended** to the corresponding file within the archive.
+- Paths in the `data` argument must be **relative**. Absolute paths will raise a `ValueError`.
+- If `data` contains multiple items for the same path, they are **appended** to the corresponding file within the
+archive.
 
 ---
 

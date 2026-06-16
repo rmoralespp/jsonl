@@ -7,6 +7,8 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+- **Added:**: Support for compression.zstd (Python 3.14+)
+
 ### v1.3.26 (2026-04-28)
 
 - **Added:** More tests to cover 100% of the codebase.

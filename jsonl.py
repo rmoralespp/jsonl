@@ -32,6 +32,11 @@ import urllib.parse
 import urllib.request
 import zipfile
 
+try:
+    from compression import zstd
+except ImportError:
+    zstd = None
+
 _utf_8 = "utf-8"
 _new_line = "\n"
 _new_line_bytes = b"\n"
@@ -46,14 +51,29 @@ ext_jsonl = ".jsonl"
 ext_gz = ".gz"
 ext_bz2 = ".bz2"
 ext_xz = ".xz"
-extensions = frozenset((ext_jsonl, ext_gz, ext_bz2, ext_xz))
+ext_zst = ".zst"
 
+extensions = {ext_jsonl, ext_gz, ext_bz2, ext_xz}
 _openers = {
     ext_jsonl: open,
     ext_gz: gzip.open,
     ext_bz2: bz2.open,
     ext_xz: lzma.open,
 }
+_archive_formats = {
+    "zip": "zip",
+    "tar": "tar",
+    "tar.gz": "gztar",
+    "tar.bz2": "bztar",
+    "tar.xz": "xztar",
+}
+
+if zstd is None:
+    _logger.info("zstd compression is not available!")
+else:
+    extensions.add(ext_zst)
+    _openers[ext_zst] = zstd.open
+    _archive_formats["tar.zst"] = "zstdtar"
 
 
 def _get_fileobj_extension(fileobj, /):
@@ -73,6 +93,9 @@ def _get_fileobj_extension(fileobj, /):
     elif bytes_[:6] == b"\xfd\x37\x7a\x58\x5a\x00":
         # https://tukaani.org/xz/xz-file-format.txt
         return ext_xz
+    elif bytes_[:4] == b"\x28\xb5\x2f\xfd":
+        # https://www.rfc-editor.org/info/rfc8878/
+        return ext_zst
     else:
         return None
 
@@ -154,6 +177,8 @@ def _xfile(name, obj, /):
         file = bz2.BZ2File(obj)
     elif ext == ext_xz:
         file = lzma.LZMAFile(obj)  # noqa: SIM115
+    elif ext == ext_zst and zstd:
+        file = zstd.ZstdFile(obj)
     else:
         file = obj
     try:
@@ -166,16 +191,9 @@ def _xfile(name, obj, /):
 def _get_archive_format(path, /):
     """Return a valid archive format for `shutil.make_archive` based on the filename."""
 
-    formats = {
-        "zip": "zip",
-        "tar": "tar",
-        "tar.gz": "gztar",
-        "tar.bz2": "bztar",
-        "tar.xz": "xztar",
-    }
     basename = os.path.basename(path)
     _, _, ext = basename.partition(".")
-    if fmt := formats.get(ext):
+    if fmt := _archive_formats.get(ext):
         return fmt
     else:
         raise ValueError(f"Unsupported archive extension: {path}")
@@ -300,7 +318,10 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
                     nothing = False
                     fd.write(_get_line(encoder(obj), text_mode))
             except GeneratorExit:
-                pass
+                # Flush compressor buffers before closing the generator to
+                # ensure a valid end-of-stream marker (required for .gz/.xz/.zst in Python 3.14+)
+                fd.flush()
+
         if nothing and not dump_if_empty:
             os.unlink(dst)
 

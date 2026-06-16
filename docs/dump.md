@@ -37,7 +37,7 @@ jsonl.dump(
 ### Compression Detection
 
 !!! note
-    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz), zst (.zst) (Python ≥ 3.14) **
 
     When a filename is provided, the compression format is determined by its extension.
     If the extension is not recognized, the file is written as plain text.
@@ -72,6 +72,7 @@ data = [
 jsonl.dump(data, "file.jsonl.gz")    # gzip
 jsonl.dump(data, "file.jsonl.bz2")   # bzip2
 jsonl.dump(data, "file.jsonl.xz")    # xz
+jsonl.dump(data, "file.jsonl.zst")    # zst
 ```
 
 ### Write to an open file object

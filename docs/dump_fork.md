@@ -31,7 +31,7 @@ jsonl.dump_fork(
 ### Behavior
 
 - If the same filepath appears multiple times, subsequent data is **appended** to the file.
-- Files can use compression extensions (`.gz`, `.bz2`, `.xz`) and will be compressed accordingly.
+- Files can use compression extensions (`.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14) ) and will be compressed accordingly.
 - When `dump_if_empty=False`, files with no data are not created.
 
 ---

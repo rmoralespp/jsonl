@@ -21,6 +21,8 @@ def test_xfile_object(filepath):
             assert isinstance(result, bz2.BZ2File)
         elif filepath.endswith(".xz"):
             assert isinstance(result, lzma.LZMAFile)
+        elif filepath.endswith(".zst") and jsonl.zstd:
+            assert isinstance(result, jsonl.zstd.ZstdFile)
         else:
             assert result is obj
 
@@ -46,6 +48,7 @@ def test_xfile_close(filepath):
         (b"\x1f\x8b\x08\x00\x00\x00", jsonl.ext_gz),  # Gzip signature
         (b"\x42\x5a\x68\x31\x31\x39", jsonl.ext_bz2),  # Bzip2 signature
         (b"\xfd\x37\x7a\x58\x5a\x00", jsonl.ext_xz),  # XZ signature
+        (b"\x28\xb5\x2f\xfd\x64\x00\x0f\x5d", jsonl.ext_zst), # Zst signature
         (b"\x00\x00\x00\x00\x00\x00", None),  # No matching signature
         (b"", None),  # Empty file content
     ],
@@ -71,10 +74,12 @@ def test_get_fileobj_extension_restores_file_pointer():
         ("file.gz", "rb", io.BytesIO(b"\x1f\x8b"), jsonl.ext_gz),
         ("file.bz2", "rb", io.BytesIO(b"\x42\x5a\x68"), jsonl.ext_bz2),
         ("file.xz", "rb", io.BytesIO(b"\xfd\x37\x7a\x58\x5a\x00"), jsonl.ext_xz),
+        ("file.zst", "rb", io.BytesIO(b"\x28\xb5\x2f\xfd"), jsonl.ext_zst),
         # Unknown extensions but detected by signature
         ("file.unknown", "rb", io.BytesIO(b"\x1f\x8b"), jsonl.ext_gz),
         ("file.unknown", "rb", io.BytesIO(b"\x42\x5a\x68"), jsonl.ext_bz2),
         ("file.unknown", "rb", io.BytesIO(b"\xfd\x37\x7a\x58\x5a\x00"), jsonl.ext_xz),
+        ("file.unknown", "rb", io.BytesIO(b"\x28\xb5\x2f\xfd"), jsonl.ext_zst),
         # Unknown extension but text mode
         ("file.unknown", "r", None, None),
         # Unknown extension but write/append binary mode

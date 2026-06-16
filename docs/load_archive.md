@@ -39,13 +39,13 @@ deserialized objects.
 ### Supported Archive Formats
 
 - **ZIP** archives (`.zip`)
-- **TAR** archives (`.tar`), including compressed variants: `.tar.gz`, `.tar.bz2`, `.tar.xz`
+- **TAR** archives (`.tar`), including compressed variants: `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar.zst` (Python ≥ 3.14) )
 
 ### Key Features
 
 - Load from local files or remote URLs
 - Filter files inside the archive using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html)
-- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`).
+- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (Python ≥ 3.14) ).
   Check [compression detection](load.md#note-compression) for details.
 - ZIP archives with password protection
 - Graceful handling of malformed lines via the `broken` parameter

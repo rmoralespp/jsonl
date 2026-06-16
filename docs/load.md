@@ -34,11 +34,11 @@ jsonl.load(
 
 <a id="note-compression"></a>
 !!! note
-    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz)**
+    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz), zst (.zst) (Python ≥ 3.14) **
 
     The compression format is resolved using two strategies:
 
-    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`), that format is used directly.
+    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14)), that format is used directly.
     2. **By magic numbers** — when the extension is not recognized, **jsonl** inspects the first bytes of the file
        ([magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures)) to auto-detect the compression format.
 
