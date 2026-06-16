@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.3.27 (2026-06-16)
+
 - **Added:** Support for compression.zstd (Python 3.14+)
 
 ### v1.3.26 (2026-04-28)
