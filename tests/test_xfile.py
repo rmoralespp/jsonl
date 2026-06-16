@@ -48,7 +48,7 @@ def test_xfile_close(filepath):
         (b"\x1f\x8b\x08\x00\x00\x00", jsonl.ext_gz),  # Gzip signature
         (b"\x42\x5a\x68\x31\x31\x39", jsonl.ext_bz2),  # Bzip2 signature
         (b"\xfd\x37\x7a\x58\x5a\x00", jsonl.ext_xz),  # XZ signature
-        (b"\x28\xb5\x2f\xfd\x64\x00\x0f\x5d", jsonl.ext_zst), # Zst signature
+        (b"\x28\xb5\x2f\xfd\x64\x00\x0f\x5d", jsonl.ext_zst),  # Zst signature
         (b"\x00\x00\x00\x00\x00\x00", None),  # No matching signature
         (b"", None),  # Empty file content
     ],

@@ -34,16 +34,16 @@ specifications.
 
 ## Features
 
-| Feature                        | Description                                                                                                   |
-|--------------------------------|---------------------------------------------------------------------------------------------------------------|
-| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                     |
-| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low                                          |
-| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                      |
-| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, , and `.tar.zst` (Python ≥ 3.14) ) |
-| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                           |
-| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                        |
-| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                           |
-| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                          |
+| Feature                        | Description                                                                                                     |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                       |
+| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low                                            |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                        |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, and `.tar.zst` **(Python ≥ 3.14) )** |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                             |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                          |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                             |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                            |
 
 ## Installation
 
