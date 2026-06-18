@@ -79,6 +79,7 @@ else:
     _openers[ext_zst] = zstd.open
     _archive_formats["tar.zst"] = "zstdtar"
 
+
 # ---------------------------------- Internal utils ----------------------------------
 
 
@@ -233,19 +234,38 @@ def _iterfind_tar_members(name_or_obj, pattern, /):
                     yield file
 
 
+def is_subclass(o, klass):
+    try:
+        return issubclass(o, klass)
+    except TypeError:
+        return False
+
+
 def _get_encode(cls, kwargs):
+    # return _default_encode if not (cls or kwargs) else (cls or json.JSONEncoder)(**kwargs).encode
+
     if not (cls or kwargs):
         encode = _default_encode
+    elif not cls:
+        encode = json.JSONEncoder(**kwargs)
+    elif is_subclass(cls, json.JSONEncoder):
+        encode = cls(**kwargs).encode
     else:
-        encode = (cls or json.JSONEncoder)(**kwargs).encode
+        encode = functools.partial(cls, **kwargs)
     return encode
 
 
 def _get_decode(cls, kwargs):
+    # return _default_decode if not (cls or kwargs) else (cls or json.JSONDecoder)(**kwargs).decode
+
     if not (cls or kwargs):
         decode = _default_decode
+    elif not cls:
+        decode = json.JSONDecoder(** kwargs)
+    elif is_subclass(cls, json.JSONDecoder):
+        decode = cls(**kwargs).decode
     else:
-        decode = (cls or json.JSONDecoder)(**kwargs).decode
+        decode = cls(**kwargs)
     return decode
 
 # ---------------------------------- Public API ----------------------------------
@@ -298,8 +318,11 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, cls=None, **kwargs):
         * If a file object is provided, the `writelines` or `write` methods will be used to write the string data.
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool text_mode: If false, write bytes to the file.
-    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
-    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
+
+    :param Optional[type[json.JSONEncoder] | Callable[..., Any]] cls: Custom encoder (defaults to `json.JSONEncoder`)
+        - JSONEncoder subclass
+        - Callable accepting arbitrary arguments and returning an encoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
 
     :raises ValueError: If the file object is missing the `writelines` and `write` methods.
     """
@@ -328,8 +351,11 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
-    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
-    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
+
+    :param Optional[type[json.JSONEncoder] | Callable[..., Any]] cls: Custom encoder (defaults to `json.JSONEncoder`)
+        - JSONEncoder subclass
+        - Callable accepting arbitrary arguments and returning an encoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
     """
 
     def get_writer(dst):
@@ -382,8 +408,12 @@ def load(source, /, *, opener=None, broken=False, cls=None, **kwargs):
         For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
-    :param Optional[Callable] cls: Custom `json.JSONDecoder` subclass (defaults to `json.JSONDecoder`).
-    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONDecoder`.
+
+    :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder (defaults to `json.JSONDecoder`)
+        - JSONDecoder subclass
+        - Callable accepting arbitrary arguments and returning a decoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom decoder (`cls`).
+
     :rtype: Iterator[Any]
     """
 
@@ -439,8 +469,12 @@ def load_archive(
     :param int chunk_size:
         The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once.
         Default is 64 KB (64 * 1024 bytes).
-    :param Optional[Callable] cls: Custom `json.JSONDecoder` subclass (defaults to `json.JSONDecoder`).
-    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONDecoder`.
+
+    :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder (defaults to `json.JSONDecoder`)
+        - JSONDecoder subclass
+        - Callable accepting arbitrary arguments and returning a decoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom decoder (`cls`).
+
     :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
@@ -499,8 +533,10 @@ def dump_archive(
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file nor an empty archive.
 
-    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
-    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
+    :param Optional[type[json.JSONEncoder] | Callable[..., Any]] cls: Custom encoder (defaults to `json.JSONEncoder`)
+        - JSONEncoder subclass
+        - Callable accepting arbitrary arguments and returning an encoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
 
     :raises ValueError: If a filepath in `items_by_relpath` is absolute, or if the archive extension is unsupported.
     :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
