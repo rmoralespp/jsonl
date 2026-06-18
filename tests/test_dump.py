@@ -7,9 +7,7 @@ import os
 import pathlib
 import tempfile
 
-import orjson
 import pytest
-import ujson
 
 import jsonl
 import tests
@@ -42,17 +40,15 @@ def test_invalid_object():
 
 
 @pytest.mark.parametrize(
-    "json_dumps, json_dumps_kwargs, expected",
+    "cls, kwargs, expected",
     [
-        (orjson.dumps, {}, tests.compacted_string_data),
-        (ujson.dumps, {"ensure_ascii": False}, tests.compacted_string_data),
-        (json.dumps, {"ensure_ascii": False}, tests.string_data),
+        (json.JSONEncoder, {"ensure_ascii": False}, tests.string_data),
         (None, {}, tests.string_data),
     ],
 )
-def test_filepath(filepath, json_dumps, json_dumps_kwargs, expected, pathlike):
+def test_filepath(filepath, cls, kwargs, expected, pathlike):
     filepath = pathlib.Path(filepath) if pathlike else filepath
-    jsonl.dump(iter(tests.data), filepath, json_dumps=json_dumps, **json_dumps_kwargs)
+    jsonl.dump(iter(tests.data), filepath, cls=cls, **kwargs)
     result = tests.read_text(filepath)
     assert result == expected
 

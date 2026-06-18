@@ -37,12 +37,16 @@ try:
 except ImportError:
     zstd = None
 
+# ---------------------------------- Internal variables ----------------------------------
+
 _utf_8 = "utf-8"
 _new_line = "\n"
 _new_line_bytes = b"\n"
 
-_default_json_dumps = functools.partial(json.dumps, ensure_ascii=False)  # result can include non-ASCII characters
-_default_json_loads = json.loads
+_default_decode = json.JSONDecoder().decode
+_default_encode = json.JSONEncoder(
+    ensure_ascii=False,  # result can include non-ASCII characters
+).encode
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
@@ -74,6 +78,8 @@ else:
     extensions.add(ext_zst)
     _openers[ext_zst] = zstd.open
     _archive_formats["tar.zst"] = "zstdtar"
+
+# ---------------------------------- Internal utils ----------------------------------
 
 
 def _get_fileobj_extension(fileobj, /):
@@ -227,45 +233,63 @@ def _iterfind_tar_members(name_or_obj, pattern, /):
                     yield file
 
 
-def dumper(iterable, /, *, text_mode=True, json_dumps=None, **json_dumps_kwargs):
+def _get_encode(cls, kwargs):
+    if not (cls or kwargs):
+        encode = _default_encode
+    else:
+        encode = (cls or json.JSONEncoder)(**kwargs).encode
+    return encode
+
+
+def _get_decode(cls, kwargs):
+    if not (cls or kwargs):
+        decode = _default_decode
+    else:
+        decode = (cls or json.JSONDecoder)(**kwargs).decode
+    return decode
+
+# ---------------------------------- Public API ----------------------------------
+
+
+def dumper(iterable, /, *, text_mode=True, cls=None, **kwargs):
     """Dump an iterable of objects into JSON Lines format."""
 
-    serialize = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
+    encode = _get_encode(cls, kwargs)
     for obj in iterable:
-        value = serialize(obj)  # can be bytes, like "orjson.dumps".
+        value = encode(obj)  # can be bytes, like "orjson.dumps".
         yield _get_line(value, text_mode)
 
 
-def loader(stream, broken, /, *, json_loads=None, **json_loads_kwargs):
+def loader(stream, broken, /, *, cls=None, **kwargs):
     """Load a JSON Lines formatted stream into an object iterator."""
 
-    deserialize = functools.partial(json_loads or _default_json_loads, **json_loads_kwargs)
+    decode = _get_decode(cls, kwargs)
     is_bytes = None
     for lineno, line in enumerate(stream, start=1):
         if is_bytes is None:  # Avoid "isinstance" check on every line after the first one.
             is_bytes = isinstance(line, bytes)
         try:
-            yield deserialize(line.decode(_utf_8) if is_bytes else line)
+            yield decode(line.decode(_utf_8) if is_bytes else line)
         except Exception as e:
             _logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
 
 
-def dumps(iterable, /, *, json_dumps=None, **json_dumps_kwargs):
+def dumps(iterable, /, *, cls=None, **kwargs):
     """
     Serialize an iterable into a JSON Lines formatted string.
 
     :param Iterable[Any] iterable: Iterable of objects
-    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
     :rtype: str
     """
 
-    return "".join(dumper(iterable, text_mode=True, json_dumps=json_dumps, **json_dumps_kwargs))
+    return "".join(dumper(iterable, text_mode=True, cls=cls, **kwargs))
 
 
-def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **json_dumps_kwargs):
+def dump(iterable, file, /, *, opener=None, text_mode=True, cls=None, **kwargs):
     """
     Dump an iterable to a JSON Lines file.
 
@@ -274,12 +298,13 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
         * If a file object is provided, the `writelines` or `write` methods will be used to write the string data.
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool text_mode: If false, write bytes to the file.
-    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
+
     :raises ValueError: If the file object is missing the `writelines` and `write` methods.
     """
 
-    lines = dumper(iterable, text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs)
+    lines = dumper(iterable, text_mode=text_mode, cls=cls, **kwargs)
     if isinstance(file, (str, os.PathLike)):
         file = os.fspath(file)
         fd_mode = "wt" if text_mode else "wb"
@@ -295,7 +320,7 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, json_dumps=None, **j
         raise ValueError("Invalid file object, missing `writelines` and `write` methods.")
 
 
-def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json_dumps=None, **json_dumps_kwargs):
+def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=None, **kwargs):
     """
     Incrementally dumps multiple iterables into the specified jsonlines files, effectively reducing memory consumption.
 
@@ -303,8 +328,8 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
-    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
     """
 
     def get_writer(dst):
@@ -316,7 +341,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
                 while True:
                     obj = yield
                     nothing = False
-                    fd.write(_get_line(encoder(obj), text_mode))
+                    fd.write(_get_line(encode(obj), text_mode))
             except GeneratorExit:
                 # Flush compressor buffers before closing the generator to
                 # ensure a valid end-of-stream marker (required for .gz/.xz/.zst in Python 3.14+)
@@ -325,7 +350,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
         if nothing and not dump_if_empty:
             os.unlink(dst)
 
-    encoder = functools.partial(json_dumps or _default_json_dumps, **json_dumps_kwargs)
+    encode = _get_encode(cls, kwargs)
     writers = {}
     try:
         for xpath, iterable in paths:
@@ -344,7 +369,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, json
             writer.close()
 
 
-def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_kwargs):
+def load(source, /, *, opener=None, broken=False, cls=None, **kwargs):
     """
     Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into an object iterator.
 
@@ -357,8 +382,8 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
         For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
-    :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
-    :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
+    :param Optional[Callable] cls: Custom `json.JSONDecoder` subclass (defaults to `json.JSONDecoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONDecoder`.
     :rtype: Iterator[Any]
     """
 
@@ -370,16 +395,16 @@ def load(source, /, *, opener=None, broken=False, json_loads=None, **json_loads_
             charset = fd.headers.get_content_charset(failobj=_utf_8)
             # Wrap the file descriptor to handle text encoding.
             with io.TextIOWrapper(fd, encoding=charset) as stream:
-                yield from loader(stream, broken, json_loads=json_loads, **json_loads_kwargs)
+                yield from loader(stream, broken, cls=cls, **kwargs)
     # Filename handling
     elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
         openhook = opener or _xopen
         with openhook(filename, mode="rb", encoding=None) as fd:
-            yield from loader(fd, broken, json_loads=json_loads, **json_loads_kwargs)
+            yield from loader(fd, broken, cls=cls, **kwargs)
     # File-like object handling
     else:
-        yield from loader(source, broken, json_loads=json_loads, **json_loads_kwargs)
+        yield from loader(source, broken, cls=cls, **kwargs)
 
 
 def load_archive(
@@ -390,14 +415,14 @@ def load_archive(
     pwd=None,
     opener=None,
     broken=False,
-    json_loads=None,
     chunk_size=64 * 1024,
-    **json_loads_kwargs,
+    cls=None,
+    **kwargs,
 ):
     """
     Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
 
-    Tar archives can be compressed with gzip, bzip2, or xz. (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
+    Tar archives can be compressed with gzip, bzip2, xz or zst (Python +3.14). (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 
     :param str | bytes | os.PathLike | urllib.request.Request | Any file: Archive file to load.
         If a URL or `urllib.request.Request` object is provided, the file will be retrieved
@@ -411,11 +436,11 @@ def load_archive(
     :param Optional[bytes] pwd: The password to decrypt the archive, if applicable.
     :param Optional[Callable] opener: Custom function to open the file if a filename is provided.
     :param bool broken: If true, skip broken lines (only logging a warning).
-    :param Optional[Callable] json_loads: Custom function to deserialize JSON strings. By default, `json.loads` is used.
     :param int chunk_size:
         The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once.
         Default is 64 KB (64 * 1024 bytes).
-    :param Unpack[dict] json_loads_kwargs: Additional keywords to pass to `loads` of `json` provider.
+    :param Optional[Callable] cls: Custom `json.JSONDecoder` subclass (defaults to `json.JSONDecoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONDecoder`.
     :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
@@ -443,7 +468,7 @@ def load_archive(
         for member in members:
             filename = member.name
             with _xfile(filename, member) as fp:
-                it = load(fp, opener=opener, broken=broken, json_loads=json_loads, **json_loads_kwargs)
+                it = load(fp, opener=opener, broken=broken, cls=cls, **kwargs)
                 yield (filename, it)
 
 
@@ -455,14 +480,15 @@ def dump_archive(
     opener=None,
     text_mode=True,
     dump_if_empty=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
+    cls=None,
+    **kwargs,
 ):
     """
     Dump multiple JSON Lines items into an archive file (zip or tar) with the specified path.
 
     - If the archive already exists on the given path, it will be overwritten.
-    - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), or xz (`.tar.xz`).
+    - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), xz (`.tar.xz`),
+      or zst (`.tar.zst`) (Python +3.14)
 
     :param str path: Destination path for the archive file.
     :param Iterable[tuple[str | os.PathLike, Iterable[Any]]] data:
@@ -472,8 +498,9 @@ def dump_archive(
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file nor an empty archive.
-    :param Optional[Callable] json_dumps: Custom function to serialize objects. By default, `json.dumps` is used.
-    :param Unpack[dict] json_dumps_kwargs: Additional keywords to pass to `dumps` of `json` provider
+
+    :param Optional[Callable] cls: Custom `json.JSONEncoder` subclass (defaults to `json.JSONEncoder`).
+    :param Unpack[dict] kwargs: keyword arguments used to configure the `JSONEncoder`.
 
     :raises ValueError: If a filepath in `items_by_relpath` is absolute, or if the archive extension is unsupported.
     :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
@@ -500,8 +527,8 @@ def dump_archive(
             opener=opener,
             text_mode=text_mode,
             dump_if_empty=dump_if_empty,
-            json_dumps=json_dumps,
-            **json_dumps_kwargs,
+            cls=cls,
+            **kwargs,
         )
         if dump_if_empty or os.listdir(tmpdir):
             # Create the archive from the temporary directory.

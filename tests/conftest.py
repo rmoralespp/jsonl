@@ -10,13 +10,34 @@ import pathlib
 import tempfile
 import threading
 
-import orjson
 import pytest
-import ujson
 
 import jsonl
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
+
+
+class CustomDecoder(json.JSONDecoder):
+    pass
+
+
+class CustomEncoder(json.JSONEncoder):
+    pass
+
+
+class UpperDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, object_hook=self.object_hook, **kwargs)
+
+    def object_hook(self, obj):
+        return {k.upper(): v for k, v in obj.items()}
+
+
+class UpperEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        if isinstance(obj, dict):
+            obj = {k.upper(): v for k, v in obj.items()}
+        return super().encode(obj)
 
 
 @contextlib.contextmanager
@@ -94,6 +115,11 @@ def filepath(tmp_dir, filename):
     return str(tmp_dir / filename)
 
 
-@pytest.fixture(scope="package", params=(orjson.loads, ujson.loads, json.loads, None))
-def json_loads(request):
+@pytest.fixture(scope="package", params=(json.JSONDecoder, CustomDecoder, None))
+def json_decoder(request):
+    return request.param
+
+
+@pytest.fixture(scope="package", params=(json.JSONEncoder, CustomEncoder, None))
+def json_encoder(request):
     return request.param
