@@ -169,8 +169,10 @@ For complete parameter documentation, see the [full docs →](https://rmoralespp
 
 ## Custom Serialization
 
-Plug in any JSON-compatible serializer. For example, [`orjson`](https://github.com/ijl/orjson)
-for high-performance encoding:
+Plug in any JSON-compatible serializer.
+
+
+For example, [`orjson`](https://github.com/ijl/orjson) for high-performance encoding:
 
 ```python
 import orjson  # ensure orjson is installed: pip install orjson
@@ -179,14 +181,53 @@ import jsonl
 data = [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]
 
 # Write with orjson (returns bytes → set text_mode=False)
-jsonl.dump(data, "fast.jsonl", json_dumps=orjson.dumps, text_mode=False)
+jsonl.dump(data, "fast.jsonl", text_mode=False, cls=orjson.dumps)
 
 # Read with orjson
-for item in jsonl.load("fast.jsonl", json_loads=orjson.loads):
+for item in jsonl.load("fast.jsonl", cls=orjson.loads):
     print(item)
 ```
 
-Extra keyword arguments are forwarded to the underlying serializer:
+Another example: using custom `JSONEncoder` or `JSONDecoder` with `**kwargs` for various purposes, for example:
+
+
+```python
+import datetime
+import decimal
+import json
+
+import jsonl
+
+
+class UpperDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, object_hook=self.object_hook, parse_float=decimal.Decimal, **kwargs)
+
+    def object_hook(self, obj):
+        return {k.upper(): v for k, v in obj.items()}
+
+
+class ISODateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return super().default(obj)
+
+
+data = [
+    {"name": "Alice", "birthdate": datetime.date(2000, 1, 1)},
+    {"name": "Bob", "birthdate": datetime.date(2005, 1, 1)}
+]
+
+#  Write using a custom encoder to serialize datetime objects as ISO strings
+jsonl.dump(data, "fast.jsonl", cls=ISODateEncoder)
+
+# Read using a custom decoder to convert floats into Decimal and uppercase all keys
+for item in jsonl.load("fast.jsonl", cls=UpperDecoder):
+    print(item)
+```
+
+keyword arguments are forwarded to the underlying serializer:
 
 ```python
 import jsonl

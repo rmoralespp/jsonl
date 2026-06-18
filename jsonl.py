@@ -265,7 +265,7 @@ def _get_decode(cls, kwargs):
     elif is_subclass(cls, json.JSONDecoder):
         decode = cls(**kwargs).decode
     else:
-        decode = cls(**kwargs)
+        decode = functools.partial(cls, **kwargs)
     return decode
 
 # ---------------------------------- Public API ----------------------------------
