@@ -7,16 +7,22 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
-### v1.3.27 (2026-06-16)
+### v1.4.0
+
+- **Breaking Change:** Increase similarity with Python standard library json module behavior:
+  1. Now `load` and `load_archive` accept `cls` and `**kwargs` for custom decoding instead of `json_loads` and `**json_loads_kwargs`
+  2. Now `dump`, `dump_fork`, `dumps` and `dump_archive` accept `cls` and `**kwargs` for custom encoding instead of `json_dumps` and `**json_dumps_kwargs`
+
+### v1.3.27
 
 - **Added:** Support for compression.zstd (Python 3.14+)
 
-### v1.3.26 (2026-04-28)
+### v1.3.26
 
 - **Added:** More tests to cover 100% of the codebase.
 - **Fixed:** `load` Use context manager to close `TextIOWrapper` stream when loading from a URL.
 
-### v1.3.25 (2026-03-06)
+### v1.3.25
 
 - **Improved:** `load_archive` from URL no longer loads the file into RAM, reducing memory consumption. 
   Instead, the data is efficiently downloaded in chunks to a temporary file for loading.

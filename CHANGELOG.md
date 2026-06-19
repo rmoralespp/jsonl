@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.4.0 (2026-06-19)
+
 - **Breaking Change:** Increase similarity with Python standard library json module behavior:
   1. Now `load` and `load_archive` accept `cls` and `**kwargs` for custom decoding instead of `json_loads` and `**json_loads_kwargs`
   2. Now `dump`, `dump_fork`, `dumps` and `dump_archive` accept `cls` and `**kwargs` for custom encoding instead of `json_dumps` and `**json_dumps_kwargs`
