@@ -694,10 +694,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v1327-2026-06-16" class="md-nav__link">
+  <a href="#v140" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.27 (2026-06-16)
+        v1.4.0
       </span>
     </span>
   </a>
@@ -705,10 +705,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v1326-2026-04-28" class="md-nav__link">
+  <a href="#v1327" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.26 (2026-04-28)
+        v1.3.27
       </span>
     </span>
   </a>
@@ -716,10 +716,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v1325-2026-03-06" class="md-nav__link">
+  <a href="#v1326" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.25 (2026-03-06)
+        v1.3.26
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v1325" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        v1.3.25
       </span>
     </span>
   </a>
@@ -913,10 +924,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v1327-2026-06-16" class="md-nav__link">
+  <a href="#v140" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.27 (2026-06-16)
+        v1.4.0
       </span>
     </span>
   </a>
@@ -924,10 +935,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v1326-2026-04-28" class="md-nav__link">
+  <a href="#v1327" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.26 (2026-04-28)
+        v1.3.27
       </span>
     </span>
   </a>
@@ -935,10 +946,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v1325-2026-03-06" class="md-nav__link">
+  <a href="#v1326" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v1.3.25 (2026-03-06)
+        v1.3.26
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v1325" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        v1.3.25
       </span>
     </span>
   </a>
@@ -1094,16 +1116,22 @@
 <a href="https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md">CHANGELOG.md</a> file on GitHub.</p>
 <hr />
 <h2 id="latest-releases">Latest Releases<a class="headerlink" href="#latest-releases" title="Permanent link">&para;</a></h2>
-<h3 id="v1327-2026-06-16">v1.3.27 (2026-06-16)<a class="headerlink" href="#v1327-2026-06-16" title="Permanent link">&para;</a></h3>
+<h3 id="v140">v1.4.0<a class="headerlink" href="#v140" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Breaking Change:</strong> Increase similarity with Python standard library json module behavior:</li>
+<li>Now <code>load</code> and <code>load_archive</code> accept <code>cls</code> and <code>**kwargs</code> for custom decoding instead of <code>json_loads</code> and <code>**json_loads_kwargs</code></li>
+<li>Now <code>dump</code>, <code>dump_fork</code>, <code>dumps</code> and <code>dump_archive</code> accept <code>cls</code> and <code>**kwargs</code> for custom encoding instead of <code>json_dumps</code> and <code>**json_dumps_kwargs</code></li>
+</ul>
+<h3 id="v1327">v1.3.27<a class="headerlink" href="#v1327" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Added:</strong> Support for compression.zstd (Python 3.14+)</li>
 </ul>
-<h3 id="v1326-2026-04-28">v1.3.26 (2026-04-28)<a class="headerlink" href="#v1326-2026-04-28" title="Permanent link">&para;</a></h3>
+<h3 id="v1326">v1.3.26<a class="headerlink" href="#v1326" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Added:</strong> More tests to cover 100% of the codebase.</li>
 <li><strong>Fixed:</strong> <code>load</code> Use context manager to close <code>TextIOWrapper</code> stream when loading from a URL.</li>
 </ul>
-<h3 id="v1325-2026-03-06">v1.3.25 (2026-03-06)<a class="headerlink" href="#v1325-2026-03-06" title="Permanent link">&para;</a></h3>
+<h3 id="v1325">v1.3.25<a class="headerlink" href="#v1325" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Improved:</strong> <code>load_archive</code> from URL no longer loads the file into RAM, reducing memory consumption. 
   Instead, the data is efficiently downloaded in chunks to a temporary file for loading.</li>
