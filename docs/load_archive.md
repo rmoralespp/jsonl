@@ -12,24 +12,24 @@ jsonl.load_archive(
     pwd=None,
     opener=None,
     broken=False,
-    json_loads=None,
+    cls=None,
     chunk_size=64 * 1024,
-    **json_loads_kwargs,
+    **kwargs,
 )
 ```
 
 ### Parameters
 
-| Parameter             | Type                                           | Default      | Description                                                                                                 |
-|-----------------------|------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------|
-| `file`                | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | Archive file to load from                                                                                   |
-| `pattern`             | `str`                                          | `"*.jsonl"`  | Unix shell-style wildcard pattern to filter filenames inside the archive                                    |
-| `pwd`                 | `bytes` or `None`                              | `None`       | Password to decrypt the archive (ZIP only)                                                                  |
-| `opener`              | `Callable` or `None`                           | `None`       | Custom function to open the file (not supported for URLs)                                                   |
-| `broken`              | `bool`                                         | `False`      | If `True`, skip malformed lines and log a warning                                                           |
-| `json_loads`          | `Callable` or `None`                           | `None`       | Custom deserialization function. Defaults to `json.loads`                                                   |
-| `chunk_size`          | `int`                                          | 64 * 1024    | The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once. |
-| `**json_loads_kwargs` |                                                |              | Additional keyword arguments passed to the deserialization function                                         |
+| Parameter    | Type                                             | Default            | Description                                                                                                 |
+|--------------|--------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------------------|
+| `file`       | `str`, `PathLike`, `URL`, `Request`, file-like   | *(required)*       | Archive file to load from                                                                                   |
+| `pattern`    | `str`                                            | `"*.jsonl"`        | Unix shell-style wildcard pattern to filter filenames inside the archive                                    |
+| `pwd`        | `bytes` or `None`                                | `None`             | Password to decrypt the archive (ZIP only)                                                                  |
+| `opener`     | `Callable` or `None`                             | `None`             | Custom function to open the file (not supported for URLs)                                                   |
+| `broken`     | `bool`                                           | `False`            | If `True`, skip malformed lines and log a warning                                                           |
+| `chunk_size` | `int`                                            | 64 * 1024          | The size (in bytes) of chunks when reading from a URL to avoid loading the entire file into memory at once. |
+| `cls`        | `type[json.JSONDecoder]` or `Callable` or `None` | `json.JSONDecoder` | Custom decoder                                                                                              |
+| `**kwargs`   |                                                  |                    | Keyword arguments used to pass the Custom decoder (`cls`)                                                   |
 
 ### Returns
 
@@ -39,13 +39,14 @@ deserialized objects.
 ### Supported Archive Formats
 
 - **ZIP** archives (`.zip`)
-- **TAR** archives (`.tar`), including compressed variants: `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar.zst` (Python ≥ 3.14) )
+- **TAR** archives (`.tar`), including compressed variants: `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar.zst` (Python ≥ 3.14)
 
 ### Key Features
 
 - Load from local files or remote URLs
 - Filter files inside the archive using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html)
-- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (Python ≥ 3.14) ).
+- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (
+  Python ≥ 3.14) ).
   Check [compression detection](load.md#note-compression) for details.
 - ZIP archives with password protection
 - Graceful handling of malformed lines via the `broken` parameter

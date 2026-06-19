@@ -34,16 +34,16 @@ specifications.
 
 ## Features
 
-| Feature                        | Description                                                                                                     |
-|--------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                       |
-| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low                                            |
-| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                        |
-| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, and `.tar.zst` **(Python ≥ 3.14) )** |
-| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                             |
-| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                          |
-| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                             |
-| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                            |
+| Feature                        | Description                                                                                                 |
+|--------------------------------|-------------------------------------------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                   |
+| ⚡ **Streaming by default**     | Read and write incrementally via **iterators**, keeping memory usage low                                    |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                    |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, and `.tar.zst` (Python ≥ 3.14) ) |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                         |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                      |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                         |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                        |
 
 ## Installation
 
@@ -150,7 +150,7 @@ jsonl.dump_fork(data)
 | `jsonl.loader(stream, broken, **kw)` | Low-level generator deserializing a line stream   |
 
 > [!TIP]
-> All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+> All **read** functions accept `cls` and `**kwargs` for custom decoding.
 
 ### Writing
 
@@ -163,14 +163,13 @@ jsonl.dump_fork(data)
 | `jsonl.dumper(iterable, **kw)`         | Low-level generator yielding formatted lines             |
 
 > [!TIP]
-> All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
+> All **write** functions accept `cls` and `**kwargs` for custom encoding.
 
 For complete parameter documentation, see the [full docs →](https://rmoralespp.github.io/jsonl/)
 
 ## Custom Serialization
 
 Plug in any JSON-compatible serializer.
-
 
 For example, [`orjson`](https://github.com/ijl/orjson) for high-performance encoding:
 
@@ -188,8 +187,7 @@ for item in jsonl.load("fast.jsonl", cls=orjson.loads):
     print(item)
 ```
 
-Another example: using custom `JSONEncoder` or `JSONDecoder` with `**kwargs` for various purposes, for example:
-
+Another example: using custom `cls` with `**kwargs` for various purposes, for example:
 
 ```python
 import datetime
@@ -220,10 +218,10 @@ data = [
 ]
 
 #  Write using a custom encoder to serialize datetime objects as ISO strings
-jsonl.dump(data, "fast.jsonl", cls=ISODateEncoder)
+jsonl.dump(data, "file.jsonl", cls=ISODateEncoder)
 
 # Read using a custom decoder to convert floats into Decimal and uppercase all keys
-for item in jsonl.load("fast.jsonl", cls=UpperDecoder):
+for item in jsonl.load("file.jsonl", cls=UpperDecoder):
     print(item)
 ```
 
@@ -258,8 +256,8 @@ jsonl.dump(data, "sorted.jsonl", sort_keys=True)  # deterministic keys
 pip install --group=test --upgrade
 
 # Run tests
-python -m pytest tests/
-python -m pytest tests/ --cov  # run with coverage reporting
+python -Wd -m pytest tests/
+python -Wd -m pytest tests/ --cov  # run with coverage reporting
 
 # Lint
 pip install --group=lint --upgrade

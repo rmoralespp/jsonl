@@ -8,18 +8,18 @@ Serialize an iterable of objects into a JSON Lines formatted string.
 jsonl.dumps(
     iterable,
     *,
-    json_dumps=None,
-    **json_dumps_kwargs,
+    cls=None,
+    **kwargs,
 )
 ```
 
 ### Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `iterable` | `Iterable[Any]` | *(required)* | Iterable of objects to serialize |
-| `json_dumps` | `Callable` or `None` | `None` | Custom serialization function. Defaults to `json.dumps` |
-| `**json_dumps_kwargs` | | | Additional keyword arguments passed to the serialization function |
+| Parameter  | Type                                          | Default            | Description                                               |
+|------------|-----------------------------------------------|--------------------|-----------------------------------------------------------|
+| `iterable` | `Iterable[Any]`                               | *(required)*       | Iterable of objects to serialize                          |
+| `cls`      | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                            |
+| `**kwargs` |                                               |                    | Additional keyword arguments passed to the `cls`  encoder |
 
 ### Returns
 

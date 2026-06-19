@@ -35,7 +35,7 @@ import zipfile
 try:
     from compression import zstd
 except ImportError:
-    zstd = None
+    zstd = None  # Python < 3.14
 
 # ---------------------------------- Internal variables ----------------------------------
 
@@ -234,7 +234,7 @@ def _iterfind_tar_members(name_or_obj, pattern, /):
                     yield file
 
 
-def is_subclass(o, klass):
+def _issubclass(o, klass):
     try:
         return issubclass(o, klass)
     except TypeError:
@@ -242,13 +242,11 @@ def is_subclass(o, klass):
 
 
 def _get_encode(cls, kwargs):
-    # return _default_encode if not (cls or kwargs) else (cls or json.JSONEncoder)(**kwargs).encode
-
     if not (cls or kwargs):
         encode = _default_encode
     elif not cls:
         encode = json.JSONEncoder(**kwargs)
-    elif is_subclass(cls, json.JSONEncoder):
+    elif _issubclass(cls, json.JSONEncoder):
         encode = cls(**kwargs).encode
     else:
         encode = functools.partial(cls, **kwargs)
@@ -256,13 +254,11 @@ def _get_encode(cls, kwargs):
 
 
 def _get_decode(cls, kwargs):
-    # return _default_decode if not (cls or kwargs) else (cls or json.JSONDecoder)(**kwargs).decode
-
     if not (cls or kwargs):
         decode = _default_decode
     elif not cls:
         decode = json.JSONDecoder(** kwargs)
-    elif is_subclass(cls, json.JSONDecoder):
+    elif _issubclass(cls, json.JSONDecoder):
         decode = cls(**kwargs).decode
     else:
         decode = functools.partial(cls, **kwargs)
