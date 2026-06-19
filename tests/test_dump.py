@@ -89,3 +89,16 @@ def test_dump_given_custom_file_writelines_method():
     file = CustomFile()
     jsonl.dump(tests.data, file)
     assert file.content == tests.string_data
+
+
+def test_dump_custom_encoder():
+    class UpperEncoder(json.JSONEncoder):
+        def encode(self, obj):
+            if isinstance(obj, dict):
+                obj = {k.upper(): v for k, v in obj.items()}
+            return super().encode(obj)
+
+    with contextlib.closing(io.StringIO()) as fp:
+        jsonl.dump(({"key": "val"},), fp, cls=UpperEncoder)
+
+        assert fp.getvalue() == '{"KEY": "val"}\n'

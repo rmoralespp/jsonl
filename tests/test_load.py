@@ -123,3 +123,16 @@ def test_http_server_url(http_server):
     url = http_server + "foo.jsonl"
     data = list(jsonl.load(url))
     assert data == tests.data
+
+
+def test_load_custom_decoder():
+    class LowerDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, object_hook=self.object_hook, **kwargs)
+
+        def object_hook(self, obj):
+            return {k.lower(): v for k, v in obj.items()}
+
+    with contextlib.closing(io.StringIO('{"KEY": "val"}\n')) as fd:
+        data = list(jsonl.load(fd, cls=LowerDecoder))
+        assert data == [{"key": "val"}]

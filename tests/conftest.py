@@ -25,21 +25,6 @@ class CustomEncoder(json.JSONEncoder):
     pass
 
 
-class UpperDecoder(json.JSONDecoder):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, object_hook=self.object_hook, **kwargs)
-
-    def object_hook(self, obj):
-        return {k.upper(): v for k, v in obj.items()}
-
-
-class UpperEncoder(json.JSONEncoder):
-    def encode(self, obj):
-        if isinstance(obj, dict):
-            obj = {k.upper(): v for k, v in obj.items()}
-        return super().encode(obj)
-
-
 @contextlib.contextmanager
 def manage_http_server(directory):
     """
