@@ -42,17 +42,17 @@ def test_invalid_object():
 
 
 @pytest.mark.parametrize(
-    "json_dumps, json_dumps_kwargs, expected",
+    "cls, kwargs, expected",
     [
+        (json.JSONEncoder, {"ensure_ascii": False}, tests.string_data),
+        (None, {}, tests.string_data),
         (orjson.dumps, {}, tests.compacted_string_data),
         (ujson.dumps, {"ensure_ascii": False}, tests.compacted_string_data),
-        (json.dumps, {"ensure_ascii": False}, tests.string_data),
-        (None, {}, tests.string_data),
     ],
 )
-def test_filepath(filepath, json_dumps, json_dumps_kwargs, expected, pathlike):
+def test_filepath(filepath, cls, kwargs, expected, pathlike):
     filepath = pathlib.Path(filepath) if pathlike else filepath
-    jsonl.dump(iter(tests.data), filepath, json_dumps=json_dumps, **json_dumps_kwargs)
+    jsonl.dump(iter(tests.data), filepath, cls=cls, **kwargs)
     result = tests.read_text(filepath)
     assert result == expected
 
@@ -89,3 +89,16 @@ def test_dump_given_custom_file_writelines_method():
     file = CustomFile()
     jsonl.dump(tests.data, file)
     assert file.content == tests.string_data
+
+
+def test_dump_custom_encoder():
+    class UpperEncoder(json.JSONEncoder):
+        def encode(self, obj):
+            if isinstance(obj, dict):
+                obj = {k.upper(): v for k, v in obj.items()}
+            return super().encode(obj)
+
+    with contextlib.closing(io.StringIO()) as fp:
+        jsonl.dump(({"key": "val"},), fp, cls=UpperEncoder)
+
+        assert fp.getvalue() == '{"KEY": "val"}\n'

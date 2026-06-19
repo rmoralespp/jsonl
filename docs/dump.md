@@ -1,6 +1,6 @@
 # jsonl.dump
 
-Write an iterable of objects to a JSON Lines file. Supports filenames (with automatic compression),
+Write an iterable of objects to a JSON Lines file. Supports filenames *(with automatic compression)*,
 `os.PathLike` objects, and file-like objects with `write` or `writelines` methods.
 
 ## Function Signature
@@ -12,32 +12,32 @@ jsonl.dump(
     *,
     opener=None,
     text_mode=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
+    cls=None,
+    **kwargs,
 )
 ```
 
 ### Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `iterable` | `Iterable[Any]` | *(required)* | Iterable of JSON-serializable objects |
-| `file` | `str`, `PathLike`, file-like | *(required)* | Destination file path or file-like object |
-| `opener` | `Callable` or `None` | `None` | Custom function to open the file (used only when `file` is a path) |
-| `text_mode` | `bool` | `True` | If `False`, write bytes instead of text |
-| `json_dumps` | `Callable` or `None` | `None` | Custom serialization function. Defaults to `json.dumps` |
-| `**json_dumps_kwargs` | | | Additional keyword arguments passed to the serialization function |
+| Parameter    | Type                                          | Default            | Description                                                        |
+|--------------|-----------------------------------------------|--------------------|--------------------------------------------------------------------|
+| `iterable`   | `Iterable[Any]`                               | *(required)*       | Iterable of JSON-serializable objects                              |
+| `file`       | `str`, `PathLike`, file-like                  | *(required)*       | Destination file path or file-like object                          |
+| `opener`     | `Callable` or `None`                          | `None`             | Custom function to open the file (used only when `file` is a path) |
+| `text_mode`  | `bool`                                        | `True`             | If `False`, write bytes instead of text                            |
+| `cls`        | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                                     |
+| `**kwargs`   |                                               |                    | Additional keyword arguments passed to the `cls` encoder           |
 
 ### Raises
 
-| Exception | Condition |
-|---|---|
+| Exception    | Condition                                                           |
+|--------------|---------------------------------------------------------------------|
 | `ValueError` | If the file object is missing both `writelines` and `write` methods |
 
 ### Compression Detection
 
 !!! note
-    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz), zst (.zst) (Python ≥ 3.14) **
+    Supported compression formats: `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14)
 
     When a filename is provided, the compression format is determined by its extension.
     If the extension is not recognized, the file is written as plain text.
@@ -69,10 +69,10 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-jsonl.dump(data, "file.jsonl.gz")    # gzip
-jsonl.dump(data, "file.jsonl.bz2")   # bzip2
-jsonl.dump(data, "file.jsonl.xz")    # xz
-jsonl.dump(data, "file.jsonl.zst")    # zst
+jsonl.dump(data, "file.jsonl.gz")  # gzip
+jsonl.dump(data, "file.jsonl.bz2")  # bzip2
+jsonl.dump(data, "file.jsonl.xz")  # xz
+jsonl.dump(data, "file.jsonl.zst")  # zst
 ```
 
 ### Write to an open file object
@@ -142,6 +142,31 @@ jsonl.dump(data, MyWriter(), text_mode=True)
 
 ### Custom serialization
 
+#### Using custom JSON Encoder
+
+```python
+import datetime
+import json
+
+import jsonl
+
+
+class ISODateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return super().default(obj)
+
+
+data = [
+    {"name": "Alice", "birthdate": datetime.date(2000, 1, 1)},
+    {"name": "Bob", "birthdate": datetime.date(2005, 1, 1)}
+]
+
+#  Write using a custom encoder to serialize datetime objects as ISO strings
+jsonl.dump(data, "file.jsonl", cls=ISODateEncoder)
+```
+
 #### Using a third-party library
 
 [`orjson`](https://github.com/ijl/orjson) is a high-performance JSON library that returns bytes:
@@ -156,12 +181,12 @@ data = [
 ]
 
 # orjson returns bytes — set text_mode=False
-jsonl.dump(data, "file.jsonl", json_dumps=orjson.dumps, text_mode=False)
+jsonl.dump(data, "file.jsonl", cls=orjson.dumps, text_mode=False)
 ```
 
-#### Passing additional keyword arguments
+#### Passing keyword arguments
 
-Extra keyword arguments are forwarded directly to the serialization function (by default, `json.dumps`):
+Extra keyword arguments are forwarded directly to the `cls` decoder:
 
 ```python
 import jsonl

@@ -6,25 +6,18 @@ Deserialize a JSON Lines source into an iterator of Python objects. Supports fil
 ## Function Signature
 
 ```python
-jsonl.load(
-    source,
-    *,
-    opener=None,
-    broken=False,
-    json_loads=None,
-    **json_loads_kwargs,
-)
+jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
 ```
 
 ### Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `source` | `str`, `PathLike`, `URL`, `Request`, file-like | *(required)* | The JSON Lines source to read from |
-| `opener` | `Callable` or `None` | `None` | Custom function to open the file (not supported for URLs) |
-| `broken` | `bool` | `False` | If `True`, skip malformed lines and log a warning instead of raising an exception |
-| `json_loads` | `Callable` or `None` | `None` | Custom deserialization function. Defaults to `json.loads` |
-| `**json_loads_kwargs` | | | Additional keyword arguments passed to the deserialization function |
+| Parameter    | Type                                               | Default              | Description                                                                         |
+|--------------|----------------------------------------------------|----------------------|-------------------------------------------------------------------------------------|
+| `source`     | `str`, `PathLike`, `URL`, `Request`, file-like     | *(required)*         | The JSON Lines source to read from                                                  |
+| `opener`     | `Callable` or `None`                               | `None`               | Custom function to open the file (not supported for URLs)                           |
+| `broken`     | `bool`                                             | `False`              | If `True`, skip malformed lines and log a warning instead of raising an exception   |
+| `cls`        | `type[json.JSONDecoder]` or `Callable` or `None`   | `json.JSONDecoder`   | Custom decoder                                                                      |
+| `**kwargs`   |                                                    |                      | Keyword arguments used to pass the Custom decoder (`cls`)                           |
 
 ### Returns
 
@@ -34,11 +27,11 @@ jsonl.load(
 
 <a id="note-compression"></a>
 !!! note
-    Supported compression formats: **gzip (.gz), bzip2 (.bz2), xz (.xz), zst (.zst) (Python ≥ 3.14) **
+    Supported compression formats: `.gz`, `.bz2`, `.xz`, and `.zst` (*Python ≥ 3.14*)
 
     The compression format is resolved using two strategies:
 
-    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14)), that format is used directly.
+    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`, `.zst` *Python ≥ 3.14* ), that format is used directly.
     2. **By magic numbers** — when the extension is not recognized, **jsonl** inspects the first bytes of the file
        ([magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures)) to auto-detect the compression format.
 
@@ -126,7 +119,7 @@ for item in jsonl.load(req):
 ### Handle broken lines
 
 !!! warning
-    When `broken=False` (the default), an exception is raised on the first malformed line.
+    When `broken=False` **(default)**, an exception is raised on the first malformed line.
     When `broken=True`, malformed lines are skipped and a warning is logged.
 
 ```python
@@ -153,6 +146,30 @@ WARNING:jsonl:Broken line at 2: Expecting ',' delimiter: line 2 column 1 (char 2
 
 ### Custom deserialization
 
+#### Using a custom JSON Decoder
+
+```python
+import json
+
+import jsonl
+
+
+class UpperDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, object_hook=self.object_hook, **kwargs)
+
+    def object_hook(self, obj):
+        return {k.upper(): v for k, v in obj.items()}
+
+
+data = [{"name": "Gilbert"}, {"name": "May"}]
+jsonl.dump(data, "file.jsonl")
+
+# Read using a custom decoder to convert all keys to uppercase.
+for item in jsonl.load("file.jsonl", cls=UpperDecoder):
+    print(item)
+```
+
 #### Using a third-party library
 
 [`orjson`](https://github.com/ijl/orjson) is a popular high-performance JSON library:
@@ -165,16 +182,16 @@ data = [
     {"name": "Gilbert", "wins": [["straight", "7♣"], ["one pair", "10♥"]]},
     {"name": "May", "wins": []},
 ]
-
 jsonl.dump(data, "file.jsonl")
 
-for item in jsonl.load("file.jsonl", json_loads=orjson.loads):
+for item in jsonl.load("file.jsonl", cls=orjson.loads):
     print(item)
 ```
 
-#### Passing additional keyword arguments
+#### Passing keyword arguments
 
-Extra keyword arguments are forwarded to the deserialization function (by default, `json.loads`).
+Extra keyword arguments are forwarded to the `cls` decoder.
+
 For example, parse float values as `decimal.Decimal`:
 
 ```python
@@ -185,7 +202,6 @@ data = [
     {"name": "Gilbert", "wins_avg": 2.5},
     {"name": "May", "wins_avg": 3.75},
 ]
-
 jsonl.dump(data, "file.jsonl")
 
 for item in jsonl.load("file.jsonl", parse_float=decimal.Decimal):

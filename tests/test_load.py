@@ -57,7 +57,7 @@ def test_memory_file(iofile):
 
 
 @pytest.mark.parametrize("mode", ("rt", "rb"))
-def test_opened_file(filepath, mode, json_loads):
+def test_opened_file(filepath, mode, json_decoder):
     expected = tuple(tests.data)
     # Prepare a file with JSON lines
     with jsonl._xopen(filepath, mode="wb") as fp:  # write into a binary file
@@ -65,27 +65,27 @@ def test_opened_file(filepath, mode, json_loads):
         fp.write(content)
     # Load the file in given mode
     with jsonl._xopen(filepath, mode=mode) as fp:
-        result = tuple(jsonl.load(fp, json_loads=json_loads))
+        result = tuple(jsonl.load(fp, cls=json_decoder))
     assert result == expected
 
 
 @pytest.mark.parametrize("pathlike", (True, False))
-def test_filepath(filepath, json_loads, pathlike):
+def test_filepath(filepath, json_decoder, pathlike):
     filepath = pathlib.Path(filepath) if pathlike else filepath
     expected = tuple(tests.data)
     tests.write_text(filepath, content=tests.string_data)
-    result = tuple(jsonl.load(filepath, json_loads=json_loads))
+    result = tuple(jsonl.load(filepath, cls=json_decoder))
     assert result == expected
 
 
-def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_loads):
+def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_decoder):
     expected = tuple(tests.data)
     tests.write_text(filepath, content=tests.string_data)  # Write compressed data first
     # Rename to have an unknown extension after writing valid data
     new_filepath = filepath + ".unknown"
     os.rename(filepath, new_filepath)
 
-    result = tuple(jsonl.load(new_filepath, json_loads=json_loads))
+    result = tuple(jsonl.load(new_filepath, cls=json_decoder))
     assert result == expected
 
 
@@ -123,3 +123,16 @@ def test_http_server_url(http_server):
     url = http_server + "foo.jsonl"
     data = list(jsonl.load(url))
     assert data == tests.data
+
+
+def test_load_custom_decoder():
+    class LowerDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, object_hook=self.object_hook, **kwargs)
+
+        def object_hook(self, obj):
+            return {k.lower(): v for k, v in obj.items()}
+
+    with contextlib.closing(io.StringIO('{"KEY": "val"}\n')) as fd:
+        data = list(jsonl.load(fd, cls=LowerDecoder))
+        assert data == [{"key": "val"}]

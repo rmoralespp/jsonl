@@ -10,13 +10,19 @@ import pathlib
 import tempfile
 import threading
 
-import orjson
 import pytest
-import ujson
 
 import jsonl
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
+
+
+class CustomDecoder(json.JSONDecoder):
+    pass
+
+
+class CustomEncoder(json.JSONEncoder):
+    pass
 
 
 @contextlib.contextmanager
@@ -94,6 +100,11 @@ def filepath(tmp_dir, filename):
     return str(tmp_dir / filename)
 
 
-@pytest.fixture(scope="package", params=(orjson.loads, ujson.loads, json.loads, None))
-def json_loads(request):
+@pytest.fixture(scope="package", params=(json.JSONDecoder, CustomDecoder, None))
+def json_decoder(request):
+    return request.param
+
+
+@pytest.fixture(scope="package", params=(json.JSONEncoder, CustomEncoder, None))
+def json_encoder(request):
     return request.param

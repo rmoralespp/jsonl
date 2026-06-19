@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 import pathlib
 import tempfile
 
 import pytest
-import ujson
 
 import jsonl
 import tests
 
 
 @pytest.mark.parametrize(
-    "json_dumps, json_dumps_kwargs",
+    "cls, kwargs",
     [
-        (ujson.dumps, {"ensure_ascii": False, "separators": (", ", ": ")}),
+        (json.JSONEncoder, {"ensure_ascii": False, "separators": (", ", ": ")}),
         (None, {}),
     ],
 )
 @pytest.mark.parametrize("text_mode", (True, False))
-def test_iter_data(file_extension, pathlike, text_mode, json_dumps, json_dumps_kwargs):
+def test_iter_data(file_extension, pathlike, text_mode, cls, kwargs):
     with tempfile.TemporaryDirectory() as tmp:
         foo_path = os.path.join(tmp, f"foo{file_extension}")
         var_path = os.path.join(tmp, f"var{file_extension}")
@@ -35,7 +35,7 @@ def test_iter_data(file_extension, pathlike, text_mode, json_dumps, json_dumps_k
             (baz_path, iter(())),
         )
 
-        jsonl.dump_fork(iter(path_items), text_mode=text_mode, json_dumps=json_dumps, **json_dumps_kwargs)
+        jsonl.dump_fork(iter(path_items), text_mode=text_mode, cls=cls, **kwargs)
 
         assert tests.read_text(foo_path) == '{"foo": 1}\n{"ño": 2}\n{"extra": true}\n'
         assert tests.read_text(var_path) == '{"foo": 1}\n{"ño": 2}\n'

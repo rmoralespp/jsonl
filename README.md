@@ -34,16 +34,16 @@ specifications.
 
 ## Features
 
-| Feature                        | Description                                                                                                     |
-|--------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                       |
-| ⚡ **Streaming by default**     | Read and write incrementally via iterators, keeping memory usage low                                            |
-| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                        |
-| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, and `.tar.zst` **(Python ≥ 3.14) )** |
-| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                             |
-| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                          |
-| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                             |
-| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                            |
+| Feature                        | Description                                                                                                 |
+|--------------------------------|-------------------------------------------------------------------------------------------------------------|
+| 🌎 **Familiar API**            | Interface similar to the standard `json` module (`dump`, `load`, `dumps`)                                   |
+| ⚡ **Streaming by default**     | Read and write incrementally via **iterators**, keeping memory usage low                                    |
+| 🗜️ **Built-in compression**   | Transparent support for `gzip`, `bzip2`, `xz`, and `zst` (Python ≥ 3.14)                                    |
+| 📦 **Archive support**         | Read and write `ZIP` and `TAR` archives (`.tar.gz`, `.tar.bz2`, `.tar.xz`, and `.tar.zst` (Python ≥ 3.14) ) |
+| 📥 **Load from URLs**          | Pass a URL directly to `load()` or `load_archive()`                                                         |
+| 🚀 **Pluggable serialization** | Swap in [`orjson`](https://github.com/ijl/orjson), or any JSON library                                      |
+| 🔧 **Error tolerance**         | Optionally skip malformed lines instead of crashing                                                         |
+| 🐍 **Zero dependencies**       | Uses only the Python standard library — nothing else                                                        |
 
 ## Installation
 
@@ -150,7 +150,7 @@ jsonl.dump_fork(data)
 | `jsonl.loader(stream, broken, **kw)` | Low-level generator deserializing a line stream   |
 
 > [!TIP]
-> All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+> All **read** functions accept `cls` and `**kwargs` for custom decoding.
 
 ### Writing
 
@@ -163,14 +163,15 @@ jsonl.dump_fork(data)
 | `jsonl.dumper(iterable, **kw)`         | Low-level generator yielding formatted lines             |
 
 > [!TIP]
-> All **write** functions accept `json_dumps` and `**json_dumps_kwargs` for custom serialization.
+> All **write** functions accept `cls` and `**kwargs` for custom encoding.
 
 For complete parameter documentation, see the [full docs →](https://rmoralespp.github.io/jsonl/)
 
 ## Custom Serialization
 
-Plug in any JSON-compatible serializer. For example, [`orjson`](https://github.com/ijl/orjson)
-for high-performance encoding:
+Plug in any JSON-compatible serializer.
+
+For example, [`orjson`](https://github.com/ijl/orjson) for high-performance encoding:
 
 ```python
 import orjson  # ensure orjson is installed: pip install orjson
@@ -179,14 +180,52 @@ import jsonl
 data = [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]
 
 # Write with orjson (returns bytes → set text_mode=False)
-jsonl.dump(data, "fast.jsonl", json_dumps=orjson.dumps, text_mode=False)
+jsonl.dump(data, "fast.jsonl", text_mode=False, cls=orjson.dumps)
 
 # Read with orjson
-for item in jsonl.load("fast.jsonl", json_loads=orjson.loads):
+for item in jsonl.load("fast.jsonl", cls=orjson.loads):
     print(item)
 ```
 
-Extra keyword arguments are forwarded to the underlying serializer:
+Another example: using custom `cls` with `**kwargs` for various purposes, for example:
+
+```python
+import datetime
+import decimal
+import json
+
+import jsonl
+
+
+class UpperDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, object_hook=self.object_hook, parse_float=decimal.Decimal, **kwargs)
+
+    def object_hook(self, obj):
+        return {k.upper(): v for k, v in obj.items()}
+
+
+class ISODateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return super().default(obj)
+
+
+data = [
+    {"name": "Alice", "birthdate": datetime.date(2000, 1, 1)},
+    {"name": "Bob", "birthdate": datetime.date(2005, 1, 1)}
+]
+
+#  Write using a custom encoder to serialize datetime objects as ISO strings
+jsonl.dump(data, "file.jsonl", cls=ISODateEncoder)
+
+# Read using a custom decoder to convert floats into Decimal and uppercase all keys
+for item in jsonl.load("file.jsonl", cls=UpperDecoder):
+    print(item)
+```
+
+keyword arguments are forwarded to the underlying serializer:
 
 ```python
 import jsonl
@@ -217,8 +256,8 @@ jsonl.dump(data, "sorted.jsonl", sort_keys=True)  # deterministic keys
 pip install --group=test --upgrade
 
 # Run tests
-python -m pytest tests/
-python -m pytest tests/ --cov  # run with coverage reporting
+python -Wd -m pytest tests/
+python -Wd -m pytest tests/ --cov  # run with coverage reporting
 
 # Lint
 pip install --group=lint --upgrade

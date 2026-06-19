@@ -12,26 +12,27 @@ jsonl.dump_fork(
     opener=None,
     text_mode=True,
     dump_if_empty=True,
-    json_dumps=None,
-    **json_dumps_kwargs,
+    cls=None,
+    **kwargs,
 )
 ```
 
 ### Parameters
 
-| Parameter             | Type                                  | Default      | Description                                                       |
-|-----------------------|---------------------------------------|--------------|-------------------------------------------------------------------|
-| `paths`               | `Iterable[tuple[str, Iterable[Any]]]` | *(required)* | Iterable of `(filepath, items)` tuples                            |
-| `opener`              | `Callable` or `None`                  | `None`       | Custom function to open the given file paths                      |
-| `text_mode`           | `bool`                                | `True`       | If `False`, write bytes instead of text                           |
-| `dump_if_empty`       | `bool`                                | `True`       | If `False`, don't create empty files                              |
-| `json_dumps`          | `Callable` or `None`                  | `None`       | Custom serialization function. Defaults to `json.dumps`           |
-| `**json_dumps_kwargs` |                                       |              | Additional keyword arguments passed to the serialization function |
+| Parameter       | Type                                          | Default            | Description                                               |
+|-----------------|-----------------------------------------------|--------------------|-----------------------------------------------------------|
+| `paths`         | `Iterable[tuple[str, Iterable[Any]]]`         | *(required)*       | Iterable of `(filepath, items)` tuples                    |
+| `opener`        | `Callable` or `None`                          | `None`             | Custom function to open the given file paths              |
+| `text_mode`     | `bool`                                        | `True`             | If `False`, write bytes instead of text                   |
+| `dump_if_empty` | `bool`                                        | `True`             | If `False`, don't create empty files                      |
+| `cls`           | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                            |
+| `**kwargs`      |                                               |                    | Additional keyword arguments passed to the `cls`  encoder |
 
 ### Behavior
 
 - If the same filepath appears multiple times, subsequent data is **appended** to the file.
-- Files can use compression extensions (`.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14) ) and will be compressed accordingly.
+- Files can use compression extensions (`.gz`, `.bz2`, `.xz`, and `.zst` *Python ≥ 3.14* ) and will be compressed
+  accordingly.
 - When `dump_if_empty=False`, files with no data are not created.
 
 ---
@@ -88,5 +89,5 @@ def worker():
 
 
 # Using orjson for faster serialization
-jsonl.dump_fork(worker(), json_dumps=orjson.dumps, text_mode=False)
+jsonl.dump_fork(worker(), cls=orjson.dumps, text_mode=False)
 ```
