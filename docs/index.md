@@ -141,7 +141,7 @@ for filename, items in jsonl.load_archive("data.tar.gz"):
 | [`jsonl.load_archive`](load_archive.md) | Read JSON Lines files from a ZIP or TAR archive                 |
 
 !!! tip "Custom Serialization"
-    All **read** functions accept `json_loads` and `**json_loads_kwargs` for custom deserialization.
+    All **read** functions accept `cls` and `**kwargs` for custom deserialization.
 
 ### Writing
 
