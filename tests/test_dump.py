@@ -46,6 +46,7 @@ def test_invalid_object():
     [
         (json.JSONEncoder, {"ensure_ascii": False}, tests.string_data),
         (None, {}, tests.string_data),
+        (None, {"ensure_ascii": False}, tests.string_data),
         (orjson.dumps, {}, tests.compacted_string_data),
         (ujson.dumps, {"ensure_ascii": False}, tests.compacted_string_data),
     ],
