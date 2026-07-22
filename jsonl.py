@@ -245,7 +245,7 @@ def _get_encode(cls, kwargs):
     if not (cls or kwargs):
         encode = _default_encode
     elif not cls:
-        encode = json.JSONEncoder(**kwargs)
+        encode = json.JSONEncoder(**kwargs).encode
     elif _issubclass(cls, json.JSONEncoder):
         encode = cls(**kwargs).encode
     else:
@@ -257,7 +257,7 @@ def _get_decode(cls, kwargs):
     if not (cls or kwargs):
         decode = _default_decode
     elif not cls:
-        decode = json.JSONDecoder(** kwargs)
+        decode = json.JSONDecoder(**kwargs).decode
     elif _issubclass(cls, json.JSONDecoder):
         decode = cls(**kwargs).decode
     else:
