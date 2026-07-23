@@ -7,6 +7,10 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.4.1
+
+- **Fixed:** `json.JSONEncoder`/`json.JSONDecoder` is not callable
+
 ### v1.4.0
 
 - **Breaking Change:** Increase similarity with Python standard library json module behavior:

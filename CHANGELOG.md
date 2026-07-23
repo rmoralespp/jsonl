@@ -1,5 +1,9 @@
 ## Releases
 
+### v1.4.1 (2026-07-23)
+
+- **Fixed:** `json.JSONEncoder`/`json.JSONDecoder` is not callable
+
 ### v1.4.0 (2026-06-19)
 
 - **Breaking Change:** Increase similarity with Python standard library json module behavior:
