@@ -110,6 +110,7 @@ for item in jsonl.load("fast.jsonl", cls=orjson.loads):
 | Function                                | Description                                       |
 |-----------------------------------------|---------------------------------------------------|
 | [`jsonl.load`](load.md)                 | File, URL, or file-like → lazy iterator           |
+| [`jsonl.loads`](loads.md)               | JSON Lines string → lazy iterator                 |
 | [`jsonl.load_archive`](load_archive.md) | Unpack JSONL files from ZIP/TAR archive           |
 | [`jsonl.loader`](loader.md)             | Low-level line-stream deserializer                |
 
