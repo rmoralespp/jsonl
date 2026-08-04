@@ -21,10 +21,25 @@ def test_xfile_object(filepath):
             assert isinstance(result, bz2.BZ2File)
         elif filepath.endswith(".xz"):
             assert isinstance(result, lzma.LZMAFile)
-        elif filepath.endswith(".zst") and jsonl.zstd:
-            assert isinstance(result, jsonl.zstd.ZstdFile)
         else:
             assert result is obj
+
+
+def test_xfile_zstd_decompression():
+    """Test _xfile with a zstd-compressed file-like object when zstd is available."""
+
+    mock_zstd_file = unittest.mock.MagicMock()
+    mock_zstd = unittest.mock.MagicMock()
+    mock_zstd.ZstdFile.return_value = mock_zstd_file
+
+    obj = unittest.mock.MagicMock()
+    with unittest.mock.patch.object(jsonl, "zstd", mock_zstd):
+        with unittest.mock.patch.object(jsonl, "_get_file_extension", return_value=jsonl.ext_zst):
+            with jsonl._xfile("file.zst", obj) as result:
+                assert result is mock_zstd_file
+
+    mock_zstd.ZstdFile.assert_called_once_with(obj)
+    mock_zstd_file.close.assert_called_once()
 
 
 def test_xfile_close(filepath):

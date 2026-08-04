@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import importlib
 import os.path
 import sys
+import unittest.mock
 import urllib.request
 
 import pytest
@@ -83,3 +85,18 @@ def test_looks_like_url(url, expected):
 def test_looks_like_url_filepath():
     expected = sys.platform != "win32"
     assert jsonl._looks_like_url("D:/path/to/data.jsonl") == expected
+
+
+def test_zstd_module_registration():
+    """Test that when zstd is available, extensions and openers are registered at module load."""
+
+    mock_zstd = unittest.mock.MagicMock()
+    with unittest.mock.patch.dict(sys.modules, {"compression": mock_zstd, "compression.zstd": mock_zstd.zstd}):
+        importlib.reload(jsonl)
+
+        assert jsonl.ext_zst in jsonl.extensions
+        assert jsonl.ext_zst in jsonl._openers
+        assert "tar.zst" in jsonl._archive_formats
+
+    # Reload again to restore original state
+    importlib.reload(jsonl)

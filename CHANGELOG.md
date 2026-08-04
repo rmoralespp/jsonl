@@ -1,5 +1,7 @@
 ## Releases
 
+- **Added:** More tests to cover 100% of the codebase.
+
 ### v1.4.1 (2026-07-23)
 
 - **Fixed:** `json.JSONEncoder`/`json.JSONDecoder` is not callable

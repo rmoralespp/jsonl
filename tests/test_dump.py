@@ -100,6 +100,13 @@ def test_dump_custom_encoder():
             return super().encode(obj)
 
     with contextlib.closing(io.StringIO()) as fp:
-        jsonl.dump(({"key": "val"},), fp, cls=UpperEncoder)
+        jsonl.dump(({"key": "val"}, [1, 2]), fp, cls=UpperEncoder)
+        assert fp.getvalue() == '{"KEY": "val"}\n[1, 2]\n'
 
-        assert fp.getvalue() == '{"KEY": "val"}\n'
+
+def test_dump_with_json_encoder_fixture(json_encoder):
+    """Test dump with the parametrized json_encoder fixture."""
+
+    with contextlib.closing(io.StringIO()) as fp:
+        jsonl.dump(iter(tests.data), fp, cls=json_encoder, ensure_ascii=False)
+        assert fp.getvalue() == tests.string_data

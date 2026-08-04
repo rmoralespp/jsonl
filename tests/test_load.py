@@ -136,3 +136,27 @@ def test_load_custom_decoder():
     with contextlib.closing(io.StringIO('{"KEY": "val"}\n')) as fd:
         data = list(jsonl.load(fd, cls=LowerDecoder))
         assert data == [{"key": "val"}]
+
+
+def test_load_with_decoder_kwargs():
+    """Test load with kwargs but no cls."""
+
+    with contextlib.closing(io.StringIO('{"price": 1.5}\n')) as fd:
+        data = list(jsonl.load(fd, parse_float=lambda x: int(float(x) * 100)))
+
+    assert data == [{"price": 150}]
+
+
+def test_load_with_callable_decoder():
+    """Test load with a callable cls that is not a JSONDecoder subclass."""
+
+    def custom_decode(line):
+        obj = json.loads(line)
+        if isinstance(obj, dict):
+            return {k.upper(): v for k, v in obj.items()}
+        return obj
+
+    with contextlib.closing(io.StringIO('{"key": "val"}\n[1, 2]\n')) as fd:
+        data = list(jsonl.load(fd, cls=custom_decode))
+
+    assert data == [{"KEY": "val"}, [1, 2]]
