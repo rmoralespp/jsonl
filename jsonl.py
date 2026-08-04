@@ -9,6 +9,7 @@ __all__ = [
     "dump_fork",
     "load",
     "loader",
+    "loads",
     "load_archive",
     "dump_archive",
 ]
@@ -303,6 +304,26 @@ def dumps(iterable, /, *, cls=None, **kwargs):
     """
 
     return "".join(dumper(iterable, text_mode=True, cls=cls, **kwargs))
+
+
+def loads(text, /, *, broken=False, cls=None, **kwargs):
+    """
+    Deserialize a JSON Lines formatted string into an object iterator.
+
+    :param str text: JSON Lines formatted string.
+    :param bool broken: If true, skip broken lines (only logging a warning).
+
+    :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder (defaults to `json.JSONDecoder`)
+        - JSONDecoder subclass
+        - Callable accepting arbitrary arguments and returning a decoded object
+    :param Unpack[dict] kwargs: keyword arguments used to pass the Custom decoder (`cls`).
+
+    :rtype: Iterator[Any]
+    """
+
+    # io.StringIO iteration is C-implemented and yields lines lazily without
+    # allocating an intermediate list, unlike str.splitlines().
+    yield from loader(io.StringIO(text), broken, cls=cls, **kwargs)
 
 
 def dump(iterable, file, /, *, opener=None, text_mode=True, cls=None, **kwargs):

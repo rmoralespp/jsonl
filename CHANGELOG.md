@@ -1,5 +1,6 @@
 ## Releases
 
+- **Added:** `loads` - Deserialize a JSON Lines formatted string into an object iterator.
 - **Added:** More tests to cover 100% of the codebase.
 - **Added:** CONTRIBUTING.md
 - **Changed:** Documentation - rewrite README and documentation for clarity and consistency
