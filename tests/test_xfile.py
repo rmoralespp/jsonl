@@ -21,6 +21,8 @@ def test_xfile_object(filepath):
             assert isinstance(result, bz2.BZ2File)
         elif filepath.endswith(".xz"):
             assert isinstance(result, lzma.LZMAFile)
+        elif filepath.endswith(".zst") and jsonl.zstd:
+            assert isinstance(result, jsonl.zstd.ZstdFile)
         else:
             assert result is obj
 
