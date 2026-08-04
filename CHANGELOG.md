@@ -1,5 +1,7 @@
 ## Releases
 
+### v1.4.2 (2026-08-04)
+
 - **Added:** `loads` - Deserialize a JSON Lines formatted string into an object iterator.
 - **Added:** More tests to cover 100% of the codebase.
 - **Added:** CONTRIBUTING.md

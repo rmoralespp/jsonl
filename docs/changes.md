@@ -7,7 +7,16 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
-### v1.4.1 (2026-07-23)
+### v1.4.2
+
+- **Added:** `loads` - Deserialize a JSON Lines formatted string into an object iterator.
+- **Added:** More tests to cover 100% of the codebase.
+- **Added:** CONTRIBUTING.md
+- **Changed:** Documentation - rewrite README and documentation for clarity and consistency
+- **Changed:** Documentation - Remove redundant sections and fix code examples
+- **Fixed:** warnings in CI/CD workflows
+
+### v1.4.1
 
 - **Fixed:** `json.JSONEncoder`/`json.JSONDecoder` is not callable
 

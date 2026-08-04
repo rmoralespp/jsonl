@@ -1,6 +1,6 @@
 [project]
 name = "py-jsonl"
-version = "1.4.1"
+version = "1.4.2"
 description = "Zero-dependency Python library for reading, writing, and compressing JSON Lines files."
 readme = "README.md"
 license-files = ["LICENSE"]
