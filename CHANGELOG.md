@@ -1,6 +1,9 @@
 ## Releases
 
 - **Added:** More tests to cover 100% of the codebase.
+- **Added:** CONTRIBUTING.md
+- **Changed:** Documentation - rewrite README and documentation for clarity and consistency
+- **Changed:** Documentation - Remove redundant sections and fix code examples
 
 ### v1.4.1 (2026-07-23)
 

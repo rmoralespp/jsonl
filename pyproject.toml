@@ -1,7 +1,7 @@
 [project]
 name = "py-jsonl"
 version = "1.4.1"
-description = "A lightweight Python library for handling jsonlines files."
+description = "Zero-dependency Python library for reading, writing, and compressing JSON Lines files."
 readme = "README.md"
 license-files = ["LICENSE"]
 keywords = ["jsonlines", "ndjson", "jsonl", "json", "gzip", "bzip2", "xz", "zip", "tar", "zst", "utilities", "serialization", "deserialization"]

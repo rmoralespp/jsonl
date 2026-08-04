@@ -1,5 +1,5 @@
 site_name = "jsonl"
-site_description = "A lightweight, dependency-free Python library for JSON Lines."
+site_description = "Zero-dependency Python library for JSON Lines — read, write, compress, and stream in one line of code."
 site_url = "https://rmoralespp.github.io/jsonl/"
 repo_url = "https://github.com/rmoralespp/jsonl"
 repo_name = "rmoralespp/jsonl"
@@ -67,12 +67,14 @@ Installation = "installation.md"
     { Reading = [
         { "jsonl.load" = "load.md" },
         { "jsonl.load_archive" = "load_archive.md" },
+        { "jsonl.loader" = "loader.md" },
     ]},
     { Writing = [
         { "jsonl.dump" = "dump.md" },
         { "jsonl.dumps" = "dumps.md" },
         { "jsonl.dump_fork" = "dump_fork.md" },
         { "jsonl.dump_archive" = "dump_archive.md" },
+        { "jsonl.dumper" = "dumper.md" },
     ]},
 ]
 

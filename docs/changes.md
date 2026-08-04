@@ -7,7 +7,7 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
-### v1.4.1
+### v1.4.1 (2026-07-23)
 
 - **Fixed:** `json.JSONEncoder`/`json.JSONDecoder` is not callable
 

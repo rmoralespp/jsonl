@@ -229,7 +229,8 @@ with zipfile.ZipFile("data.zip", "w") as zf:
 
 
 def opener(name, *args, **kwargs):
-    return zipfile.ZipFile(name).open("file.jsonl")
+    zf = zipfile.ZipFile(name)
+    return zf.open("file.jsonl")
 
 
 for item in jsonl.load("data.zip", opener=opener):
