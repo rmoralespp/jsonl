@@ -34,7 +34,8 @@ test = [
     "pytest-cov",
     "setuptools; python_version >= '3.12'",
     "ujson",
-    "orjson"
+    "orjson",
+    "jmespath",
 ]
 lint = [
     "ruff",

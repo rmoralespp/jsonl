@@ -47,8 +47,9 @@ pip install py-jsonl
 - **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14). Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
 - **Archive support** — read/write `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz` natively.
 - **URL loading** — pass a URL to `load()` or `load_archive()` directly.
-- **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
-- **Error tolerance** — skip malformed lines instead of crashing.
+- **Pluggable serialization**  — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
+- **Expression queries**  — `where()` / `extract()` filter or project lines with one JMESPath expression; native `aero-jsonl` kernel when installed, `jmespath` fallback otherwise.
+- **Error tolerance**  — skip malformed lines instead of crashing.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
 > Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specs.
@@ -65,6 +66,35 @@ pip install py-jsonl
 | `jsonl.loads(text, **kw)` | JSON Lines string → lazy iterator |
 | `jsonl.load_archive(file, **kw)` | Unpack JSONL files from ZIP/TAR |
 | `jsonl.loader(stream, broken, **kw)` | Low-level line-stream deserializer |
+
+### Expression queries
+
+| Function | Description |
+|---|---|
+| `jsonl.where(expr, source, **kw)` | Keep objects whose JMESPath `expr` result is truthy |
+| `jsonl.extract(expr, source, **kw)` | Project `expr` over each object; non-null results |
+
+Both accept the same `source` forms as `load` (file, URL, compressed, file-like)
+and stream with constant memory. They use the native [`aero-jsonl`](https://github.com/SereinCin/aero-jsonl)
+kernel when it is installed, and fall back to the pure-Python `jmespath`
+library; either one must be installed to use the query helpers.
+
+```
+pip install aero-jsonl        # native accelerator (optional)
+pip install jmespath          # pure-Python fallback (optional)
+```
+
+```python
+import jsonl
+
+# Keep only active servers.
+for server in jsonl.where("status == `active`", "servers.jsonl"):
+    print(server["name"])
+
+# Extract one nested field per session.
+for tool in jsonl.extract("messages[1].tool_calls[0].name", "sessions.jsonl.gz"):
+    print(tool)
+```
 
 ### Writing
 

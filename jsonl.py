@@ -12,6 +12,8 @@ __all__ = [
     "loads",
     "load_archive",
     "dump_archive",
+    "where",
+    "extract",
 ]
 
 import bz2
@@ -37,6 +39,19 @@ try:
     from compression import zstd
 except ImportError:
     zstd = None  # Python < 3.14
+
+# Optional expression engines for the `where` / `extract` query helpers.
+# `aero-jsonl` is the native accelerator (streaming kernel); `jmespath` is the
+# pure-Python fallback. At least one must be installed to use query helpers.
+try:
+    import aero_jsonl as _aero
+except ImportError:
+    _aero = None
+
+try:
+    import jmespath as _jmespath
+except ImportError:
+    _jmespath = None
 
 # ---------------------------------- Internal variables ----------------------------------
 
@@ -588,3 +603,92 @@ def dump_archive(
             return shutil.make_archive(archive, arc_fmt, root_dir=tmpdir, logger=_logger)
         else:
             return None
+
+
+# ---------------------------------- Expression query helpers ----------------------------------
+
+
+def _iter_raw_lines(source, /):
+    """Yield raw, stripped text lines from any ``load`` source without decoding them."""
+
+    if _looks_like_url(source):
+        with urllib.request.urlopen(source) as fd:
+            charset = fd.headers.get_content_charset(failobj=_utf_8)
+            # Wrap the file descriptor to handle text encoding.
+            with io.TextIOWrapper(fd, encoding=charset) as stream:
+                yield from _iter_lines(stream)
+    # Filename handling
+    elif isinstance(source, (str, os.PathLike)):
+        filename = source if isinstance(source, str) else os.fspath(source)
+        with _xopen(filename, mode="rb", encoding=None) as fd:
+            yield from _iter_lines(fd)
+    # File-like object handling
+    else:
+        yield from _iter_lines(source)
+
+
+def _iter_lines(stream, /):
+    for raw in stream:
+        text = raw.decode(_utf_8) if isinstance(raw, bytes) else raw
+        text = text.rstrip("\n")
+        if text:
+            yield text
+
+
+def _raise_no_engine():
+    raise ImportError("`where`/`extract` require 'aero-jsonl' or 'jmespath' to be installed")
+
+
+def where(expr, source, /, *, broken=False, cls=None, **kwargs):
+    """
+    Keep the objects of a JSON Lines source whose JMESPath ``expr`` result is truthy.
+
+    Uses the native ``aero-jsonl`` kernel when installed (streaming, bounded
+    memory); otherwise falls back to the pure-Python ``jmespath`` library.
+    At least one of them must be installed.
+
+    :param str expr: JMESPath expression (e.g. ``"status == `active`"``).
+    :param source: Any source accepted by :func:`load`.
+    :param bool broken: If true, skip broken lines (only logging a warning).
+    :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder.
+    :param Unpack[dict] kwargs: Keyword arguments passed to the custom decoder.
+    :rtype: Iterator[Any]
+    """
+
+    if _aero is not None:
+        for line in _aero.filter_lines(expr, _iter_raw_lines(source)):
+            yield json.loads(line)
+        return
+    if _jmespath is None:
+        _raise_no_engine()
+    for obj in load(source, broken=broken, cls=cls, **kwargs):
+        if _jmespath.search(expr, obj):
+            yield obj
+
+
+def extract(expr, source, /, *, broken=False, cls=None, **kwargs):
+    """
+    Project a JMESPath ``expr`` over the objects of a JSON Lines source, yielding non-null results.
+
+    Uses the native ``aero-jsonl`` kernel when installed (streaming, bounded
+    memory); otherwise falls back to the pure-Python ``jmespath`` library.
+    At least one of them must be installed.
+
+    :param str expr: JMESPath expression (e.g. ``"messages[1].tool_calls[0].name"``).
+    :param source: Any source accepted by :func:`load`.
+    :param bool broken: If true, skip broken lines (only logging a warning).
+    :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder.
+    :param Unpack[dict] kwargs: Keyword arguments passed to the custom decoder.
+    :rtype: Iterator[Any]
+    """
+
+    if _aero is not None:
+        for result in _aero.map_lines(expr, _iter_raw_lines(source)):
+            yield json.loads(result)
+        return
+    if _jmespath is None:
+        _raise_no_engine()
+    for obj in load(source, broken=broken, cls=cls, **kwargs):
+        result = _jmespath.search(expr, obj)
+        if result is not None:
+            yield result
