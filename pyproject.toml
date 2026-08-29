@@ -35,7 +35,6 @@ test = [
     "setuptools; python_version >= '3.12'",
     "ujson",
     "orjson",
-    "jmespath",
 ]
 lint = [
     "ruff",

@@ -1,11 +1,5 @@
 ## Releases
 
-### Unreleased
-
-- **Added:** `where` and `extract` — expression query helpers that filter / project
-  JSON Lines using a JMESPath expression, backed by the optional native
-  `aero-jsonl` kernel when installed and falling back to `jmespath`.
-
 ### v1.4.2 (2026-08-04)
 
 - **Added:** `loads` - Deserialize a JSON Lines formatted string into an object iterator.
