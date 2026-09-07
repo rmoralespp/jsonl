@@ -1,12 +1,9 @@
 ## Releases
 
-### Unreleased
+### v1.5.0 (2026-09-07)
 
-- **Added:** `jsonl` command-line interface (also `python -m jsonl`) with a `json`-style
-  `jsonl [OPTIONS] [INFILE] [OUTFILE]` interface: stdin/stdout streaming, automatic
-  compression, URLs, archive member auto-discovery and selection (`--member`), `--compact`,
-  `--sort-keys`, `--ascii`, UTF-8 output by default, atomic output files, and `--broken`
-  record handling with well-defined exit codes.
+- **Added:** `jsonl` CLI with a `json`-style interface: stdin/stdout streaming, automatic
+  compression, URLs, archive member auto-discovery and `--broken` record handling with well-defined exit codes.
 
 ### v1.4.2 (2026-08-04)
 

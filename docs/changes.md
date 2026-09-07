@@ -7,6 +7,11 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.5.0 (2026-09-07)
+
+- **Added:** `jsonl` CLI with a `json`-style interface: stdin/stdout streaming, automatic
+  compression, URLs, archive member auto-discovery and `--broken` record handling with well-defined exit codes.
+
 ### v1.4.2
 
 - **Added:** `loads` - Deserialize a JSON Lines formatted string into an object iterator.
