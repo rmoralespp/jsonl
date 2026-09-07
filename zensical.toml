@@ -68,6 +68,7 @@ Installation = "installation.md"
         { "jsonl.load" = "load.md" },
         { "jsonl.load_archive" = "load_archive.md" },
         { "jsonl.loader" = "loader.md" },
+        { "jsonl.loads" = "loads.md" },
     ]},
     { Writing = [
         { "jsonl.dump" = "dump.md" },
