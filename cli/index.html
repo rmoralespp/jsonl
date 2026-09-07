@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://rmoralespp.github.io/jsonl/dumper/">
+        <link rel="canonical" href="https://rmoralespp.github.io/jsonl/cli/">
       
       
-        <link rel="prev" href="../dump_archive/">
+        <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../changes/">
+        <link rel="next" href="../load/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>jsonl.dumper - jsonl</title>
+        <title>Command-line interface - jsonl</title>
       
     
     
@@ -83,7 +83,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jsonldumper" class="md-skip">
+        <a href="#command-line-interface" class="md-skip">
           Skip to content
         </a>
       
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              jsonl.dumper
+              Command-line interface
             
           </span>
         </div>
@@ -287,10 +287,36 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Command-line interface
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -305,6 +331,77 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Options
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Examples
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Error handling
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exit-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Exit codes
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -313,8 +410,6 @@
       
   
   
-    
-  
   
   
     
@@ -327,11 +422,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
@@ -351,7 +448,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -530,8 +627,6 @@
                 
   
   
-    
-  
   
   
     
@@ -541,11 +636,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
         
           
           <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
@@ -565,7 +662,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -687,36 +784,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  jsonl.dumper
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../dumper/" class="md-nav__link">
         
   
   
@@ -731,127 +802,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#function-signature" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Function Signature
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Function Signature">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Parameters
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Returns
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Examples
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Basic usage
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#yield-bytes" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Yield bytes
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stream-to-a-custom-destination" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Stream to a custom destination
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-orjson" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        With orjson
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -939,41 +889,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#function-signature" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Function Signature
+        Options
       </span>
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Function Signature">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Parameters
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Returns
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -986,47 +908,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Examples">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Error handling
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error handling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
+  <a href="#exit-codes" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Basic usage
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#yield-bytes" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Yield bytes
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stream-to-a-custom-destination" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Stream to a custom destination
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-orjson" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        With orjson
+        Exit codes
       </span>
     </span>
   </a>
@@ -1056,96 +956,150 @@
   
 
 
-<h1 id="jsonldumper">jsonl.dumper<a class="headerlink" href="#jsonldumper" title="Permanent link">&para;</a></h1>
-<p>Low-level generator that yields formatted JSON Lines strings (or bytes) from an iterable of objects.
-This is the building block used internally by <code>jsonl.dump</code> and <code>jsonl.dumps</code>.</p>
-<h2 id="function-signature">Function Signature<a class="headerlink" href="#function-signature" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">jsonl</span><span class="o">.</span><span class="n">dumper</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">text_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<h1 id="command-line-interface">Command-line interface<a class="headerlink" href="#command-line-interface" title="Permanent link">&para;</a></h1>
+<p>Installing <strong>jsonl</strong> adds a <code>jsonl</code> command (equivalently <code>python -m jsonl</code>) that brings the
+library's streaming, compression, URL, and archive features to the shell — no Python code needed.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>jsonl [OPTIONS] [INFILE] [OUTFILE]
 </span></code></pre></div>
-<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
+<th>Argument</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>iterable</code></td>
-<td><code>Iterable[Any]</code></td>
-<td><em>(required)</em></td>
-<td>Iterable of JSON-serializable objects</td>
+<td><code>INFILE</code></td>
+<td>Input file, archive (ZIP or TAR), or URL. Reads from <strong>stdin</strong> when omitted or <code>-</code>.</td>
 </tr>
 <tr>
-<td><code>text_mode</code></td>
-<td><code>bool</code></td>
-<td><code>True</code></td>
-<td>If <code>True</code>, yield <code>str</code> lines; if <code>False</code>, yield <code>bytes</code></td>
-</tr>
-<tr>
-<td><code>cls</code></td>
-<td><code>type[json.JSONEncoder]</code> <code>Callable</code> or <code>None</code></td>
-<td><code>json.JSONEncoder</code></td>
-<td>Custom encoder</td>
-</tr>
-<tr>
-<td><code>**kwargs</code></td>
-<td></td>
-<td></td>
-<td>Additional keyword arguments passed to the <code>cls</code> encoder</td>
+<td><code>OUTFILE</code></td>
+<td>Output file. Writes to <strong>stdout</strong> when omitted.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h3>
-<p><code>Iterator[str | bytes]</code> — A generator yielding one formatted line per object (including trailing newline).</p>
-<hr />
+<p>Input is processed as a <strong>stream</strong>, so memory stays constant regardless of size. Compression is
+handled automatically: the output codec is chosen from the file extension (<code>.gz</code>, <code>.bz2</code>, <code>.xz</code>,
+<code>.zst</code> <em>Python ≥ 3.14</em>), and input compression is detected from the extension or the first bytes
+(<a href="https://en.wikipedia.org/wiki/List_of_file_signatures">magic numbers</a>) — including stdin and URLs.</p>
+<h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--compact</code></td>
+<td>Write records in the most compact form (no spaces).</td>
+</tr>
+<tr>
+<td><code>--sort-keys</code></td>
+<td>Sort object keys alphabetically.</td>
+</tr>
+<tr>
+<td><code>--ascii</code></td>
+<td>Escape non-ASCII characters as <code>\uXXXX</code>. Output is raw UTF-8 by default.</td>
+</tr>
+<tr>
+<td><code>--member PATTERN</code></td>
+<td>Pick archive members by shell-style pattern. Local archives auto-select <code>*.jsonl</code> when omitted.</td>
+</tr>
+<tr>
+<td><code>--broken</code></td>
+<td>Skip invalid records instead of aborting (see <a href="#error-handling">Error handling</a>).</td>
+</tr>
+<tr>
+<td><code>--version</code></td>
+<td>Show the version and exit.</td>
+</tr>
+<tr>
+<td><code>-h</code>, <code>--help</code></td>
+<td>Show the help message and exit.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
-<h3 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jsonl</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Alice"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Bob"</span><span class="p">}]</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">jsonl</span><span class="o">.</span><span class="n">dumper</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Validate and pretty-pass a file (aborts on the first invalid record)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>jsonl<span class="w"> </span>data.jsonl
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Convert between files; compression follows the extension (gzip in, zstd out)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>jsonl<span class="w"> </span>data.jsonl.gz<span class="w"> </span>data.jsonl.zst
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Pipe through a shell pipeline</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>cat<span class="w"> </span>data.jsonl<span class="w"> </span><span class="p">|</span><span class="w"> </span>jsonl<span class="w"> </span>--compact<span class="w"> </span>&gt;<span class="w"> </span>compact.jsonl
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Load directly from a URL (auto-decompressed)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>jsonl<span class="w"> </span>https://example.com/data.jsonl.gz<span class="w"> </span>&gt;<span class="w"> </span>data.jsonl
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Read an archive: its *.jsonl members are auto-discovered and streamed</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>jsonl<span class="w"> </span>dataset.zip<span class="w"> </span>&gt;<span class="w"> </span>merged.jsonl
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># Select specific members from an archive</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>jsonl<span class="w"> </span>--member<span class="w"> </span><span class="s1">'2026/*.jsonl'</span><span class="w"> </span>dataset.tar.gz<span class="w"> </span>&gt;<span class="w"> </span>year.jsonl
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># Tolerate broken input: skip invalid records and report them to stderr</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>jsonl<span class="w"> </span>--broken<span class="w"> </span>messy.jsonl<span class="w"> </span>clean.jsonl
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># Reformat: sort keys and escape non-ASCII to pure ASCII</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>jsonl<span class="w"> </span>--sort-keys<span class="w"> </span>--ascii<span class="w"> </span>data.jsonl<span class="w"> </span>&gt;<span class="w"> </span>normalized.jsonl
 </span></code></pre></div>
-<p><em>Output:</em></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>'{"name": "Alice"}\n'
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>'{"name": "Bob"}\n'
-</span></code></pre></div>
-<h3 id="yield-bytes">Yield bytes<a class="headerlink" href="#yield-bytes" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jsonl</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s2">"x"</span><span class="p">:</span> <span class="mi">2</span><span class="p">}]</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">jsonl</span><span class="o">.</span><span class="n">dumper</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">text_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
-</span></code></pre></div>
-<p><em>Output:</em></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>b'{"x": 1}\n'
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>b'{"x": 2}\n'
-</span></code></pre></div>
-<h3 id="stream-to-a-custom-destination">Stream to a custom destination<a class="headerlink" href="#stream-to-a-custom-destination" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jsonl</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"event"</span><span class="p">:</span> <span class="s2">"click"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"event"</span><span class="p">:</span> <span class="s2">"scroll"</span><span class="p">}]</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Write lines to stdout or any writable target</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">jsonl</span><span class="o">.</span><span class="n">dumper</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-</span></code></pre></div>
-<h3 id="with-orjson">With orjson<a class="headerlink" href="#with-orjson" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">orjson</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jsonl</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Alice"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Bob"</span><span class="p">}]</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">jsonl</span><span class="o">.</span><span class="n">dumper</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">text_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">orjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">):</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
-</span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">No <code>--indent</code></p>
+<p>Spreading a value across multiple lines would break the JSON Lines format (one value per
+line), so <code>--indent</code> is intentionally unsupported.</p>
+</div>
+<h2 id="error-handling">Error handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<p><a id="error-handling"></a></p>
+<p>By default the <strong>first</strong> invalid record aborts processing. With <code>--broken</code>, invalid records are
+skipped and reported to stderr (with the input line number when available) while the rest continue.
+<code>--broken</code> covers only recoverable JSON parsing errors; I/O, filesystem, archive, and compression
+errors always abort.</p>
+<div class="admonition tip">
+<p class="admonition-title">Atomic output files</p>
+<p>When writing to a file, output goes to a temporary file that <strong>atomically</strong> replaces the
+destination only after the whole input succeeds — a failed run never leaves a partial file,
+and the existing destination is untouched. Input and output may not be the same file. When
+writing to <strong>stdout</strong>, valid records may already be emitted before an error, since stdout
+cannot be rolled back.</p>
+</div>
+<h3 id="exit-codes">Exit codes<a class="headerlink" href="#exit-codes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Success — all records valid.</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>One or more invalid JSON records.</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Invalid command-line usage or configuration.</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Unexpected I/O, filesystem, archive, compression, or runtime error.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Non-UTF-8 terminals</p>
+<p>Output is UTF-8 by default (like <code>jq</code>) and written as UTF-8 regardless of locale, so redirects
+and pipes always get valid bytes. A legacy non-UTF-8 console may <em>display</em> non-ASCII as mojibake
+(a rendering issue, not corruption) — use <code>--ascii</code>, or switch the console to UTF-8
+(<code>chcp 65001</code> on Windows).</p>
+</div>
 
 
 
