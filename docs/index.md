@@ -36,6 +36,7 @@ If you know `json.dump` and `json.load`, you already know **jsonl**.
 - **URL loading** — pass a URL to `load()` or `load_archive()` directly.
 - **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
 - **Error tolerance** — skip malformed lines instead of crashing.
+- **Command-line interface** — a `json`-style [`jsonl` command](cli.md) for shell pipelines.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
 Fully compliant with the [JSON Lines](https://jsonlines.org/) and [NDJSON](https://github.com/ndjson/ndjson-spec) specifications.
@@ -100,6 +101,20 @@ jsonl.dump(data, "fast.jsonl", text_mode=False, cls=orjson.dumps)
 for item in jsonl.load("fast.jsonl", cls=orjson.loads):
     print(item)
 ```
+
+### Command line
+
+Installing the package also provides a `jsonl` command for shell pipelines:
+
+```bash
+# Recompress and reformat, streaming from stdin to stdout
+cat input.jsonl.gz | jsonl --sort-keys > output.jsonl
+
+# Select members from an archive
+jsonl --member '2026/*.jsonl' dataset.tar.gz > output.jsonl
+```
+
+See the [Command-line interface](cli.md) page for all options and exit codes.
 
 ---
 

@@ -12,10 +12,13 @@ __all__ = [
     "loads",
     "load_archive",
     "dump_archive",
+    "main",
 ]
 
+import argparse
 import bz2
 import contextlib
+import errno
 import fnmatch
 import functools
 import gzip
@@ -58,7 +61,14 @@ ext_bz2 = ".bz2"
 ext_xz = ".xz"
 ext_zst = ".zst"
 
+_compression_signatures = (
+    (ext_gz, b"\x1f\x8b"),
+    (ext_bz2, b"\x42\x5a\x68"),
+    (ext_xz, b"\xfd\x37\x7a\x58\x5a\x00"),
+    (ext_zst, b"\x28\xb5\x2f\xfd"),
+)
 extensions = {ext_jsonl, ext_gz, ext_bz2, ext_xz}
+_known_extensions = extensions | {ext_zst}
 _openers = {
     ext_jsonl: open,
     ext_gz: gzip.open,
@@ -84,6 +94,15 @@ else:
 # ---------------------------------- Internal utils ----------------------------------
 
 
+def _extension_from_magic(head, /):
+    """Detect a compression extension from the leading magic bytes, or None."""
+
+    for extension, signature in _compression_signatures:
+        if head.startswith(signature):
+            return extension
+    return None
+
+
 def _get_fileobj_extension(fileobj, /):
     """Get the file extension based on the initial bytes of a file-like object."""
 
@@ -91,28 +110,31 @@ def _get_fileobj_extension(fileobj, /):
     fileobj.seek(0)  # Go to the start of the file
     bytes_ = fileobj.read(6)  # Read enough bytes to detect compression
     fileobj.seek(fd_position)  # Restore the original position
+    return _extension_from_magic(bytes_)
 
-    if bytes_[:2] == b"\x1f\x8b":
-        # https://tools.ietf.org/html/rfc1952#page-6
-        return ext_gz
-    elif bytes_[:3] == b"\x42\x5a\x68":
-        # https://en.wikipedia.org/wiki/List_of_file_signatures
-        return ext_bz2
-    elif bytes_[:6] == b"\xfd\x37\x7a\x58\x5a\x00":
-        # https://tukaani.org/xz/xz-file-format.txt
-        return ext_xz
-    elif bytes_[:4] == b"\x28\xb5\x2f\xfd":
-        # https://www.rfc-editor.org/info/rfc8878/
-        return ext_zst
+
+def _decompressor(extension, fileobj, /):
+    """Wrap a binary file object with the decompressor matching the extension (or return it as-is)."""
+
+    if extension == ext_gz:
+        return gzip.GzipFile(fileobj=fileobj)
+    elif extension == ext_bz2:
+        return bz2.BZ2File(fileobj)
+    elif extension == ext_xz:
+        return lzma.LZMAFile(fileobj)
+    elif extension == ext_zst:
+        if zstd is None:
+            raise RuntimeError("Zstandard compression is unavailable in this Python runtime")
+        return zstd.ZstdFile(fileobj)
     else:
-        return None
+        return fileobj
 
 
 def _get_file_extension(name, mode, /, *, fileobj=None):
     """Get the file extension based on the filename or file-like object."""
 
     extension = os.path.splitext(name)[1]
-    if extension in extensions:
+    if extension in _known_extensions:
         return extension
     elif mode == "rb" and fileobj:
         return _get_fileobj_extension(fileobj)
@@ -163,6 +185,8 @@ def _xopen(name, /, *, mode="rb", encoding=None):
     """
 
     extension = _get_file_extension(name, mode)
+    if extension == ext_zst and zstd is None:
+        raise RuntimeError("Zstandard compression is unavailable in this Python runtime")
     opener = _openers.get(extension, open)
     return opener(name, mode=mode, encoding=encoding or _get_encoding(mode))
 
@@ -179,16 +203,7 @@ def _xfile(name, obj, /):
     """
 
     ext = _get_file_extension(name, "rb", fileobj=obj)
-    if ext == ext_gz:
-        file = gzip.GzipFile(fileobj=obj)
-    elif ext == ext_bz2:
-        file = bz2.BZ2File(obj)
-    elif ext == ext_xz:
-        file = lzma.LZMAFile(obj)  # noqa: SIM115
-    elif ext == ext_zst and zstd:
-        file = zstd.ZstdFile(obj)
-    else:
-        file = obj
+    file = _decompressor(ext, obj)
     try:
         yield file
     finally:
@@ -277,7 +292,7 @@ def dumper(iterable, /, *, text_mode=True, cls=None, **kwargs):
         yield _get_line(value, text_mode)
 
 
-def loader(stream, broken, /, *, cls=None, **kwargs):
+def loader(stream, broken, /, *, cls=None, _on_error=None, **kwargs):
     """Load a JSON Lines formatted stream into an object iterator."""
 
     decode = _get_decode(cls, kwargs)
@@ -288,6 +303,8 @@ def loader(stream, broken, /, *, cls=None, **kwargs):
         try:
             yield decode(line.decode(_utf_8) if is_bytes else line)
         except Exception as e:
+            if _on_error is not None:
+                _on_error(lineno, e)
             _logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
@@ -412,7 +429,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
             writer.close()
 
 
-def load(source, /, *, opener=None, broken=False, cls=None, **kwargs):
+def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kwargs):
     """
     Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into an object iterator.
 
@@ -442,16 +459,16 @@ def load(source, /, *, opener=None, broken=False, cls=None, **kwargs):
             charset = fd.headers.get_content_charset(failobj=_utf_8)
             # Wrap the file descriptor to handle text encoding.
             with io.TextIOWrapper(fd, encoding=charset) as stream:
-                yield from loader(stream, broken, cls=cls, **kwargs)
+                yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
     # Filename handling
     elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
         openhook = opener or _xopen
         with openhook(filename, mode="rb", encoding=None) as fd:
-            yield from loader(fd, broken, cls=cls, **kwargs)
+            yield from loader(fd, broken, cls=cls, _on_error=_on_error, **kwargs)
     # File-like object handling
     else:
-        yield from loader(source, broken, cls=cls, **kwargs)
+        yield from loader(source, broken, cls=cls, _on_error=_on_error, **kwargs)
 
 
 def load_archive(
@@ -464,6 +481,7 @@ def load_archive(
     broken=False,
     chunk_size=64 * 1024,
     cls=None,
+    _on_error=None,
     **kwargs,
 ):
     """
@@ -519,7 +537,7 @@ def load_archive(
         for member in members:
             filename = member.name
             with _xfile(filename, member) as fp:
-                it = load(fp, opener=opener, broken=broken, cls=cls, **kwargs)
+                it = load(fp, opener=opener, broken=broken, cls=cls, _on_error=_on_error, **kwargs)
                 yield (filename, it)
 
 
@@ -588,3 +606,310 @@ def dump_archive(
             return shutil.make_archive(archive, arc_fmt, root_dir=tmpdir, logger=_logger)
         else:
             return None
+
+
+# ---------------------------------- Command-line interface ----------------------------------
+
+# Exit codes:
+#   0 -> success, all records valid
+#   1 -> one or more invalid JSON records were encountered
+#   2 -> invalid command-line usage or input/output configuration error (argparse default)
+#   3 -> unexpected I/O, filesystem, archive, compression, or runtime error
+_EXIT_OK = 0
+_EXIT_INVALID_RECORD = 1
+_EXIT_RUNTIME_ERROR = 3
+
+
+def _get_version():
+    """Return the installed package version, or "unknown" when not available."""
+
+    try:
+        import importlib.metadata
+
+        return importlib.metadata.version("py-jsonl")
+    except Exception:
+        return "unknown"
+
+
+class _BrokenRecordReporter:
+    """Report and count broken records independently of logging configuration."""
+
+    def __init__(self):
+        self.count = 0
+
+    def __call__(self, lineno, error):
+        self.count += 1
+        print("jsonl: Broken line at {}: {}".format(lineno, error), file=sys.stderr)
+
+
+class _PrefixedReader(io.RawIOBase):
+    """Read a captured prefix before continuing with the original binary stream."""
+
+    def __init__(self, prefix, stream):
+        super().__init__()
+        self._prefix = io.BytesIO(prefix)
+        self._stream = stream
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        view = memoryview(buffer)
+        size = self._prefix.readinto(view)
+        if size:
+            return size
+
+        read = getattr(self._stream, "read1", self._stream.read)
+        chunk = read(len(view))
+        if not chunk:
+            return 0
+        view[: len(chunk)] = chunk
+        return len(chunk)
+
+
+def _read_compression_prefix(stream, /):
+    """Read only enough bytes to identify compression, stopping early for plain data."""
+
+    head = bytearray()
+    max_size = max(len(signature) for _extension, signature in _compression_signatures)
+    while len(head) < max_size:  # pragma: no branch - every full-length signature exits in the loop
+        byte = stream.read(1)
+        if not byte:
+            break
+        head.extend(byte)
+        if _extension_from_magic(head) is not None:
+            break
+        if not any(signature.startswith(head) for _extension, signature in _compression_signatures):
+            break
+    return bytes(head)
+
+
+def _decompress_stream(stream, /):
+    """Wrap a (possibly non-seekable) binary stream with transparent decompression via magic bytes."""
+
+    head = _read_compression_prefix(stream)
+    buffered = io.BufferedReader(_PrefixedReader(head, stream))
+    return _decompressor(_extension_from_magic(head), buffered)
+
+
+def _cli_records(infile, broken, member, on_error, /):
+    """Yield decoded records from the CLI input, reusing the streaming public API."""
+
+    if member is not None or _is_archive_path(infile):
+        pattern = member or "*.jsonl"
+        found = False
+        for _name, items in load_archive(infile, pattern=pattern, broken=broken, _on_error=on_error):
+            found = True
+            yield from items
+        if not found:
+            raise ValueError("no archive members matched pattern {!r}".format(pattern))
+    elif infile is None or infile == "-":
+        yield from loader(_decompress_stream(sys.stdin.buffer), broken, _on_error=on_error)
+    elif _looks_like_url(infile):
+        with urllib.request.urlopen(infile) as resp:
+            yield from loader(_decompress_stream(resp), broken, _on_error=on_error)
+    else:
+        yield from load(infile, broken=broken, _on_error=on_error)
+
+
+@contextlib.contextmanager
+def _atomic_output(dest, /):
+    """
+    Yield a temporary path that atomically replaces `dest` on success.
+
+    The temporary file is removed if the body raises, and the existing
+    destination is left untouched until the replacement succeeds.
+    """
+
+    dest = os.path.abspath(os.fspath(dest))
+    dest_dir = os.path.dirname(dest)
+
+    # Same filesystem keeps os.replace() atomic; the prefix makes cleanup remnants identifiable.
+    with tempfile.TemporaryDirectory(dir=dest_dir, prefix=".jsonl-tmp-") as tmp_dir:
+        tmp = os.path.join(tmp_dir, os.path.basename(dest))
+        yield tmp
+
+        # Keep an existing destination's permissions. For a new destination,
+        # dump() creates `tmp` normally, so the process umask is applied.
+        with contextlib.suppress(FileNotFoundError):
+            shutil.copymode(dest, tmp)
+
+        os.replace(tmp, dest)  # atomically publish only after successful completion
+
+
+def _cli_write(records, outfile, encoder_kwargs, /):
+    """Write records to stdout (streaming) or atomically to an output file."""
+
+    if outfile is None:
+        # Emit UTF-8 regardless of the platform's console/locale encoding so the
+        # default non-ASCII output cannot raise UnicodeEncodeError (e.g. a Windows
+        # cp1252 console). File output is already written as UTF-8 by `dump`.
+        with contextlib.suppress(AttributeError, ValueError, OSError):
+            sys.stdout.reconfigure(encoding="utf-8")
+        dump(records, sys.stdout, **encoder_kwargs)
+    else:
+        with _atomic_output(outfile) as tmp:
+            dump(records, tmp, **encoder_kwargs)
+
+
+def _redirect_stdout_to_devnull():
+    """Redirect stdout's file descriptor so interpreter shutdown cannot flush a broken pipe."""
+
+    with contextlib.suppress(AttributeError, OSError, ValueError):
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        try:
+            os.dup2(devnull, sys.stdout.fileno())
+        finally:
+            os.close(devnull)
+
+
+def _is_broken_stdout(exc, outfile, /):
+    """Return whether an output error represents a closed stdout pipe."""
+
+    return outfile is None and (
+        isinstance(exc, BrokenPipeError) or (sys.platform == "win32" and exc.errno == errno.EINVAL)
+    )
+
+
+def _cli_same_file(infile, outfile, /):
+    """Return True when the input and output paths refer to the same file."""
+
+    if outfile is None or infile is None or infile == "-" or _looks_like_url(infile):
+        return False
+    infile = os.fspath(infile)
+    outfile = os.fspath(outfile)
+    try:
+        # Most accurate when both exist: compares device/inode, so it also
+        # catches hardlinks and different paths aliasing the same file.
+        return os.path.samefile(infile, outfile)
+    except OSError:
+        # `samefile` requires both paths to exist; fall back to a resolved-path
+        # comparison for the common case where the output does not exist yet.
+        src = os.path.normcase(os.path.realpath(infile))
+        dst = os.path.normcase(os.path.realpath(outfile))
+        return src == dst
+
+
+def _build_parser():
+    parser = argparse.ArgumentParser(
+        prog="jsonl",
+        description="Stream, convert, compress, and validate JSON Lines data.",
+    )
+    parser.add_argument(
+        "infile",
+        nargs="?",
+        default="-",
+        help="input JSON Lines file, archive (zip or tar), or URL; reads from stdin when omitted or '-'",
+    )
+    parser.add_argument(
+        "outfile",
+        nargs="?",
+        default=None,
+        help="output file; writes to stdout when omitted (compression is chosen from the extension)",
+    )
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="write records using the most compact representation",
+    )
+    parser.add_argument(
+        "--sort-keys",
+        dest="sort_keys",
+        action="store_true",
+        help="sort object keys alphabetically in the output",
+    )
+    parser.add_argument(
+        "--ascii",
+        dest="ensure_ascii",
+        action="store_true",
+        help="escape non-ASCII characters as \\uXXXX (default: emit raw UTF-8)",
+    )
+    parser.add_argument(
+        "--member",
+        metavar="PATTERN",
+        default=None,
+        help="select JSON Lines members from a supported archive (zip/tar) using a shell-style pattern",
+    )
+    parser.add_argument(
+        "--broken",
+        action="store_true",
+        help="skip invalid JSON records instead of aborting; exits 1 if any record was skipped",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s (py-jsonl {})".format(_get_version()),
+    )
+    return parser
+
+
+def _is_archive_path(path, /):
+    """Return True if `path` is a readable zip or tar archive (which needs --member)."""
+
+    if not isinstance(path, str) or not os.path.isfile(path):
+        return False
+    with contextlib.suppress(OSError):
+        if zipfile.is_zipfile(path):
+            return True
+    with contextlib.suppress(OSError, tarfile.TarError):
+        return tarfile.is_tarfile(path)
+    return False
+
+
+def main(argv=None):
+    """Command-line entry point. Returns a process exit code."""
+
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    infile = args.infile
+    outfile = args.outfile
+
+    # Configuration errors -> exit code 2 (argparse convention).
+    if args.member is not None and (infile is None or infile == "-"):
+        parser.error("--member requires an input archive file or URL, not stdin")
+    if _cli_same_file(infile, outfile):
+        parser.error("input and output must not refer to the same file")
+
+    encoder_kwargs = {"ensure_ascii": args.ensure_ascii}
+    if args.sort_keys:
+        encoder_kwargs["sort_keys"] = True
+    if args.compact:
+        encoder_kwargs["separators"] = (",", ":")
+
+    reporter = _BrokenRecordReporter()
+    exit_code = _EXIT_OK
+    try:
+        records = _cli_records(infile, args.broken, args.member, reporter)
+        _cli_write(records, outfile, encoder_kwargs)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        # Recoverable parsing error without --broken: the reporter already described it.
+        exit_code = _EXIT_INVALID_RECORD
+    except OSError as exc:
+        # A downstream consumer closed early (e.g. `jsonl big.jsonl | head`).
+        # Windows can report a closed stdout pipe as EINVAL rather than BrokenPipeError.
+        if _is_broken_stdout(exc, outfile):
+            _redirect_stdout_to_devnull()
+            return _EXIT_RUNTIME_ERROR
+        print("jsonl: error: {}".format(exc), file=sys.stderr)
+        exit_code = _EXIT_RUNTIME_ERROR
+    except Exception as exc:
+        print("jsonl: error: {}".format(exc), file=sys.stderr)
+        exit_code = _EXIT_RUNTIME_ERROR
+
+    if outfile is None:
+        try:
+            sys.stdout.flush()
+        except OSError as exc:
+            if _is_broken_stdout(exc, outfile):
+                _redirect_stdout_to_devnull()
+            else:
+                print("jsonl: error: {}".format(exc), file=sys.stderr)
+            return _EXIT_RUNTIME_ERROR
+
+    if exit_code == _EXIT_OK and args.broken and reporter.count:
+        return _EXIT_INVALID_RECORD
+    return exit_code
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -49,9 +49,11 @@ pip install py-jsonl
 - **URL loading** — pass a URL to `load()` or `load_archive()` directly.
 - **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
 - **Error tolerance** — skip malformed lines instead of crashing.
+- **Command-line interface** — a `json`-style `jsonl` command for shell pipelines.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
-> Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specs.
+> Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec)
+> specs.
 
 ---
 
@@ -59,22 +61,22 @@ pip install py-jsonl
 
 ### Reading
 
-| Function | Description |
-|---|---|
-| `jsonl.load(source, **kw)` | File, URL, or file-like → lazy iterator |
-| `jsonl.loads(text, **kw)` | JSON Lines string → lazy iterator |
-| `jsonl.load_archive(file, **kw)` | Unpack JSONL files from ZIP/TAR |
-| `jsonl.loader(stream, broken, **kw)` | Low-level line-stream deserializer |
+| Function                             | Description                             |
+|--------------------------------------|-----------------------------------------|
+| `jsonl.load(source, **kw)`           | File, URL, or file-like → lazy iterator |
+| `jsonl.loads(text, **kw)`            | JSON Lines string → lazy iterator       |
+| `jsonl.load_archive(file, **kw)`     | Unpack JSONL files from ZIP/TAR         |
+| `jsonl.loader(stream, broken, **kw)` | Low-level line-stream deserializer      |
 
 ### Writing
 
-| Function | Description |
-|---|---|
-| `jsonl.dump(iterable, file, **kw)` | Write to file (any format) |
-| `jsonl.dumps(iterable, **kw)` | Serialize to string |
-| `jsonl.dump_fork(paths, **kw)` | Write to multiple files at once |
-| `jsonl.dump_archive(path, data, **kw)` | Pack into ZIP/TAR archive |
-| `jsonl.dumper(iterable, **kw)` | Low-level generator → formatted lines |
+| Function                               | Description                           |
+|----------------------------------------|---------------------------------------|
+| `jsonl.dump(iterable, file, **kw)`     | Write to file (any format)            |
+| `jsonl.dumps(iterable, **kw)`          | Serialize to string                   |
+| `jsonl.dump_fork(paths, **kw)`         | Write to multiple files at once       |
+| `jsonl.dump_archive(path, data, **kw)` | Pack into ZIP/TAR archive             |
+| `jsonl.dumper(iterable, **kw)`         | Low-level generator → formatted lines |
 
 > All functions accept `cls` and `**kwargs` for custom encoding/decoding.
 
@@ -144,11 +146,13 @@ import datetime
 import json
 import jsonl
 
+
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.date):
             return obj.isoformat()
         return super().default(obj)
+
 
 data = [{"event": "launch", "date": datetime.date(2026, 1, 15)}]
 jsonl.dump(data, "events.jsonl", cls=DateEncoder)
@@ -158,14 +162,53 @@ jsonl.dump(data, "events.jsonl", cls=DateEncoder)
 
 ---
 
+## Command-line interface
+
+Installing the package also provides the `jsonl` command (equivalently `python -m jsonl`):
+
+```text
+jsonl [OPTIONS] [INFILE] [OUTFILE]
+```
+
+`INFILE` may be a JSON Lines file, a ZIP/TAR archive, a URL, or `-` for stdin. When `OUTFILE` is omitted, output is
+written to stdout. Processing is streamed and compression is detected automatically.
+
+```bash
+# Validate and stream a file
+jsonl input.jsonl
+
+# Shell pipelines
+cat input.jsonl | jsonl --compact > output.jsonl
+
+# Convert compression formats
+jsonl input.jsonl.gz output.jsonl.xz
+
+# Read every *.jsonl member from a ZIP/TAR archive
+jsonl dataset.zip > merged.jsonl
+
+# Select archive members
+jsonl --member '2026/*.jsonl' dataset.tar.gz > output.jsonl
+
+# Skip invalid records (returns 1 if any are found)
+jsonl --broken input.jsonl output.jsonl
+```
+
+Useful options include `--compact`, `--sort-keys`, `--ascii`, `--member`, and
+`--broken`. File output is atomic: an existing destination is replaced only after the complete input has been processed
+successfully.
+
+[Full command-line documentation](https://rmoralespp.github.io/jsonl/cli/)
+
+---
+
 ## Supported Formats
 
-| Type | Extensions |
-|---|---|
-| Plain | `.jsonl` |
-| Compressed | `.jsonl.gz` · `.jsonl.bz2` · `.jsonl.xz` · `.jsonl.zst`¹ |
-| ZIP | `.zip` |
-| TAR | `.tar` · `.tar.gz` · `.tar.bz2` · `.tar.xz` · `.tar.zst`¹ |
+| Type       | Extensions                                                |
+|------------|-----------------------------------------------------------|
+| Plain      | `.jsonl`                                                  |
+| Compressed | `.jsonl.gz` · `.jsonl.bz2` · `.jsonl.xz` · `.jsonl.zst`¹  |
+| ZIP        | `.zip`                                                    |
+| TAR        | `.tar` · `.tar.gz` · `.tar.bz2` · `.tar.xz` · `.tar.zst`¹ |
 
 ¹ Requires Python ≥ 3.14
 
