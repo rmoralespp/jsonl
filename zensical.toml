@@ -63,6 +63,9 @@ Home = "index.md"
 Installation = "installation.md"
 
 [[nav]]
+"Command-line interface" = "cli.md"
+
+[[nav]]
 "API Reference" = [
     { Reading = [
         { "jsonl.load" = "load.md" },
