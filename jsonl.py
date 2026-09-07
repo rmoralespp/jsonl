@@ -446,6 +446,7 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
     :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder (defaults to `json.JSONDecoder`)
         - JSONDecoder subclass
         - Callable accepting arbitrary arguments and returning a decoded object
+    :param _on_error: Callback for reporting errors
     :param Unpack[dict] kwargs: keyword arguments used to pass the Custom decoder (`cls`).
 
     :rtype: Iterator[Any]
@@ -508,6 +509,7 @@ def load_archive(
     :param Optional[type[json.JSONDecoder] | Callable[..., Any]] cls: Custom decoder (defaults to `json.JSONDecoder`)
         - JSONDecoder subclass
         - Callable accepting arbitrary arguments and returning a decoded object
+    :param _on_error: Callback for reporting errors
     :param Unpack[dict] kwargs: keyword arguments used to pass the Custom decoder (`cls`).
 
     :rtype: Iterator[tuple[str, Iterator[Any]]]
