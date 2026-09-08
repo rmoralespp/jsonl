@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import contextlib
+import gzip
 import io
 import json
 import os
@@ -13,6 +14,34 @@ import pytest
 
 import jsonl
 import tests
+
+
+class NonSeekableBytesIO(io.BytesIO):
+    """Expose a fragmented binary stream without seeking support."""
+
+    def seekable(self):
+        return False
+
+    def read(self, size=-1):
+        return super().read(1 if size < 0 else min(size, 1))
+
+    read1 = read
+
+    def seek(self, *args, **kwargs):
+        raise io.UnsupportedOperation("not seekable")
+
+    def tell(self):
+        raise io.UnsupportedOperation("not seekable")
+
+
+class BinaryReader:
+    """Minimal binary file-like object that does not inherit from an IO base class."""
+
+    def __init__(self, data):
+        self._stream = io.BytesIO(data)
+
+    def read(self, size=-1):
+        return self._stream.read(size)
 
 
 def test_invalid_json_lines(broken):
@@ -54,6 +83,63 @@ def test_memory_file(iofile):
     with contextlib.closing(iofile):
         result = tuple(jsonl.load(iofile))
     assert result == tuple(tests.data)
+
+
+@pytest.mark.parametrize("extension", sorted(jsonl.extensions - {jsonl.ext_jsonl}))
+def test_compressed_binary_file_like(tmp_dir, extension):
+    filepath = tmp_dir / ("data" + extension)
+    tests.write_text(filepath, content=tests.string_data)
+    source = io.BytesIO(filepath.read_bytes())
+
+    assert list(jsonl.load(source)) == tests.data
+    assert not source.closed
+
+
+def test_compressed_non_seekable_file_like():
+    source = NonSeekableBytesIO(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+
+    assert list(jsonl.load(source)) == tests.data
+    assert not source.closed
+
+
+def test_compressed_duck_typed_binary_file_like():
+    source = BinaryReader(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+
+    assert list(jsonl.load(source)) == tests.data
+
+
+def test_compressed_file_like_remains_open_after_early_close():
+    source = io.BytesIO(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+    records = jsonl.load(source)
+
+    assert next(records) == tests.data[0]
+    records.close()
+
+    assert not source.closed
+
+
+def test_buffer_is_closed_when_decompressor_close_fails(monkeypatch):
+    source = io.BytesIO(b"compressed")
+    buffered = unittest.mock.MagicMock()
+    buffered.closed = False
+    decompressor = unittest.mock.MagicMock()
+    decompressor.close.side_effect = OSError("close failed")
+    monkeypatch.setattr(jsonl, "_read_compression_prefix", lambda _stream: b"\x1f\x8b")
+    monkeypatch.setattr(jsonl.io, "BufferedReader", lambda _stream: buffered)
+    monkeypatch.setattr(jsonl, "_decompressor", lambda _extension, _stream: decompressor)
+
+    with pytest.raises(OSError, match="close failed"):
+        with jsonl._decompress_stream(source):
+            pass
+
+    buffered.close.assert_called_once_with()
+    assert not source.closed
+
+
+def test_iterable_text_source_without_read_method():
+    source = iter(tests.string_data.splitlines(keepends=True))
+
+    assert list(jsonl.load(source)) == tests.data
 
 
 @pytest.mark.parametrize("mode", ("rt", "rb"))
@@ -99,6 +185,14 @@ def test_filepath_using_opener(opener):
     assert result == expected
 
 
+@pytest.mark.parametrize("extension", sorted(jsonl.extensions - {jsonl.ext_jsonl}))
+def test_compressed_filepath_using_plain_opener(tmp_dir, extension):
+    filepath = tmp_dir / ("data" + extension)
+    tests.write_text(filepath, content=tests.string_data)
+
+    assert list(jsonl.load(filepath, opener=open)) == tests.data
+
+
 def test_filepath_not_found():
     with pytest.raises(FileNotFoundError):
         tests.consume(jsonl.load("not_found.jsonl"))
@@ -117,6 +211,24 @@ def test_url(urlopen, url_class, charset):
     fd.headers = unittest.mock.MagicMock()
     fd.headers.get_content_charset.return_value = charset
     urlopen.return_value.__enter__.return_value = fd
+
+    source = url_class("https://example.com/data.jsonl")
+
+    assert list(jsonl.load(source)) == tests.data
+    urlopen.assert_called_once_with(source)
+
+
+@pytest.mark.parametrize("extension", sorted(jsonl.extensions - {jsonl.ext_jsonl}))
+@unittest.mock.patch("urllib.request.urlopen")
+def test_compressed_url_without_extension(urlopen, tmp_dir, extension):
+    filepath = tmp_dir / ("data" + extension)
+    tests.write_text(filepath, content=tests.string_data)
+    fd = io.BytesIO(filepath.read_bytes())
+    fd.headers = unittest.mock.MagicMock()
+    fd.headers.get_content_charset.return_value = jsonl._utf_8
+    urlopen.return_value.__enter__.return_value = fd
+
+    assert list(jsonl.load("https://example.com/download?id=123")) == tests.data
 
 
 def test_http_server_url(http_server):

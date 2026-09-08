@@ -191,6 +191,82 @@ def _xopen(name, /, *, mode="rb", encoding=None):
     return opener(name, mode=mode, encoding=encoding or _get_encoding(mode))
 
 
+class _PrefixedReader(io.RawIOBase):
+    """Read a captured prefix before continuing with the original binary stream."""
+
+    def __init__(self, prefix, stream):
+        super().__init__()
+        self._prefix = io.BytesIO(prefix)
+        self._stream = stream
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        view = memoryview(buffer)
+        size = self._prefix.readinto(view)
+        if size:
+            return size
+
+        read = getattr(self._stream, "read1", self._stream.read)
+        chunk = read(len(view))
+        if not chunk:
+            return 0
+        view[: len(chunk)] = chunk
+        return len(chunk)
+
+
+def _read_compression_prefix(stream, /):
+    """Read only enough bytes to identify compression, stopping early for plain data."""
+
+    head = bytearray()
+    max_size = max(len(signature) for _extension, signature in _compression_signatures)
+    while len(head) < max_size:  # pragma: no branch - every full-length signature exits in the loop
+        byte = stream.read(1)
+        if not byte:
+            break
+        head.extend(byte)
+        if _extension_from_magic(head) is not None:
+            break
+        if not any(signature.startswith(head) for _extension, signature in _compression_signatures):
+            break
+    return bytes(head)
+
+
+@contextlib.contextmanager
+def _decompress_stream(stream, /, *, extension=None):
+    """Yield a binary stream with transparent decompression without closing the source."""
+
+    buffered = None
+    file = stream
+    try:
+        if extension is None:
+            head = _read_compression_prefix(stream)
+            buffered = io.BufferedReader(_PrefixedReader(head, stream))
+            extension = _extension_from_magic(head)
+            file = buffered
+        file = _decompressor(extension, file)
+        yield file
+    finally:
+        try:
+            if file is not stream:
+                file.close()
+        finally:
+            if buffered is not None and not buffered.closed:
+                buffered.close()
+
+
+def _is_binary_stream(stream, /):
+    """Return whether a file-like object exposes binary reads."""
+
+    if isinstance(stream, io.TextIOBase):
+        return False
+    if isinstance(stream, (io.RawIOBase, io.BufferedIOBase)):
+        return True
+    read = getattr(stream, "read", None)
+    return read is not None and isinstance(read(0), (bytes, bytearray))
+
+
 @contextlib.contextmanager
 def _xfile(name, obj, /):
     """
@@ -202,13 +278,11 @@ def _xfile(name, obj, /):
     :param obj: File-like an object.
     """
 
-    ext = _get_file_extension(name, "rb", fileobj=obj)
-    file = _decompressor(ext, obj)
-    try:
+    extension = os.path.splitext(name)[1]
+    if extension not in _known_extensions:
+        extension = None
+    with _decompress_stream(obj, extension=extension) as file:
         yield file
-    finally:
-        if file is not obj:
-            file.close()
 
 
 def _get_archive_extension(path, /):
@@ -331,6 +405,20 @@ def loader(stream, broken, /, *, cls=None, _on_error=None, **kwargs):
             _logger.warning("Broken line at %s: %s", lineno, e)
             if not broken:
                 raise
+
+
+def _load_stream(stream, broken, /, *, extension=None, encoding=None, cls=None, _on_error=None, **kwargs):
+    """Load records from a text or binary stream with transparent decompression."""
+
+    if _is_binary_stream(stream):
+        with _decompress_stream(stream, extension=extension) as binary_stream:
+            if encoding is None:
+                yield from loader(binary_stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+            else:
+                with io.TextIOWrapper(binary_stream, encoding=encoding) as text_stream:
+                    yield from loader(text_stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+    else:
+        yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
 
 
 def dumps(iterable, /, *, cls=None, **kwargs):
@@ -456,8 +544,8 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
     """
     Deserialize a UTF-8 encoded JSON Lines source—such as a filename, URL, or file-like object—into an object iterator.
 
-    If the file's extension indicates a recognized compression format (.gz, .bz2, .xz),
-    the corresponding decompression method is applied; if not, the standard open function is used by default.
+    Compression is detected from local path extensions or magic bytes. URL responses and binary file-like objects
+    are inspected without seeking and without consuming bytes from the resulting stream.
 
     :param str | bytes | os.PathLike | urllib.request.Request | Any source:
         If a URL or `urllib.request.Request` object is provided, the file will be retrieved
@@ -481,18 +569,33 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
         with urllib.request.urlopen(source) as fd:
             charset = fd.headers.get_content_charset(failobj=_utf_8)
-            # Wrap the file descriptor to handle text encoding.
-            with io.TextIOWrapper(fd, encoding=charset) as stream:
-                yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+            yield from _load_stream(
+                fd,
+                broken,
+                encoding=charset,
+                cls=cls,
+                _on_error=_on_error,
+                **kwargs,
+            )
     # Filename handling
     elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
-        openhook = opener or _xopen
+        openhook = opener or open
+        extension = None if opener is not None else os.path.splitext(filename)[1]
+        if extension not in _known_extensions:
+            extension = None
         with openhook(filename, mode="rb", encoding=None) as fd:
-            yield from loader(fd, broken, cls=cls, _on_error=_on_error, **kwargs)
+            yield from _load_stream(
+                fd,
+                broken,
+                extension=extension,
+                cls=cls,
+                _on_error=_on_error,
+                **kwargs,
+            )
     # File-like object handling
     else:
-        yield from loader(source, broken, cls=cls, _on_error=_on_error, **kwargs)
+        yield from _load_stream(source, broken, cls=cls, _on_error=_on_error, **kwargs)
 
 
 def load_archive(
@@ -665,56 +768,6 @@ class _BrokenRecordReporter:
         print("jsonl: Broken line at {}: {}".format(lineno, error), file=sys.stderr)
 
 
-class _PrefixedReader(io.RawIOBase):
-    """Read a captured prefix before continuing with the original binary stream."""
-
-    def __init__(self, prefix, stream):
-        super().__init__()
-        self._prefix = io.BytesIO(prefix)
-        self._stream = stream
-
-    def readable(self):
-        return True
-
-    def readinto(self, buffer):
-        view = memoryview(buffer)
-        size = self._prefix.readinto(view)
-        if size:
-            return size
-
-        read = getattr(self._stream, "read1", self._stream.read)
-        chunk = read(len(view))
-        if not chunk:
-            return 0
-        view[: len(chunk)] = chunk
-        return len(chunk)
-
-
-def _read_compression_prefix(stream, /):
-    """Read only enough bytes to identify compression, stopping early for plain data."""
-
-    head = bytearray()
-    max_size = max(len(signature) for _extension, signature in _compression_signatures)
-    while len(head) < max_size:  # pragma: no branch - every full-length signature exits in the loop
-        byte = stream.read(1)
-        if not byte:
-            break
-        head.extend(byte)
-        if _extension_from_magic(head) is not None:
-            break
-        if not any(signature.startswith(head) for _extension, signature in _compression_signatures):
-            break
-    return bytes(head)
-
-
-def _decompress_stream(stream, /):
-    """Wrap a (possibly non-seekable) binary stream with transparent decompression via magic bytes."""
-
-    head = _read_compression_prefix(stream)
-    buffered = io.BufferedReader(_PrefixedReader(head, stream))
-    return _decompressor(_extension_from_magic(head), buffered)
-
-
 def _cli_records(infile, broken, member, on_error, /):
     """Yield decoded records from the CLI input, reusing the streaming public API."""
 
@@ -727,10 +780,7 @@ def _cli_records(infile, broken, member, on_error, /):
         if not found:
             raise ValueError("no archive members matched pattern {!r}".format(pattern))
     elif infile is None or infile == "-":
-        yield from loader(_decompress_stream(sys.stdin.buffer), broken, _on_error=on_error)
-    elif _looks_like_url(infile):
-        with urllib.request.urlopen(infile) as resp:
-            yield from loader(_decompress_stream(resp), broken, _on_error=on_error)
+        yield from load(sys.stdin.buffer, broken=broken, _on_error=on_error)
     else:
         yield from load(infile, broken=broken, _on_error=on_error)
 

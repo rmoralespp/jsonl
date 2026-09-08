@@ -29,13 +29,19 @@ jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
 !!! note
     Supported compression formats: `.gz`, `.bz2`, `.xz`, and `.zst` (*Python ≥ 3.14*)
 
-    The compression format is resolved using two strategies:
+    Compression detection depends on the source:
 
-    1. **By file extension** — if the file has a recognized extension (`.gz`, `.bz2`, `.xz`, `.zst` *Python ≥ 3.14* ), that format is used directly.
-    2. **By magic numbers** — when the extension is not recognized, **jsonl** inspects the first bytes of the file
-       ([magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures)) to auto-detect the compression format.
+    | Source                  | Detection                                                                       |
+    |-------------------------|---------------------------------------------------------------------------------|
+    | Local path              | Recognized extension, with a magic-number fallback for unknown extensions      |
+    | Path with `opener=`     | Magic bytes from the stream returned by the opener                              |
+    | URL or `Request`        | Magic bytes from the response, independently of the URL                         |
+    | Binary file-like object | Magic bytes without requiring `seek()` or consuming bytes from the parsed data  |
+    | Text file-like object   | Assumed to be already decoded and decompressed                                  |
 
-    If neither method identifies a known format, the file is treated as uncompressed.
+    If no [magic number](https://en.wikipedia.org/wiki/List_of_file_signatures) or recognized extension identifies a
+    supported format, the source is treated as uncompressed. Streams supplied by the caller are never closed by
+    `load()`; only wrappers created internally for buffering and decompression are closed.
 
 ---
 
@@ -95,6 +101,20 @@ with open("file.jsonl") as fp:
         print(item)
 ```
 
+Binary file-like objects are inspected for compression without requiring seek support:
+
+```python
+import gzip
+import io
+import jsonl
+
+compressed = gzip.compress(b'{"name": "Alice"}\n')
+source = io.BytesIO(compressed)
+
+assert list(jsonl.load(source)) == [{"name": "Alice"}]
+assert not source.closed
+```
+
 ### Load from a URL
 
 You can load JSON Lines directly from a remote URL. For custom request headers, use `urllib.request.Request`:
@@ -113,6 +133,13 @@ req = urllib.request.Request(
     headers={"Accept": "application/jsonl"},
 )
 for item in jsonl.load(req):
+    print(item)
+```
+
+Compression is detected from the response body, so the URL does not need a filename extension:
+
+```python
+for item in jsonl.load("https://example.com/download?id=123"):
     print(item)
 ```
 

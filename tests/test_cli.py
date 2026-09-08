@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import contextlib
 import errno
 import gzip
 import importlib.metadata
@@ -310,6 +311,19 @@ def test_member_broken(tmp_dir, capsys):
 def test_url_input(http_server, capsys):
     assert jsonl.main([http_server + "foo.jsonl"]) == 0
     assert capsys.readouterr().out.count("\n") == 4
+
+
+def test_compressed_url_input(monkeypatch, capsys):
+    response = io.BytesIO(gzip.compress(b"[1]\n[2]\n"))
+    response.headers = types.SimpleNamespace(get_content_charset=lambda failobj: failobj)
+    monkeypatch.setattr(
+        jsonl.urllib.request,
+        "urlopen",
+        lambda _url: contextlib.nullcontext(response),
+    )
+
+    assert jsonl.main(["https://example.com/download?id=123"]) == 0
+    assert capsys.readouterr().out == "[1]\n[2]\n"
 
 
 def test_unexpected_error_exit_code(tmp_dir, capsys):
