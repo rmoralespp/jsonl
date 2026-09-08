@@ -36,6 +36,8 @@ jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
        ([magic numbers](https://en.wikipedia.org/wiki/List_of_file_signatures)) to auto-detect the compression format.
 
     If neither method identifies a known format, the file is treated as uncompressed.
+    URLs and binary file-like objects are inspected without seeking or consuming bytes from the resulting stream.
+    Text file-like objects are assumed to be already decoded and decompressed.
 
 ---
 
