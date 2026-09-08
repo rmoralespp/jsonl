@@ -211,21 +211,26 @@ def _xfile(name, obj, /):
             file.close()
 
 
+def _get_archive_extension(path, /):
+    """Return the supported archive extension at the end of a path."""
+
+    basename = os.path.basename(path)
+    for extension in sorted(_archive_formats, key=len, reverse=True):
+        if basename.endswith("." + extension):
+            return extension
+    raise ValueError(f"Unsupported archive extension: {path}")
+
+
 def _get_archive_format(path, /):
     """Return a valid archive format for `shutil.make_archive` based on the filename."""
 
-    basename = os.path.basename(path)
-    _, _, ext = basename.partition(".")
-    if fmt := _archive_formats.get(ext):
-        return fmt
-    else:
-        raise ValueError(f"Unsupported archive extension: {path}")
+    return _archive_formats[_get_archive_extension(path)]
 
 
 def _del_archive_extension(path, /):
-    dirpath, basename = os.path.split(path)
-    arcpath = os.path.join(dirpath, basename.split(".")[0])
-    return os.path.normpath(arcpath)
+    path = os.fspath(path)
+    extension = _get_archive_extension(path)
+    return os.path.normpath(path[: -(len(extension) + 1)])
 
 
 def _get_archive_member_path(root_dir, relpath, /):
