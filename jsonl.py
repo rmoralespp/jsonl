@@ -214,7 +214,6 @@ def _xfile(name, obj, /):
 def _get_archive_extension(path, /):
     """Return the supported archive extension at the end of a path."""
 
-    path = os.fspath(path)
     basename = os.path.basename(path)
     for extension in sorted(_archive_formats, key=len, reverse=True):
         if basename.endswith("." + extension):
