@@ -12,6 +12,7 @@ jsonl.dump_fork(
     opener=None,
     text_mode=True,
     dump_if_empty=True,
+    max_open_files=64,
     cls=None,
     **kwargs,
 )
@@ -25,15 +26,21 @@ jsonl.dump_fork(
 | `opener`        | `Callable` or `None`                          | `None`             | Custom function to open the given file paths              |
 | `text_mode`     | `bool`                                        | `True`             | If `False`, write bytes instead of text                   |
 | `dump_if_empty` | `bool`                                        | `True`             | If `False`, don't create empty files                      |
+| `max_open_files` | `int` or `None`                              | `64`               | Maximum number of files kept open; `None` disables the limit |
 | `cls`           | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                            |
 | `**kwargs`      |                                               |                    | Additional keyword arguments passed to the `cls`  encoder |
 
 ### Behavior
 
 - If the same filepath appears multiple times, subsequent data is **appended** to the file.
+- At most `max_open_files` destinations remain open. When the limit is reached, the least recently used writer is
+  closed and reopened in append mode if that destination appears again. Pass `None` to preserve the previous unbounded
+  behavior.
 - Raw `bytes` paths and `PathLike` objects returning bytes are rejected; decode them with `os.fsdecode()` first.
 - Files can use compression extensions (`.gz`, `.bz2`, `.xz`, and `.zst` *Python ≥ 3.14* ) and will be compressed
-  accordingly.
+  accordingly. Reopened compressed destinations use concatenated streams supported by their corresponding readers;
+  frequent reopening can reduce compression efficiency.
+- Custom openers must support both write (`wt` or `wb`) and append (`at` or `ab`) modes when destinations are reopened.
 - When `dump_if_empty=False`, files with no data are not created.
 
 ---

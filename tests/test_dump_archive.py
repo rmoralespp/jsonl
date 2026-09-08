@@ -37,6 +37,38 @@ def test_dump_archive(tmp_dir, archive_extension, pathlike):
     assert loaded == expected_data
 
 
+def test_max_open_files_forwarded_to_dump_fork(tmp_dir, monkeypatch):
+    path = str(tmp_dir / "archive.zip")
+    original_dump_fork = jsonl.dump_fork
+    received = []
+
+    def dump_fork(*args, **kwargs):
+        received.append(kwargs["max_open_files"])
+        return original_dump_fork(*args, **kwargs)
+
+    monkeypatch.setattr(jsonl, "dump_fork", dump_fork)
+
+    jsonl.dump_archive(path, [("file.jsonl", tests.data)], max_open_files=1)
+
+    assert received == [1]
+
+
+def test_reopened_archive_member_preserves_order(tmp_dir):
+    path = str(tmp_dir / "archive.zip")
+    data = [
+        ("first.jsonl", [{"batch": 1}]),
+        ("second.jsonl", [{"batch": 1}]),
+        ("first.jsonl", [{"batch": 2}]),
+    ]
+
+    result = jsonl.dump_archive(path, data, max_open_files=1)
+
+    assert _get_loaded_data(result) == [
+        ("first.jsonl", [{"batch": 1}, {"batch": 2}]),
+        ("second.jsonl", [{"batch": 1}]),
+    ]
+
+
 @pytest.mark.parametrize(
     "path_factory",
     [os.fsencode, tests.BytesPath],

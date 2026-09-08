@@ -6,6 +6,7 @@
 - **Fixed:** `dump_archive` supports archive filenames containing multiple dots.
 - **Fixed:** `load` detects compressed data consistently for paths, URLs, and binary file-like objects.
 - **Fixed:** File APIs consistently reject ambiguous `bytes` paths with a clear error.
+- **Added:** `dump_fork` and `dump_archive` use a configurable 64-file LRU limit; pass `None` to retain unbounded behavior.
 
 ### v1.5.0 (2026-09-07)
 
