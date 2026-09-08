@@ -1,5 +1,9 @@
 ## Releases
 
+### Unreleased
+
+- **Fixed:** `dump_archive` rejects archive member paths that escape the staging directory.
+
 ### v1.5.0 (2026-09-07)
 
 - **Added:** `jsonl` CLI with a `json`-style interface: stdin/stdout streaming, automatic

@@ -51,6 +51,51 @@ def test_invalid_filepath(tmp_dir):
         jsonl.dump_archive(arc_path, data)
 
 
+@pytest.mark.parametrize(
+    "filepath",
+    [
+        os.path.join(os.pardir, "escaped.jsonl"),
+        os.path.join("nested", os.pardir, os.pardir, "escaped.jsonl"),
+        pathlib.Path(os.pardir) / "escaped.jsonl",
+    ],
+)
+def test_filepath_cannot_escape_staging_directory(tmp_dir, filepath):
+    archive = tmp_dir / "archive.zip"
+    archive.write_bytes(b"existing archive")
+    opened = []
+
+    def opener(*args, **kwargs):
+        opened.append((args, kwargs))
+        raise AssertionError("Unsafe paths must be rejected before opening a file")
+
+    data = [(filepath, [{"key": "value"}])]
+    with pytest.raises(ValueError, match="escapes the staging directory"):
+        jsonl.dump_archive(archive, data, opener=opener)
+
+    assert opened == []
+    assert archive.read_bytes() == b"existing archive"
+
+
+def test_filepath_normalized_within_staging_directory(tmp_dir):
+    archive = tmp_dir / "archive.zip"
+    filepath = os.path.join("data", "temporary", os.pardir, "file.jsonl")
+    data = [(filepath, [{"key": "value"}])]
+
+    result = jsonl.dump_archive(archive, data)
+
+    assert _get_loaded_data(result) == [("data/file.jsonl", [{"key": "value"}])]
+
+
+def test_filepath_on_incompatible_volume_is_rejected(tmp_dir, monkeypatch):
+    def incompatible_paths(_paths):
+        raise ValueError("Paths are on different drives")
+
+    monkeypatch.setattr(os.path, "commonpath", incompatible_paths)
+
+    with pytest.raises(ValueError, match="escapes the staging directory"):
+        jsonl._get_archive_member_path(tmp_dir, "file.jsonl")
+
+
 @pytest.mark.parametrize("dump_if_empty", [True, False])
 def test_empty_data(tmp_dir, dump_if_empty):
     path = str(tmp_dir / "empty_archive.zip")

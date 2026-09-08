@@ -49,7 +49,8 @@ jsonl.dump_archive(
     If the archive already exists at the given path, it will be **overwritten**.
 
 !!! note
-    - Paths in the `data` argument must be **relative**. Absolute paths will raise a `ValueError`.
+    - Paths in the `data` argument must be **relative** and remain within the archive staging directory.
+      Absolute paths and paths that escape through `..` components raise a `ValueError`.
     - If `data` contains multiple items for the same path, they are **appended** to the corresponding file within the
       archive.
 
