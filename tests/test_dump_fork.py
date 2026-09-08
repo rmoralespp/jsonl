@@ -52,3 +52,14 @@ def test_empty_data(filepath, dump_if_empty, pathlike):
         assert not tests.read_text(filepath)
     else:
         assert not os.path.exists(filepath)
+
+
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_bytes_filepath(filepath, path_factory):
+    jsonl.dump_fork([(path_factory(filepath), tests.data)])
+
+    assert tests.read_text(filepath) == tests.string_data

@@ -6,6 +6,7 @@ import pathlib
 import pytest
 
 import jsonl
+import tests
 
 
 def _get_loaded_data(path):
@@ -34,6 +35,22 @@ def test_dump_archive(tmp_dir, archive_extension, pathlike):
     # Verify the path and loaded data
     assert result == path
     assert loaded == expected_data
+
+
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_dump_archive_bytes_paths(tmp_dir, archive_extension, path_factory):
+    path = str(tmp_dir / f"archive{archive_extension}")
+    archive_path = path_factory(path)
+    member_path = path_factory(os.path.join("data", "file.jsonl"))
+
+    result = jsonl.dump_archive(archive_path, [(member_path, [{"key": "value"}])])
+
+    assert result == path
+    assert _get_loaded_data(result) == [("data/file.jsonl", [{"key": "value"}])]
 
 
 def test_invalid_extension():

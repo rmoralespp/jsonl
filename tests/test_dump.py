@@ -58,6 +58,17 @@ def test_filepath(filepath, cls, kwargs, expected, pathlike):
     assert result == expected
 
 
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_bytes_filepath(filepath, path_factory):
+    jsonl.dump(iter(tests.data), path_factory(filepath))
+
+    assert tests.read_text(filepath) == tests.string_data
+
+
 def test_filepath_without_extension_using_opener():
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "foo")

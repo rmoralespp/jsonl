@@ -78,6 +78,19 @@ def test_http_server_uri_url(http_server, filename):
     assert loaded == expected
 
 
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_load_archive_bytes_path(path_factory):
+    archive = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "archive.zip"))
+
+    loaded = [(name, list(data)) for name, data in jsonl.load_archive(path_factory(archive))]
+
+    assert loaded == [("foo.jsonl", tests.data), ("var.jsonl", tests.data)]
+
+
 def test_load_archive_from_bytesio_tar():
     content = tests.string_data.encode(jsonl._utf_8)
     buf = io.BytesIO()

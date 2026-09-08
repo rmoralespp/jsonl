@@ -1,6 +1,6 @@
 # jsonl.dump
 
-Write an iterable of objects to a JSON Lines file. Supports filenames *(with automatic compression)*,
+Write an iterable of objects to a JSON Lines file. Supports `str` and `bytes` filenames *(with automatic compression)*,
 `os.PathLike` objects, and file-like objects with `write` or `writelines` methods.
 
 ## Function Signature
@@ -22,7 +22,7 @@ jsonl.dump(
 | Parameter    | Type                                          | Default            | Description                                                        |
 |--------------|-----------------------------------------------|--------------------|--------------------------------------------------------------------|
 | `iterable`   | `Iterable[Any]`                               | *(required)*       | Iterable of JSON-serializable objects                              |
-| `file`       | `str`, `PathLike`, file-like                  | *(required)*       | Destination file path or file-like object                          |
+| `file`       | `str`, `bytes`, `PathLike`, file-like         | *(required)*       | Destination file path or file-like object                          |
 | `opener`     | `Callable` or `None`                          | `None`             | Custom function to open the file (used only when `file` is a path) |
 | `text_mode`  | `bool`                                        | `True`             | If `False`, write bytes instead of text                            |
 | `cls`        | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                                     |
@@ -40,6 +40,8 @@ jsonl.dump(
     Supported compression formats: `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14)
 
     When a filename is provided, the compression format is determined by its extension.
+
+    `bytes` paths and `PathLike` objects returning bytes are decoded with `os.fsdecode()` before opening.
     If the extension is not recognized, the file is written as plain text.
 
 ---

@@ -55,6 +55,8 @@ _default_encode = json.JSONEncoder(
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
+_path_types = (str, bytes, os.PathLike)
+
 ext_jsonl = ".jsonl"
 ext_gz = ".gz"
 ext_bz2 = ".bz2"
@@ -133,6 +135,7 @@ def _decompressor(extension, fileobj, /):
 def _get_file_extension(name, mode, /, *, fileobj=None):
     """Get the file extension based on the filename or file-like object."""
 
+    name = os.fsdecode(name)
     extension = os.path.splitext(name)[1]
     if extension in _known_extensions:
         return extension
@@ -278,7 +281,7 @@ def _xfile(name, obj, /):
     :param obj: File-like an object.
     """
 
-    extension = os.path.splitext(name)[1]
+    extension = os.path.splitext(os.fsdecode(name))[1]
     if extension not in _known_extensions:
         extension = None
     with _decompress_stream(obj, extension=extension) as file:
@@ -288,7 +291,7 @@ def _xfile(name, obj, /):
 def _get_archive_extension(path, /):
     """Return the supported archive extension at the end of a path."""
 
-    basename = os.path.basename(path)
+    basename = os.path.basename(os.fsdecode(path))
     for extension in sorted(_archive_formats, key=len, reverse=True):
         if basename.endswith("." + extension):
             return extension
@@ -302,7 +305,7 @@ def _get_archive_format(path, /):
 
 
 def _del_archive_extension(path, /):
-    path = os.fspath(path)
+    path = os.fsdecode(path)
     extension = _get_archive_extension(path)
     return os.path.normpath(path[: -(len(extension) + 1)])
 
@@ -310,7 +313,7 @@ def _del_archive_extension(path, /):
 def _get_archive_member_path(root_dir, relpath, /):
     """Resolve an archive member path, ensuring it remains below the staging directory."""
 
-    file_relpath = os.fspath(relpath) if isinstance(relpath, os.PathLike) else relpath
+    file_relpath = os.fsdecode(relpath)
     if os.path.isabs(file_relpath):
         raise ValueError(f"Absolute path is not allowed: {file_relpath}")
 
@@ -473,8 +476,8 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, cls=None, **kwargs):
     """
 
     lines = dumper(iterable, text_mode=text_mode, cls=cls, **kwargs)
-    if isinstance(file, (str, os.PathLike)):
-        file = os.fspath(file)
+    if isinstance(file, _path_types):
+        file = os.fsdecode(file)
         fd_mode = "wt" if text_mode else "wb"
         fd_open = opener or _xopen
         with fd_open(file, mode=fd_mode, encoding=_get_encoding(fd_mode)) as fd:
@@ -492,7 +495,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
     """
     Incrementally dumps multiple iterables into the specified jsonlines files, effectively reducing memory consumption.
 
-    :param Iterable[str | os.PathLike, Iterable[Any]] paths: Iterable of iterables by filepath.
+    :param Iterable[str | bytes | os.PathLike, Iterable[Any]] paths: Iterable of iterables by filepath.
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
@@ -525,7 +528,7 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
     writers = {}
     try:
         for xpath, iterable in paths:
-            path = os.fspath(xpath) if isinstance(xpath, os.PathLike) else xpath
+            path = os.fsdecode(xpath)
             if path in writers:
                 writer = writers[path]
             else:
@@ -578,8 +581,8 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
                 **kwargs,
             )
     # Filename handling
-    elif isinstance(source, (str, os.PathLike)):
-        filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
+    elif isinstance(source, _path_types):
+        filename = os.fsdecode(source)
         openhook = opener or open
         extension = None if opener is not None else os.path.splitext(filename)[1]
         if extension not in _known_extensions:
@@ -641,9 +644,13 @@ def load_archive(
     :rtype: Iterator[tuple[str, Iterator[Any]]]
     """
 
+    is_url = _looks_like_url(file)
+    if not is_url and isinstance(file, _path_types):
+        file = os.fsdecode(file)
+
     with tempfile.TemporaryDirectory() as tmp:
 
-        if _looks_like_url(file):
+        if is_url:
             if opener is not None:
                 raise ValueError("Custom opener is not supported for URLs or Request objects.")
 
@@ -687,8 +694,8 @@ def dump_archive(
     - Supports TAR compression with gzip (`.tar.gz`), bzip2 (`.tar.bz2`), xz (`.tar.xz`),
       or zst (`.tar.zst`) (Python +3.14)
 
-    :param str path: Destination path for the archive file.
-    :param Iterable[tuple[str | os.PathLike, Iterable[Any]]] data:
+    :param str | bytes | os.PathLike path: Destination path for the archive file.
+    :param Iterable[tuple[str | bytes | os.PathLike, Iterable[Any]]] data:
         Iterable of (relative_path, items), where `relative_path` is the target file path within
         the archive, and `items` is an iterable of JSON-serializable objects.
 
@@ -706,6 +713,8 @@ def dump_archive(
         or if the archive extension is unsupported.
     :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
     """
+
+    path = os.fsdecode(path)
 
     def worker(root_dir, /):
         for relpath, iterable in data:
@@ -794,7 +803,7 @@ def _atomic_output(dest, /):
     destination is left untouched until the replacement succeeds.
     """
 
-    dest = os.path.abspath(os.fspath(dest))
+    dest = os.path.abspath(os.fsdecode(dest))
     dest_dir = os.path.dirname(dest)
 
     # Same filesystem keeps os.replace() atomic; the prefix makes cleanup remnants identifiable.

@@ -22,7 +22,7 @@ jsonl.load_archive(
 
 | Parameter    | Type                                             | Default            | Description                                                                                                 |
 |--------------|--------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------------------|
-| `file`       | `str`, `PathLike`, `URL`, `Request`, file-like   | *(required)*       | Archive file to load from                                                                                   |
+| `file`       | `str`, `bytes`, `PathLike`, URL, `Request`, file-like | *(required)*  | Archive file to load from                                                                                   |
 | `pattern`    | `str`                                            | `"*.jsonl"`        | Unix shell-style wildcard pattern to filter filenames inside the archive                                    |
 | `pwd`        | `bytes` or `None`                                | `None`             | Password to decrypt the archive (ZIP only)                                                                  |
 | `opener`     | `Callable` or `None`                             | `None`             | Custom function to open the file (not supported for URLs)                                                   |
@@ -44,6 +44,7 @@ deserialized objects.
 ### Key Features
 
 - Load from local files or remote URLs
+- Decode `bytes` paths and `PathLike` objects returning bytes with `os.fsdecode()`
 - Filter files inside the archive using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html)
 - Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (
   Python ≥ 3.14) ).

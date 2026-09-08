@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
+import os
 
 import jsonl
 
@@ -18,6 +19,16 @@ string_data = (
     '{"name": "Deloise", "wins": [["three of a kind", "5♣"]]}\n'
 )
 compacted_string_data = string_data.replace(", ", ",").replace(": ", ":")
+
+
+class BytesPath:
+    """PathLike implementation returning a filesystem-encoded path."""
+
+    def __init__(self, path):
+        self.path = os.fsencode(path)
+
+    def __fspath__(self):
+        return self.path
 
 
 def read_text(filename):

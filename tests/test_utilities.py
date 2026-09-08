@@ -85,6 +85,7 @@ def test_get_archive_format_invalid(ext):
     ("http://example.com", True),
     (urllib.request.Request("http://example.com"), True),  # Request object
     ("file:///path/to/data.jsonl", True),
+    (b"http://example.com", False),  # Bytes always represent filesystem paths
 ])
 def test_looks_like_url(url, expected):
     assert jsonl._looks_like_url(url) == expected

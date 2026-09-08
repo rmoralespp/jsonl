@@ -21,7 +21,7 @@ jsonl.dump_fork(
 
 | Parameter       | Type                                          | Default            | Description                                               |
 |-----------------|-----------------------------------------------|--------------------|-----------------------------------------------------------|
-| `paths`         | `Iterable[tuple[str, Iterable[Any]]]`         | *(required)*       | Iterable of `(filepath, items)` tuples                    |
+| `paths`         | `Iterable[tuple[str | bytes | PathLike, Iterable[Any]]]` | *(required)* | Iterable of `(filepath, items)` tuples       |
 | `opener`        | `Callable` or `None`                          | `None`             | Custom function to open the given file paths              |
 | `text_mode`     | `bool`                                        | `True`             | If `False`, write bytes instead of text                   |
 | `dump_if_empty` | `bool`                                        | `True`             | If `False`, don't create empty files                      |
@@ -31,6 +31,7 @@ jsonl.dump_fork(
 ### Behavior
 
 - If the same filepath appears multiple times, subsequent data is **appended** to the file.
+- `bytes` paths and `PathLike` objects returning bytes are decoded with `os.fsdecode()`.
 - Files can use compression extensions (`.gz`, `.bz2`, `.xz`, and `.zst` *Python ≥ 3.14* ) and will be compressed
   accordingly.
 - When `dump_if_empty=False`, files with no data are not created.
