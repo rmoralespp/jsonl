@@ -7,6 +7,13 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.5.1 (2026-09-08)
+
+- **Fixed:** `dump_archive` rejects archive member paths that escape the staging directory.
+- **Fixed:** `dump_archive` supports archive filenames containing multiple dots.
+- **Fixed:** `load` detects compressed data consistently for paths, URLs, and binary file-like objects.
+- **Fixed:** File APIs consistently reject ambiguous `bytes` paths with a clear error.
+
 ### v1.5.0 (2026-09-07)
 
 - **Added:** `jsonl` CLI with a `json`-style interface: stdin/stdout streaming, automatic
