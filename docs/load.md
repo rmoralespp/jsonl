@@ -1,6 +1,6 @@
 # jsonl.load
 
-Deserialize a JSON Lines source into an iterator of Python objects. Supports filenames, URLs,
+Deserialize a JSON Lines source into an iterator of Python objects. Supports `str` filenames, URLs,
 `urllib.request.Request` objects, and file-like objects.
 
 ## Function Signature
@@ -13,7 +13,7 @@ jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
 
 | Parameter    | Type                                               | Default              | Description                                                                         |
 |--------------|----------------------------------------------------|----------------------|-------------------------------------------------------------------------------------|
-| `source`     | `str`, `PathLike`, `URL`, `Request`, file-like     | *(required)*         | The JSON Lines source to read from                                                  |
+| `source`     | `str`, `PathLike[str]`, URL, `Request`, file-like | *(required)*      | The JSON Lines source to read from                                                  |
 | `opener`     | `Callable` or `None`                               | `None`               | Custom function to open the file (not supported for URLs)                           |
 | `broken`     | `bool`                                             | `False`              | If `True`, skip malformed lines and log a warning instead of raising an exception   |
 | `cls`        | `type[json.JSONDecoder]` or `Callable` or `None`   | `json.JSONDecoder`   | Custom decoder                                                                      |
@@ -42,6 +42,9 @@ jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
     If no [magic number](https://en.wikipedia.org/wiki/List_of_file_signatures) or recognized extension identifies a
     supported format, the source is treated as uncompressed. Streams supplied by the caller are never closed by
     `load()`; only wrappers created internally for buffering and decompression are closed.
+
+    Raw `bytes` paths and `PathLike` objects returning bytes are rejected because they are ambiguous with binary
+    content. Decode filesystem paths with `os.fsdecode()` or wrap binary content in `io.BytesIO`.
 
 ---
 

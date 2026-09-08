@@ -164,6 +164,18 @@ def test_filepath(filepath, json_decoder, pathlike):
     assert result == expected
 
 
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_bytes_filepath_rejected(filepath, path_factory):
+    tests.write_text(filepath, content=tests.string_data)
+
+    with pytest.raises(TypeError, match="bytes paths are not supported"):
+        list(jsonl.load(path_factory(filepath)))
+
+
 def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_decoder):
     expected = tuple(tests.data)
     tests.write_text(filepath, content=tests.string_data)  # Write compressed data first

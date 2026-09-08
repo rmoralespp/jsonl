@@ -78,6 +78,18 @@ def test_http_server_uri_url(http_server, filename):
     assert loaded == expected
 
 
+@pytest.mark.parametrize(
+    "path_factory",
+    [os.fsencode, tests.BytesPath],
+    ids=["bytes", "pathlike-bytes"],
+)
+def test_load_archive_bytes_path_rejected(path_factory):
+    archive = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "archive.zip"))
+
+    with pytest.raises(TypeError, match="bytes paths are not supported"):
+        list(jsonl.load_archive(path_factory(archive)))
+
+
 def test_load_archive_from_bytesio_tar():
     content = tests.string_data.encode(jsonl._utf_8)
     buf = io.BytesIO()
