@@ -228,6 +228,24 @@ def _del_archive_extension(path, /):
     return os.path.normpath(arcpath)
 
 
+def _get_archive_member_path(root_dir, relpath, /):
+    """Resolve an archive member path, ensuring it remains below the staging directory."""
+
+    file_relpath = os.fspath(relpath) if isinstance(relpath, os.PathLike) else relpath
+    if os.path.isabs(file_relpath):
+        raise ValueError(f"Absolute path is not allowed: {file_relpath}")
+
+    root_dir = os.path.realpath(root_dir)
+    file_abspath = os.path.realpath(os.path.join(root_dir, file_relpath))
+    try:
+        contained = os.path.commonpath((root_dir, file_abspath)) == root_dir
+    except ValueError:
+        contained = False
+    if not contained:
+        raise ValueError(f"Archive member path escapes the staging directory: {file_relpath}")
+    return file_abspath
+
+
 def _iterfind_zip_members(name_or_obj, pattern, pwd, /):
     with zipfile.ZipFile(name_or_obj) as zf:
         for name in fnmatch.filter(zf.namelist(), pattern):
@@ -575,17 +593,15 @@ def dump_archive(
         - Callable accepting arbitrary arguments and returning an encoded object
     :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
 
-    :raises ValueError: If a filepath in `items_by_relpath` is absolute, or if the archive extension is unsupported.
+    :raises ValueError:
+        If a filepath in `items_by_relpath` is absolute or escapes the staging directory,
+        or if the archive extension is unsupported.
     :return: Path to the created archive file, or `None` if no items were dumped and `dump_if_empty` is `False`.
     """
 
     def worker(root_dir, /):
         for relpath, iterable in data:
-            file_relpath = os.fspath(relpath) if isinstance(relpath, os.PathLike) else relpath
-            if os.path.isabs(file_relpath):
-                raise ValueError(f"Absolute path is not allowed: {file_relpath}")
-
-            file_abspath = os.path.join(root_dir, file_relpath)
+            file_abspath = _get_archive_member_path(root_dir, relpath)
             file_dirpath = os.path.dirname(file_abspath)
             os.makedirs(file_dirpath, exist_ok=True)
             yield (file_abspath, iterable)
