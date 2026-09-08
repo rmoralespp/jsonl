@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="zensical-0.0.59">
+      <meta name="generator" content="zensical-0.0.60">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../assets/stylesheets/modern/main.5da3a30f.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
       
         
           
@@ -1201,7 +1201,7 @@
 
 
 <h1 id="jsonldump">jsonl.dump<a class="headerlink" href="#jsonldump" title="Permanent link">&para;</a></h1>
-<p>Write an iterable of objects to a JSON Lines file. Supports filenames <em>(with automatic compression)</em>,
+<p>Write an iterable of objects to a JSON Lines file. Supports <code>str</code> filenames <em>(with automatic compression)</em>,
 <code>os.PathLike</code> objects, and file-like objects with <code>write</code> or <code>writelines</code> methods.</p>
 <h2 id="function-signature">Function Signature<a class="headerlink" href="#function-signature" title="Permanent link">&para;</a></h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">jsonl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
@@ -1233,7 +1233,7 @@
 </tr>
 <tr>
 <td><code>file</code></td>
-<td><code>str</code>, <code>PathLike</code>, file-like</td>
+<td><code>str</code>, <code>PathLike[str]</code>, file-like</td>
 <td><em>(required)</em></td>
 <td>Destination file path or file-like object</td>
 </tr>
@@ -1282,7 +1282,9 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Supported compression formats: <code>.gz</code>, <code>.bz2</code>, <code>.xz</code>, <code>.zst</code> (Python ≥ 3.14)</p>
-<p>When a filename is provided, the compression format is determined by its extension.
+<p>When a filename is provided, the compression format is determined by its extension.</p>
+<p>Raw <code>bytes</code> paths and <code>PathLike</code> objects returning bytes are rejected because they are ambiguous with binary
+content. Decode filesystem paths with <code>os.fsdecode()</code> before passing them to <code>dump()</code>.
 If the extension is not recognized, the file is written as plain text.</p>
 </div>
 <hr />
@@ -1476,7 +1478,7 @@ If the extension is not recognized, the file is written as plain text.</p>
       <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.copy","navigation.instant","navigation.sections","navigation.expand","navigation.top","toc.follow"],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../assets/javascripts/bundle.6970bfe9.min.js"></script>
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
       
     
   </body>
