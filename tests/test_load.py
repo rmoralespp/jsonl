@@ -169,10 +169,11 @@ def test_filepath(filepath, json_decoder, pathlike):
     [os.fsencode, tests.BytesPath],
     ids=["bytes", "pathlike-bytes"],
 )
-def test_bytes_filepath(filepath, path_factory):
+def test_bytes_filepath_rejected(filepath, path_factory):
     tests.write_text(filepath, content=tests.string_data)
 
-    assert list(jsonl.load(path_factory(filepath))) == tests.data
+    with pytest.raises(TypeError, match="bytes paths are not supported"):
+        list(jsonl.load(path_factory(filepath)))
 
 
 def test_filepath_unknown_extension_but_detected_by_signature(filepath, json_decoder):

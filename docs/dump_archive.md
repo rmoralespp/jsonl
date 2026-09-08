@@ -22,8 +22,8 @@ jsonl.dump_archive(
 
 | Parameter       | Type                                          | Default            | Description                                               |
 |-----------------|-----------------------------------------------|--------------------|-----------------------------------------------------------|
-| `path`          | `str`, `bytes`, `PathLike`                    | *(required)*       | Destination path for the archive file                     |
-| `data`          | `Iterable[tuple[str | bytes | PathLike, Iterable[Any]]]` | *(required)* | Iterable of `(relative_path, items)` tuples |
+| `path`          | `str`, `PathLike[str]`                         | *(required)*       | Destination path for the archive file                     |
+| `data`          | `Iterable[tuple[str | PathLike[str], Iterable[Any]]]` | *(required)* | Iterable of `(relative_path, items)` tuples |
 | `opener`        | `Callable` or `None`                          | `None`             | Custom function to open the given file paths              |
 | `text_mode`     | `bool`                                        | `True`             | If `False`, write bytes instead of text                   |
 | `dump_if_empty` | `bool`                                        | `True`             | If `False`, don't create empty files or an empty archive  |
@@ -51,7 +51,7 @@ jsonl.dump_archive(
 !!! note
     - Paths in the `data` argument must be **relative** and remain within the archive staging directory.
       Absolute paths and paths that escape through `..` components raise a `ValueError`.
-    - `bytes` paths and `PathLike` objects returning bytes are decoded with `os.fsdecode()`.
+    - Raw `bytes` paths and `PathLike` objects returning bytes are rejected; decode them with `os.fsdecode()` first.
     - If `data` contains multiple items for the same path, they are **appended** to the corresponding file within the
       archive.
 

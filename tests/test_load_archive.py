@@ -83,12 +83,11 @@ def test_http_server_uri_url(http_server, filename):
     [os.fsencode, tests.BytesPath],
     ids=["bytes", "pathlike-bytes"],
 )
-def test_load_archive_bytes_path(path_factory):
+def test_load_archive_bytes_path_rejected(path_factory):
     archive = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "archive.zip"))
 
-    loaded = [(name, list(data)) for name, data in jsonl.load_archive(path_factory(archive))]
-
-    assert loaded == [("foo.jsonl", tests.data), ("var.jsonl", tests.data)]
+    with pytest.raises(TypeError, match="bytes paths are not supported"):
+        list(jsonl.load_archive(path_factory(archive)))
 
 
 def test_load_archive_from_bytesio_tar():
