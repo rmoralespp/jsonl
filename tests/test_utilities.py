@@ -30,10 +30,15 @@ def test_get_line(value, text_mode, expected):
 
 @pytest.mark.parametrize("filename, expected", [
     ("foo.zip", "zip"),
+    ("foo.v1.zip", "zip"),
     ("foo.tar", "tar"),
+    ("foo.v1.tar", "tar"),
     ("foo.tar.gz", "gztar"),
+    ("foo.v1.tar.gz", "gztar"),
     ("foo.tar.bz2", "bztar"),
+    ("foo.v1.tar.bz2", "bztar"),
     ("foo.tar.xz", "xztar"),
+    ("foo.v1.tar.xz", "xztar"),
 ])
 def test_get_archive_format(filename, expected):
     assert jsonl._get_archive_format(filename) == expected
@@ -45,12 +50,17 @@ def test_get_archive_format(filename, expected):
     ("path/to/foo.tar.gz", os.path.join("path", "to", "foo")),
     ("path/to/foo.tar.bz2", os.path.join("path", "to", "foo")),
     ("path/to/foo.tar.xz", os.path.join("path", "to", "foo")),
-    ("path/to.var/foo.var.tar.xz", os.path.join("path", "to.var", "foo")),
+    ("path/to.var/foo.var.tar.xz", os.path.join("path", "to.var", "foo.var")),
     ("foo.zip", "foo"),
+    ("foo.v1.zip", "foo.v1"),
     ("foo.tar", "foo"),
+    ("foo.v1.tar", "foo.v1"),
     ("foo.tar.gz", "foo"),
+    ("foo.v1.tar.gz", "foo.v1"),
     ("foo.tar.bz2", "foo"),
+    ("foo.v1.tar.bz2", "foo.v1"),
     ("foo.tar.xz", "foo"),
+    ("foo.v1.tar.xz", "foo.v1"),
 ])
 def test_del_archive_extension(filename, expected):
     assert jsonl._del_archive_extension(filename) == expected
@@ -63,9 +73,7 @@ def test_del_archive_extension(filename, expected):
     "foo.gz",  # non-tar gzip
     "foo.xz",  # non-tar xz
     "foo.bz2",  # non-tar bzip2
-    "foo.var.tar.gz",  # tar with extra extensions
-    "foo.var.tar.bz2",  # tar with extra extensions
-    "foo.var.tar.xz",  # tar with extra extensions
+    "foo.tar.gz.backup",  # supported extension is not at the end
     "foo.TAR",  # case-insensitive check
 ])
 def test_get_archive_format_invalid(ext):

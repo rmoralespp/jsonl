@@ -14,7 +14,7 @@ def _get_loaded_data(path):
 
 
 def test_dump_archive(tmp_dir, archive_extension, pathlike):
-    path = str(tmp_dir / f"archive{archive_extension}")
+    path = str(tmp_dir / f"archive.v1{archive_extension}")
     data = [
         ("file1.jsonl", [{"key": "value1"}, {"key": "value2"}]),
         ("path/to/file2.jsonl", [{"key": "value3"}]),
