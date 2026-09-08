@@ -248,10 +248,12 @@ def _decompress_stream(stream, /, *, extension=None):
         file = _decompressor(extension, file)
         yield file
     finally:
-        if file is not stream:
-            file.close()
-        if buffered is not None and not buffered.closed:
-            buffered.close()
+        try:
+            if file is not stream:
+                file.close()
+        finally:
+            if buffered is not None and not buffered.closed:
+                buffered.close()
 
 
 def _is_binary_stream(stream, /):
@@ -405,6 +407,20 @@ def loader(stream, broken, /, *, cls=None, _on_error=None, **kwargs):
                 raise
 
 
+def _load_stream(stream, broken, /, *, extension=None, encoding=None, cls=None, _on_error=None, **kwargs):
+    """Load records from a text or binary stream with transparent decompression."""
+
+    if _is_binary_stream(stream):
+        with _decompress_stream(stream, extension=extension) as binary_stream:
+            if encoding is None:
+                yield from loader(binary_stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+            else:
+                with io.TextIOWrapper(binary_stream, encoding=encoding) as text_stream:
+                    yield from loader(text_stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+    else:
+        yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+
+
 def dumps(iterable, /, *, cls=None, **kwargs):
     """
     Serialize an iterable into a JSON Lines formatted string.
@@ -553,22 +569,33 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
         with urllib.request.urlopen(source) as fd:
             charset = fd.headers.get_content_charset(failobj=_utf_8)
-            with _decompress_stream(fd) as binary_stream:
-                # Preserve the response charset after decompression.
-                with io.TextIOWrapper(binary_stream, encoding=charset) as stream:
-                    yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+            yield from _load_stream(
+                fd,
+                broken,
+                encoding=charset,
+                cls=cls,
+                _on_error=_on_error,
+                **kwargs,
+            )
     # Filename handling
     elif isinstance(source, (str, os.PathLike)):
         filename = source if isinstance(source, str) else os.fspath(source)  # Ensure it's a string path
-        openhook = opener or _xopen
+        openhook = opener or open
+        extension = None if opener is not None else os.path.splitext(filename)[1]
+        if extension not in _known_extensions:
+            extension = None
         with openhook(filename, mode="rb", encoding=None) as fd:
-            yield from loader(fd, broken, cls=cls, _on_error=_on_error, **kwargs)
+            yield from _load_stream(
+                fd,
+                broken,
+                extension=extension,
+                cls=cls,
+                _on_error=_on_error,
+                **kwargs,
+            )
     # File-like object handling
-    elif _is_binary_stream(source):
-        with _decompress_stream(source) as stream:
-            yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
     else:
-        yield from loader(source, broken, cls=cls, _on_error=_on_error, **kwargs)
+        yield from _load_stream(source, broken, cls=cls, _on_error=_on_error, **kwargs)
 
 
 def load_archive(

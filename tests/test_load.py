@@ -19,6 +19,9 @@ import tests
 class NonSeekableBytesIO(io.BytesIO):
     """Expose a fragmented binary stream without seeking support."""
 
+    def seekable(self):
+        return False
+
     def read(self, size=-1):
         return super().read(1 if size < 0 else min(size, 1))
 
@@ -162,6 +165,14 @@ def test_filepath_using_opener(opener):
         tests.write_text(os.path.join(tmp, "foo"), content=tests.string_data)
         result = tuple(jsonl.load(path, opener=opener))
     assert result == expected
+
+
+@pytest.mark.parametrize("extension", sorted(jsonl.extensions - {jsonl.ext_jsonl}))
+def test_compressed_filepath_using_plain_opener(tmp_dir, extension):
+    filepath = tmp_dir / ("data" + extension)
+    tests.write_text(filepath, content=tests.string_data)
+
+    assert list(jsonl.load(filepath, opener=open)) == tests.data
 
 
 def test_filepath_not_found():
