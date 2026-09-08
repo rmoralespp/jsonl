@@ -118,6 +118,24 @@ def test_compressed_file_like_remains_open_after_early_close():
     assert not source.closed
 
 
+def test_buffer_is_closed_when_decompressor_close_fails(monkeypatch):
+    source = io.BytesIO(b"compressed")
+    buffered = unittest.mock.MagicMock()
+    buffered.closed = False
+    decompressor = unittest.mock.MagicMock()
+    decompressor.close.side_effect = OSError("close failed")
+    monkeypatch.setattr(jsonl, "_read_compression_prefix", lambda _stream: b"\x1f\x8b")
+    monkeypatch.setattr(jsonl.io, "BufferedReader", lambda _stream: buffered)
+    monkeypatch.setattr(jsonl, "_decompressor", lambda _extension, _stream: decompressor)
+
+    with pytest.raises(OSError, match="close failed"):
+        with jsonl._decompress_stream(source):
+            pass
+
+    buffered.close.assert_called_once_with()
+    assert not source.closed
+
+
 def test_iterable_text_source_without_read_method():
     source = iter(tests.string_data.splitlines(keepends=True))
 
