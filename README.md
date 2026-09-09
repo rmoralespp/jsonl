@@ -183,7 +183,7 @@ cat input.jsonl | jsonl --compact > output.jsonl
 # Convert compression formats
 jsonl input.jsonl.gz output.jsonl.xz
 
-# Read every *.jsonl member from a ZIP/TAR archive
+# Read every recognized JSONL/NDJSON member from a ZIP/TAR archive
 jsonl dataset.zip > merged.jsonl
 
 # Select archive members
