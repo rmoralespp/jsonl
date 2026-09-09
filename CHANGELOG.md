@@ -1,6 +1,6 @@
 ## Releases
 
-### Unreleased
+### v1.5.2 (2026-09-9)
 
 - **Added:** The CLI supports sequential record-count splitting with `--split N INPUT OUTPUT`.
 - **Added:** `load_archive` and the CLI now auto-discover `.jsonl` and `.ndjson` archive
