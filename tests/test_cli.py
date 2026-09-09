@@ -111,6 +111,81 @@ def test_output_compression(tmp_dir, extension):
     assert list(jsonl.load(str(dst))) == [[1], [2]]
 
 
+def test_split_records(tmp_dir):
+    src = tmp_dir / "in.jsonl"
+    output = tmp_dir / "part.jsonl"
+    tests.write_text(str(src), "[1]\n[2]\n[3]\n[4]\n[5]\n")
+
+    assert jsonl.main(["--split", "2", str(src), str(output)]) == 0
+
+    paths = [tmp_dir / "part-00000.jsonl", tmp_dir / "part-00001.jsonl", tmp_dir / "part-00002.jsonl"]
+    assert [record for path in paths for record in jsonl.load(path)] == [[1], [2], [3], [4], [5]]
+
+
+def test_split_compressed_output(tmp_dir):
+    src = tmp_dir / "in.jsonl"
+    output = tmp_dir / "part.jsonl.gz"
+    tests.write_text(str(src), "[1]\n[2]\n[3]\n")
+
+    assert jsonl.main(["--split", "2", str(src), str(output)]) == 0
+    assert list(jsonl.load(tmp_dir / "part-00000.jsonl.gz")) == [[1], [2]]
+    assert list(jsonl.load(tmp_dir / "part-00001.jsonl.gz")) == [[3]]
+
+
+def test_split_empty_input_does_not_create_outputs(tmp_dir):
+    src = tmp_dir / "empty.jsonl"
+    output = tmp_dir / "part-{index}.jsonl"
+    tests.write_text(str(src))
+
+    assert jsonl.main(["--split", "1", str(src), str(output)]) == 0
+    assert not list(tmp_dir.glob("part-*.jsonl"))
+
+
+def test_split_broken_records_writes_valid_records(tmp_dir):
+    src = tmp_dir / "broken.jsonl"
+    output = tmp_dir / "part.jsonl"
+    tests.write_text(str(src), "[1]\nNOPE\n[2]\n")
+
+    assert jsonl.main(["--split", "1", "--broken", str(src), str(output)]) == 1
+    assert list(jsonl.load(tmp_dir / "part-00000.jsonl")) == [[1]]
+    assert list(jsonl.load(tmp_dir / "part-00001.jsonl")) == [[2]]
+
+
+@pytest.mark.parametrize("records", ["0", "-1", "invalid"])
+def test_split_requires_positive_record_count(records):
+    with pytest.raises(SystemExit) as exc:
+        jsonl.main(["--split", records])
+    assert exc.value.code == 2
+
+
+def test_split_requires_output_path(tmp_dir):
+    src = tmp_dir / "in.jsonl"
+    tests.write_text(str(src), "[1]\n")
+
+    with pytest.raises(SystemExit) as exc:
+        jsonl.main(["--split", "1", str(src)])
+    assert exc.value.code == 2
+
+
+def test_split_rejects_input_as_first_output(tmp_dir):
+    src = tmp_dir / "part-00000.jsonl"
+    output = tmp_dir / "part.jsonl"
+    tests.write_text(str(src), "[1]\n[2]\n")
+
+    assert jsonl.main(["--split", "1", str(src), str(output)]) == 3
+    assert tests.read_text(src) == "[1]\n[2]\n"
+
+
+def test_split_rejects_input_as_later_output(tmp_dir):
+    src = tmp_dir / "part-00001.jsonl"
+    output = tmp_dir / "part.jsonl"
+    tests.write_text(str(src), "[1]\n[2]\n[3]\n")
+
+    assert jsonl.main(["--split", "1", str(src), str(output)]) == 3
+    assert list(jsonl.load(tmp_dir / "part-00000.jsonl")) == [[1]]
+    assert tests.read_text(src) == "[1]\n[2]\n[3]\n"
+
+
 def test_zstd_output_rejected_when_unavailable(tmp_dir, capsys, monkeypatch):
     src = tmp_dir / "in.jsonl"
     dst = tmp_dir / "out.jsonl.zst"
