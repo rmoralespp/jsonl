@@ -24,6 +24,7 @@ import fnmatch
 import functools
 import gzip
 import io
+import itertools
 import json
 import logging
 import lzma
@@ -1065,6 +1066,38 @@ def _cli_write(records, outfile, encoder_kwargs, /):
             dump(records, tmp, **encoder_kwargs)
 
 
+def _cli_split(records, infile, output, records_per_file, encoder_kwargs, /):
+    """Write streamed records to sequential files using the existing multipath writer."""
+
+    def split_path():
+        directory, name = os.path.split(output)
+        for suffix in sorted(_default_archive_member_suffixes, key=len, reverse=True):
+            if name.endswith(suffix):
+                return directory, name[: -len(suffix)], suffix
+        name, suffix = os.path.splitext(name)
+        return directory, name, suffix
+
+    def grouper():
+        source_iter = iter(records)
+        while True:
+            batch_iter = itertools.islice(source_iter, records_per_file)
+            try:
+                first = next(batch_iter)
+            except StopIteration:
+                return
+            yield itertools.chain((first,), batch_iter)
+
+    def paths():
+        directory, name, suffix = split_path()
+        for index, batch in enumerate(grouper()):
+            path = os.path.join(directory, "{}-{:05}{}".format(name, index, suffix))
+            if _cli_same_file(infile, path):
+                raise ValueError("input and split output must not refer to the same file")
+            yield path, batch
+
+    dump_fork(paths(), max_open_files=1, **encoder_kwargs)
+
+
 def _redirect_stdout_to_devnull():
     """Redirect stdout's file descriptor so interpreter shutdown cannot flush a broken pipe."""
 
@@ -1082,6 +1115,18 @@ def _is_broken_stdout(exc, outfile, /):
     return outfile is None and (
         isinstance(exc, BrokenPipeError) or (sys.platform == "win32" and exc.errno == errno.EINVAL)
     )
+
+
+def _positive_int(value, /):
+    """Parse an integer greater than zero for argparse."""
+
+    try:
+        value = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be an integer") from exc
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return value
 
 
 def _cli_same_file(infile, outfile, /):
@@ -1106,7 +1151,7 @@ def _cli_same_file(infile, outfile, /):
 def _build_parser():
     parser = argparse.ArgumentParser(
         prog="jsonl",
-        description="Stream, convert, compress, and validate JSON Lines data.",
+        description="Stream, convert, compress, validate, and split JSON Lines data.",
     )
     parser.add_argument(
         "infile",
@@ -1149,6 +1194,12 @@ def _build_parser():
         help="skip invalid JSON records instead of aborting; exits 1 if any record was skipped",
     )
     parser.add_argument(
+        "--split",
+        type=_positive_int,
+        metavar="N",
+        help="split output into files containing at most N records",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version="%(prog)s (py-jsonl {})".format(_get_version()),
@@ -1167,7 +1218,10 @@ def main(argv=None):
     # Configuration errors -> exit code 2 (argparse convention).
     if args.member is not None and (infile is None or infile == "-"):
         parser.error("--member requires an input archive file or URL, not stdin")
-    if _cli_same_file(infile, outfile):
+    if args.split is not None:
+        if outfile is None:
+            parser.error("--split requires an output path")
+    elif _cli_same_file(infile, outfile):
         parser.error("input and output must not refer to the same file")
 
     encoder_kwargs = {"ensure_ascii": args.ensure_ascii}
@@ -1180,7 +1234,10 @@ def main(argv=None):
     exit_code = _EXIT_OK
     try:
         records = _cli_records(infile, args.broken, args.member, reporter)
-        _cli_write(records, outfile, encoder_kwargs)
+        if args.split is None:
+            _cli_write(records, outfile, encoder_kwargs)
+        else:
+            _cli_split(records, infile, outfile, args.split, encoder_kwargs)
     except (json.JSONDecodeError, UnicodeDecodeError):
         # Recoverable parsing error without --broken: the reporter already described it.
         exit_code = _EXIT_INVALID_RECORD

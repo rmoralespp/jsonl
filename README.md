@@ -50,6 +50,7 @@ pip install py-jsonl
 - **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
 - **Error tolerance** — skip malformed lines instead of crashing.
 - **Command-line interface** — a `json`-style `jsonl` command for shell pipelines.
+- **Sequential splitting** — divide a stream into fixed-size JSONL files.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
 > Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec)
@@ -191,11 +192,13 @@ jsonl --member '2026/*.jsonl' dataset.tar.gz > output.jsonl
 
 # Skip invalid records (returns 1 if any are found)
 jsonl --broken input.jsonl output.jsonl
+
+# Split into files of 50,000 records; output compression follows the output suffix
+jsonl --split 50000 input.jsonl part.jsonl.gz
 ```
 
-Useful options include `--compact`, `--sort-keys`, `--ascii`, `--member`, and
-`--broken`. File output is atomic: an existing destination is replaced only after the complete input has been processed
-successfully.
+Useful options include `--compact`, `--sort-keys`, `--ascii`, `--member`, `--broken`, and `--split`. File output is
+atomic unless `--split` is used: split files are written incrementally, so files completed before an error remain.
 
 [Full command-line documentation](https://rmoralespp.github.io/jsonl/cli/)
 

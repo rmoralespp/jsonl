@@ -26,6 +26,7 @@ handled automatically: the output codec is chosen from the file extension (`.gz`
 | `--ascii`          | Escape non-ASCII characters as `\uXXXX`. Output is raw UTF-8 by default.                       |
 | `--member PATTERN` | Pick local or remote archive members by shell-style pattern. Without it, archives auto-select recognized `.jsonl`/`.ndjson` members and their supported compressed variants.|
 | `--broken`         | Skip invalid records instead of aborting (see [Error handling](#error-handling)).             |
+| `--split N`        | Write at most `N` records per output file.                                                     |
 | `--version`        | Show the version and exit.                                                                     |
 | `-h`, `--help`     | Show the help message and exit.                                                                |
 
@@ -56,9 +57,21 @@ jsonl --member '2026/*.jsonl' dataset.tar.gz > year.jsonl
 # Tolerate broken input: skip invalid records and report them to stderr
 jsonl --broken messy.jsonl clean.jsonl
 
+# Split into 50,000-record gzip files
+jsonl --split 50000 input.jsonl users.jsonl.gz
+
 # Reformat: sort keys and escape non-ASCII to pure ASCII
 jsonl --sort-keys --ascii data.jsonl > normalized.jsonl
 ```
+
+## Splitting
+
+`--split N` streams the input into sequential files of at most `N` records. Indexing starts at `00000` and uses five
+zero-padded digits. The index is inserted before a recognized JSONL or NDJSON suffix, preserving compression:
+`users.jsonl.gz` creates `users-00000.jsonl.gz`, `users-00001.jsonl.gz`, and so on.
+
+Splitting uses the existing incremental multipath writer with one open destination at a time. It does not create a
+manifest and does not publish all shards atomically: if input processing fails, files already written remain available.
 
 !!! info "No `--indent`"
     Spreading a value across multiple lines would break the JSON Lines format (one value per
@@ -74,7 +87,7 @@ skipped and reported to stderr (with the input line number when available) while
 errors always abort.
 
 !!! tip "Atomic output files"
-    When writing to a file, output goes to a temporary file that **atomically** replaces the
+    When writing to a file without `--split`, output goes to a temporary file that **atomically** replaces the
     destination only after the whole input succeeds — a failed run never leaves a partial file,
     and the existing destination is untouched. Input and output may not be the same file. When
     writing to **stdout**, valid records may already be emitted before an error, since stdout
