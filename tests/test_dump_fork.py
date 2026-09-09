@@ -165,6 +165,8 @@ def test_open_file_limit_can_be_disabled(tmp_dir):
     "max_open_files, error, message",
     [
         (1.5, TypeError, "max_open_files must be an integer"),
+        (True, TypeError, "max_open_files must be an integer"),
+        (False, TypeError, "max_open_files must be an integer"),
         (0, ValueError, "max_open_files must be greater than zero"),
         (-1, ValueError, "max_open_files must be greater than zero"),
     ],

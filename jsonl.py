@@ -529,7 +529,7 @@ def dump_fork(
     :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
     """
 
-    if max_open_files is not None and not isinstance(max_open_files, int):
+    if max_open_files is not None and (isinstance(max_open_files, bool) or not isinstance(max_open_files, int)):
         raise TypeError("max_open_files must be an integer")
     if max_open_files is not None and max_open_files < 1:
         raise ValueError("max_open_files must be greater than zero")
@@ -571,7 +571,8 @@ def dump_fork(
     encode = _get_encode(cls, kwargs)
     writers = collections.OrderedDict()
     path_states = {}
-    try:
+
+    def write_paths():
         for xpath, iterable in paths:
             path = _get_path(xpath)
             if path in writers:
@@ -579,7 +580,11 @@ def dump_fork(
             else:
                 if max_open_files is not None and len(writers) == max_open_files:
                     _old_path, old_writer = writers.popitem(last=False)
-                    old_writer.close()
+                    try:
+                        old_writer.close()
+                    except BaseException:
+                        _logger.exception("Failed to close an evicted dump_fork writer")
+                        raise
 
                 writer = get_writer(path, append=path in path_states)
                 writer.send(None)
@@ -588,14 +593,17 @@ def dump_fork(
             writers[path] = writer
             for item in iterable:
                 writer.send(item)
-    finally:  # Cleanup
-        pending_error = sys.exc_info()[0] is not None
+
+    try:
+        write_paths()
+    except BaseException:
         try:
             close_writers()
         except BaseException:
-            if not pending_error:
-                raise
             _logger.exception("Failed to close a dump_fork writer while handling another error")
+        raise
+    else:
+        close_writers()
 
 
 def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kwargs):
