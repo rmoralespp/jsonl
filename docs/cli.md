@@ -24,7 +24,7 @@ handled automatically: the output codec is chosen from the file extension (`.gz`
 | `--compact`        | Write records in the most compact form (no spaces).                                            |
 | `--sort-keys`      | Sort object keys alphabetically.                                                               |
 | `--ascii`          | Escape non-ASCII characters as `\uXXXX`. Output is raw UTF-8 by default.                       |
-| `--member PATTERN` | Pick archive members by shell-style pattern. Without it, archives auto-select recognized `.jsonl`/`.ndjson` members and their supported compressed variants.|
+| `--member PATTERN` | Pick local or remote archive members by shell-style pattern. Without it, archives auto-select recognized `.jsonl`/`.ndjson` members and their supported compressed variants.|
 | `--broken`         | Skip invalid records instead of aborting (see [Error handling](#error-handling)).             |
 | `--version`        | Show the version and exit.                                                                     |
 | `-h`, `--help`     | Show the help message and exit.                                                                |
@@ -46,6 +46,9 @@ jsonl https://example.com/data.jsonl.gz > data.jsonl
 
 # Read an archive: recognized JSONL/NDJSON members are auto-discovered and streamed
 jsonl dataset.zip > merged.jsonl
+
+# Remote archives are detected from their content, even without a file extension
+jsonl 'https://example.com/download?id=123' > merged.jsonl
 
 # Select specific members from an archive
 jsonl --member '2026/*.jsonl' dataset.tar.gz > year.jsonl

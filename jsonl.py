@@ -104,6 +104,8 @@ _default_archive_member_suffixes = tuple(
     for compression in _archive_member_compression_suffixes
 )
 
+_zip_signatures = (b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08")
+
 # ---------------------------------- Internal utils ----------------------------------
 
 
@@ -182,6 +184,15 @@ def _looks_like_url(value, /):
     return True
 
 
+def _get_response_encoding(response, /):
+    """Return a response charset, defaulting to UTF-8 when unavailable."""
+
+    headers = getattr(response, "headers", None)
+    if headers is None:
+        return _utf_8
+    return headers.get_content_charset(failobj=_utf_8)
+
+
 def _get_encoding(mode, /):
     """Get the encoding based on the file mode."""
 
@@ -239,6 +250,22 @@ class _PrefixedReader(io.RawIOBase):
         return len(chunk)
 
 
+class _CachingReader:
+    """Cache bytes read from a stream while preserving its read interface."""
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.cache = bytearray()
+
+    def read(self, size=-1):
+        data = self.stream.read(size)
+        self.cache.extend(data)
+        return data
+
+    def read1(self, size=-1):
+        return self.read(size)
+
+
 def _read_compression_prefix(stream, /):
     """Read only enough bytes to identify compression, stopping early for plain data."""
 
@@ -254,6 +281,29 @@ def _read_compression_prefix(stream, /):
         if not any(signature.startswith(head) for _extension, signature in _compression_signatures):
             break
     return bytes(head)
+
+
+def _read_prefix(stream, size, /):
+    """Read up to `size` bytes without returning before a short read reaches EOF."""
+
+    chunks = []
+    remaining = size
+    while remaining:
+        chunk = stream.read(remaining)
+        if not chunk:
+            break
+        chunks.append(chunk)
+        remaining -= len(chunk)
+    return b"".join(chunks)
+
+
+def _copy_stream_to_file(source, destination, /, *, prefix=b"", chunk_size=64 * 1024):
+    """Copy a binary stream to a file, including an already-read prefix."""
+
+    with open(destination, mode="wb") as target:
+        target.write(prefix)
+        for block in iter(functools.partial(source.read, chunk_size), b""):
+            target.write(block)
 
 
 @contextlib.contextmanager
@@ -354,6 +404,37 @@ def _filter_archive_members(names, pattern, /):
     if pattern is None:
         return [name for name in names if name.endswith(_default_archive_member_suffixes)]
     return fnmatch.filter(names, pattern)
+
+
+def _is_tar_header(data, /):
+    """Return whether a byte prefix starts with a valid TAR header."""
+
+    if len(data) < tarfile.BLOCKSIZE:
+        return False
+    try:
+        tarfile.TarInfo.frombuf(data[: tarfile.BLOCKSIZE], encoding="utf-8", errors="surrogateescape")
+    except tarfile.HeaderError:
+        return False
+    return True
+
+
+def _is_archive_prefix(data, /):
+    """Return whether a byte prefix identifies a supported archive format."""
+
+    return any(data.startswith(signature) for signature in _zip_signatures) or _is_tar_header(data)
+
+
+def _is_archive_path(path, /):
+    """Return whether a path is a readable ZIP or TAR archive."""
+
+    if not isinstance(path, str) or not os.path.isfile(path):
+        return False
+    with contextlib.suppress(OSError):
+        if zipfile.is_zipfile(path):
+            return True
+    with contextlib.suppress(OSError, tarfile.TarError):
+        return tarfile.is_tarfile(path)
+    return False
 
 
 def _iterfind_zip_members(name_or_obj, pattern, pwd, /):
@@ -651,11 +732,10 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
         if opener is not None:
             raise ValueError("Custom opener is not supported for URLs or Request objects.")
         with urllib.request.urlopen(source) as fd:
-            charset = fd.headers.get_content_charset(failobj=_utf_8)
             yield from _load_stream(
                 fd,
                 broken,
-                encoding=charset,
+                encoding=_get_response_encoding(fd),
                 cls=cls,
                 _on_error=_on_error,
                 **kwargs,
@@ -741,9 +821,8 @@ def load_archive(
             # If a URL or request obj is provided, first download the file incrementally
             # to avoid loading the entire file into memory.
             tmp_path = os.path.join(tmp, "archive")
-            with urllib.request.urlopen(file) as src_fd, open(tmp_path, mode="wb") as tmp_fd:
-                for block in iter(functools.partial(src_fd.read, chunk_size), b''):
-                    tmp_fd.write(block)
+            with urllib.request.urlopen(file) as src_fd:
+                _copy_stream_to_file(src_fd, tmp_path, chunk_size=chunk_size)
             file = tmp_path
 
         if zipfile.is_zipfile(file):
@@ -842,6 +921,8 @@ _EXIT_OK = 0
 _EXIT_INVALID_RECORD = 1
 _EXIT_RUNTIME_ERROR = 3
 
+_cli_archive_probe_size = 512
+
 
 def _get_version():
     """Return the installed package version, or "unknown" when not available."""
@@ -865,18 +946,79 @@ class _BrokenRecordReporter:
         print("jsonl: Broken line at {}: {}".format(lineno, error), file=sys.stderr)
 
 
+def _cli_archive_records(file, broken, pattern, on_error, /):
+    """Yield records from archive members and report when no member matches."""
+
+    found = False
+    for _name, items in load_archive(file, pattern=pattern, broken=broken, _on_error=on_error):
+        found = True
+        yield from items
+    if not found:
+        if pattern is None:
+            raise ValueError("no archive members matched the recognized JSON Lines suffixes")
+        raise ValueError("no archive members matched pattern {!r}".format(pattern))
+
+
+def _cli_staged_archive_records(source, prefix, broken, pattern, on_error, /):
+    """Stage a remote archive once, then yield records from its selected members."""
+
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = os.path.join(tmp, "archive")
+        _copy_stream_to_file(source, archive, prefix=prefix)
+        yield from _cli_archive_records(archive, broken, pattern, on_error)
+
+
+def _cli_remote_records(infile, broken, member, on_error, /):
+    """Detect and stream remote JSONL, or stage a detected remote archive once."""
+
+    with urllib.request.urlopen(infile) as response:
+        encoding = _get_response_encoding(response)
+        prefix = _read_prefix(response, _cli_archive_probe_size)
+
+        if member is not None or _is_archive_prefix(prefix):
+            yield from _cli_staged_archive_records(response, prefix, broken, member, on_error)
+            return
+
+        extension = _extension_from_magic(prefix)
+        if extension is None:
+            stream = _PrefixedReader(prefix, response)
+            yield from _load_stream(
+                stream,
+                broken,
+                encoding=encoding,
+                _on_error=on_error,
+            )
+            return
+
+        cached_response = _CachingReader(_PrefixedReader(prefix, response))
+        with _decompress_stream(cached_response, extension=extension) as decompressed:
+            decompressed_prefix = _read_prefix(decompressed, _cli_archive_probe_size)
+            if _is_archive_prefix(decompressed_prefix):
+                yield from _cli_staged_archive_records(
+                    response,
+                    bytes(cached_response.cache),
+                    broken,
+                    None,
+                    on_error,
+                )
+                return
+
+            stream = io.BufferedReader(_PrefixedReader(decompressed_prefix, decompressed))
+            yield from _load_stream(
+                stream,
+                broken,
+                encoding=encoding,
+                _on_error=on_error,
+            )
+
+
 def _cli_records(infile, broken, member, on_error, /):
     """Yield decoded records from the CLI input, reusing the streaming public API."""
 
-    if member is not None or _is_archive_path(infile):
-        pattern = member
-        found = False
-        for _name, items in load_archive(infile, pattern=pattern, broken=broken, _on_error=on_error):
-            found = True
-            yield from items
-        if not found:
-            description = pattern if pattern is not None else "default JSON Lines suffixes"
-            raise ValueError("no archive members matched pattern {!r}".format(description))
+    if _looks_like_url(infile):
+        yield from _cli_remote_records(infile, broken, member, on_error)
+    elif member is not None or _is_archive_path(infile):
+        yield from _cli_archive_records(infile, broken, member, on_error)
     elif infile is None or infile == "-":
         yield from load(sys.stdin.buffer, broken=broken, _on_error=on_error)
     else:
@@ -1012,19 +1154,6 @@ def _build_parser():
         version="%(prog)s (py-jsonl {})".format(_get_version()),
     )
     return parser
-
-
-def _is_archive_path(path, /):
-    """Return True if `path` is a readable zip or tar archive (which needs --member)."""
-
-    if not isinstance(path, str) or not os.path.isfile(path):
-        return False
-    with contextlib.suppress(OSError):
-        if zipfile.is_zipfile(path):
-            return True
-    with contextlib.suppress(OSError, tarfile.TarError):
-        return tarfile.is_tarfile(path)
-    return False
 
 
 def main(argv=None):

@@ -1,0 +1,4 @@
+{"id": 1, "message": "This fixture is intentionally larger than one TAR header block so the remote JSONL path exercises archive probing without being detected as an archive."}
+{"id": 2, "message": "It contains ordinary JSON Lines records served through the real HTTP fixture, preserving the same network path that command-line users exercise."}
+{"id": 3, "message": "The test asserts the complete output rather than only a record count, ensuring that the inspected prefix is restored before streaming continues."}
+{"id": 4, "message": "No compression or archive container is involved in this fixture because it verifies that ordinary remote JSONL remains a streaming operation."}

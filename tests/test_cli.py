@@ -268,6 +268,46 @@ def test_archive_auto_discovered(capsys):
     assert capsys.readouterr().out.count("\n") == 8
 
 
+@pytest.mark.parametrize("filename", ["archive.zip", "archive.tar"])
+def test_remote_archive_auto_discovered(http_server, capsys, filename):
+    assert jsonl.main([http_server + filename]) == 0
+    assert capsys.readouterr().out.count("\n") == 8
+
+
+@pytest.mark.parametrize("filename", ["archive-zip", "archive-tar"])
+def test_remote_archive_without_extension_auto_discovered(http_server, capsys, filename):
+    assert jsonl.main([http_server + filename]) == 0
+    assert capsys.readouterr().out.count("\n") == 8
+
+
+def test_remote_large_jsonl_remains_streamed(http_server, capsys):
+    expected = tests.read_text(os.path.join(DATA_DIR, "large.jsonl"))
+    assert len(expected.encode(jsonl._utf_8)) > jsonl._cli_archive_probe_size
+
+    assert jsonl.main([http_server + "large.jsonl"]) == 0
+    assert capsys.readouterr().out == expected
+
+
+def test_remote_archive_member_pattern(http_server, capsys):
+    assert jsonl.main(["--member", "foo.jsonl", http_server + "archive.zip"]) == 0
+    assert capsys.readouterr().out.count("\n") == 4
+
+
+def test_remote_compressed_tar_member_pattern_without_extension(http_server, capsys):
+    assert jsonl.main(["--member", "foo.jsonl", http_server + "archive-compressed"]) == 0
+    assert capsys.readouterr().out.count("\n") == 4
+
+
+def test_remote_archive_with_compressed_members(http_server, capsys):
+    assert jsonl.main([http_server + "archive-compressed.zip?download=1"]) == 0
+    assert capsys.readouterr().out.count("\n") == 8
+
+
+def test_remote_compressed_tar_auto_discovered(http_server, capsys):
+    assert jsonl.main([http_server + "archive-compressed.tar.gz?download=1"]) == 0
+    assert capsys.readouterr().out.count("\n") == 8
+
+
 @pytest.mark.parametrize("archive_format", ["zip", "tar"])
 def test_archive_auto_discovers_ndjson_and_compressed_members(tmp_dir, capsys, archive_format):
     root = tmp_dir / "members"
