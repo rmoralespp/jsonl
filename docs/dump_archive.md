@@ -13,6 +13,7 @@ jsonl.dump_archive(
     opener=None,
     text_mode=True,
     dump_if_empty=True,
+    max_open_files=64,
     cls=None,
     **kwargs,
 )
@@ -27,6 +28,7 @@ jsonl.dump_archive(
 | `opener`        | `Callable` or `None`                          | `None`             | Custom function to open the given file paths              |
 | `text_mode`     | `bool`                                        | `True`             | If `False`, write bytes instead of text                   |
 | `dump_if_empty` | `bool`                                        | `True`             | If `False`, don't create empty files or an empty archive  |
+| `max_open_files` | `int` or `None`                              | `64`               | Maximum number of open members; `None` disables the limit |
 | `cls`           | `type[json.JSONEncoder]` `Callable` or `None` | `json.JSONEncoder` | Custom encoder                                            |
 | `**kwargs`      |                                               |                    | Additional keyword arguments passed to the `cls`  encoder |
 
@@ -54,6 +56,10 @@ jsonl.dump_archive(
     - Raw `bytes` paths and `PathLike` objects returning bytes are rejected; decode them with `os.fsdecode()` first.
     - If `data` contains multiple items for the same path, they are **appended** to the corresponding file within the
       archive.
+    - At most `max_open_files` member files remain open. Least recently used members are closed and reopened in append
+      mode when needed. Pass `None` to disable the limit; frequent reopening of compressed members can reduce
+      compression efficiency.
+    - Custom openers must support write and append modes when members are reopened.
 
 ---
 

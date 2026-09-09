@@ -17,6 +17,7 @@ __all__ = [
 
 import argparse
 import bz2
+import collections
 import contextlib
 import errno
 import fnmatch
@@ -56,6 +57,7 @@ _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
 _path_types = (str, bytes, os.PathLike)
+_default_max_open_files = 64
 
 ext_jsonl = ".jsonl"
 ext_gz = ".gz"
@@ -500,7 +502,17 @@ def dump(iterable, file, /, *, opener=None, text_mode=True, cls=None, **kwargs):
         raise ValueError("Invalid file object, missing `writelines` and `write` methods.")
 
 
-def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=None, **kwargs):
+def dump_fork(
+    paths,
+    /,
+    *,
+    opener=None,
+    text_mode=True,
+    dump_if_empty=True,
+    max_open_files=_default_max_open_files,
+    cls=None,
+    **kwargs,
+):
     """
     Incrementally dumps multiple iterables into the specified jsonlines files, effectively reducing memory consumption.
 
@@ -508,6 +520,8 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file.
+    :param Optional[int] max_open_files: Maximum number of destination files kept open simultaneously.
+        If `None`, keep every destination open until dumping finishes.
 
     :param Optional[type[json.JSONEncoder] | Callable[..., Any]] cls: Custom encoder (defaults to `json.JSONEncoder`)
         - JSONEncoder subclass
@@ -515,41 +529,81 @@ def dump_fork(paths, /, *, opener=None, text_mode=True, dump_if_empty=True, cls=
     :param Unpack[dict] kwargs: keyword arguments used to pass the Custom encoder (`cls`).
     """
 
-    def get_writer(dst):
-        nothing = True
-        fd_mode = "wt" if text_mode else "wb"
+    if max_open_files is not None and (isinstance(max_open_files, bool) or not isinstance(max_open_files, int)):
+        raise TypeError("max_open_files must be an integer")
+    if max_open_files is not None and max_open_files < 1:
+        raise ValueError("max_open_files must be greater than zero")
+
+    def get_writer(dst, append):
+        fd_mode = ("a" if append else "w") + ("t" if text_mode else "b")
         fd_open = opener or _xopen
         with fd_open(dst, mode=fd_mode, encoding=_get_encoding(fd_mode)) as fd:
             try:
                 while True:
                     obj = yield
-                    nothing = False
                     fd.write(_get_line(encode(obj), text_mode))
+                    path_states[dst] = True
             except GeneratorExit:
                 # Flush compressor buffers before closing the generator to
                 # ensure a valid end-of-stream marker (required for .gz/.xz/.zst in Python 3.14+)
                 fd.flush()
 
-        if nothing and not dump_if_empty:
+        if not path_states[dst] and not dump_if_empty:
             os.unlink(dst)
 
+    def close_writers():
+        first_error = None
+        while writers:
+            _path, writer = writers.popitem()
+            try:
+                writer.close()
+            except BaseException as error:
+                if first_error is None:
+                    first_error = error
+                else:
+                    _logger.error(
+                        "Failed to close an additional dump_fork writer",
+                        exc_info=(type(error), error, error.__traceback__),
+                    )
+        if first_error is not None:
+            raise first_error
+
     encode = _get_encode(cls, kwargs)
-    writers = {}
-    try:
+    writers = collections.OrderedDict()
+    path_states = {}
+
+    def write_paths():
         for xpath, iterable in paths:
             path = _get_path(xpath)
             if path in writers:
-                writer = writers[path]
+                writer = writers.pop(path)
             else:
-                writer = get_writer(path)
-                writer.send(None)
-                writers[path] = writer
+                if max_open_files is not None and len(writers) == max_open_files:
+                    _old_path, old_writer = writers.popitem(last=False)
+                    try:
+                        old_writer.close()
+                    except BaseException:
+                        _logger.exception("Failed to close an evicted dump_fork writer")
+                        raise
 
+                writer = get_writer(path, append=path in path_states)
+                writer.send(None)
+                path_states.setdefault(path, False)
+
+            writers[path] = writer
             for item in iterable:
                 writer.send(item)
-    finally:  # Cleanup
-        for writer in writers.values():
-            writer.close()
+
+    try:
+        write_paths()
+    except BaseException:
+        try:
+            close_writers()
+        except BaseException:
+            _logger.exception("Failed to close a dump_fork writer while handling another error")
+        raise
+    else:
+        close_writers()
 
 
 def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kwargs):
@@ -693,6 +747,7 @@ def dump_archive(
     opener=None,
     text_mode=True,
     dump_if_empty=True,
+    max_open_files=_default_max_open_files,
     cls=None,
     **kwargs,
 ):
@@ -711,6 +766,8 @@ def dump_archive(
     :param Optional[Callable] opener: Custom function to open the given file paths.
     :param bool text_mode: If false, write bytes to the file.
     :param bool dump_if_empty: If false, don't create an empty jsonlines file nor an empty archive.
+    :param Optional[int] max_open_files: Maximum number of archive member files kept open simultaneously.
+        If `None`, keep every member file open until dumping finishes.
 
     :param Optional[type[json.JSONEncoder] | Callable[..., Any]] cls: Custom encoder (defaults to `json.JSONEncoder`)
         - JSONEncoder subclass
@@ -742,6 +799,7 @@ def dump_archive(
             opener=opener,
             text_mode=text_mode,
             dump_if_empty=dump_if_empty,
+            max_open_files=max_open_files,
             cls=cls,
             **kwargs,
         )
