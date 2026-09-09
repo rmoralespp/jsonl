@@ -7,6 +7,7 @@ import importlib.metadata
 import io
 import logging
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -260,10 +261,24 @@ def test_member_archive(capsys):
 
 
 def test_archive_auto_discovered(capsys):
-    # A zip/tar path without --member auto-discovers its *.jsonl members.
+    # A zip/tar path without --member auto-discovers its recognized members.
     archive = os.path.join(DATA_DIR, "archive.zip")
     assert jsonl.main([archive]) == 0
     # archive.zip bundles foo.jsonl and var.jsonl (4 records each).
+    assert capsys.readouterr().out.count("\n") == 8
+
+
+@pytest.mark.parametrize("archive_format", ["zip", "tar"])
+def test_archive_auto_discovers_ndjson_and_compressed_members(tmp_dir, capsys, archive_format):
+    root = tmp_dir / "members"
+    root.mkdir()
+    tests.write_text(root / "records.jsonl", tests.string_data)
+    with jsonl._xopen(root / "records.ndjson.gz", mode="wt") as file:
+        file.write(tests.string_data)
+
+    archive = shutil.make_archive(str(tmp_dir / "data"), archive_format, root_dir=root, base_dir=".")
+
+    assert jsonl.main([archive]) == 0
     assert capsys.readouterr().out.count("\n") == 8
 
 

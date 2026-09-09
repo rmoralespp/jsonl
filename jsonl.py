@@ -60,6 +60,7 @@ _path_types = (str, bytes, os.PathLike)
 _default_max_open_files = 64
 
 ext_jsonl = ".jsonl"
+ext_ndjson = ".ndjson"
 ext_gz = ".gz"
 ext_bz2 = ".bz2"
 ext_xz = ".xz"
@@ -86,6 +87,8 @@ _archive_formats = {
     "tar.bz2": "bztar",
     "tar.xz": "xztar",
 }
+_archive_member_formats = (ext_jsonl, ext_ndjson)
+_archive_member_compression_suffixes = ("", ext_gz, ext_bz2, ext_xz)
 
 if zstd is None:
     _logger.info("zstd compression is not available!")
@@ -93,7 +96,13 @@ else:
     extensions.add(ext_zst)
     _openers[ext_zst] = zstd.open
     _archive_formats["tar.zst"] = "zstdtar"
+    _archive_member_compression_suffixes += (ext_zst,)
 
+_default_archive_member_suffixes = tuple(
+    format_ + compression
+    for format_ in _archive_member_formats
+    for compression in _archive_member_compression_suffixes
+)
 
 # ---------------------------------- Internal utils ----------------------------------
 
@@ -339,9 +348,17 @@ def _get_archive_member_path(root_dir, relpath, /):
     return file_abspath
 
 
+def _filter_archive_members(names, pattern, /):
+    """Filter archive member names using the default suffixes or an explicit pattern."""
+
+    if pattern is None:
+        return [name for name in names if name.endswith(_default_archive_member_suffixes)]
+    return fnmatch.filter(names, pattern)
+
+
 def _iterfind_zip_members(name_or_obj, pattern, pwd, /):
     with zipfile.ZipFile(name_or_obj) as zf:
-        for name in fnmatch.filter(zf.namelist(), pattern):
+        for name in _filter_archive_members(zf.namelist(), pattern):
             file = zf.open(name, pwd=pwd)
             with file:
                 yield file
@@ -355,7 +372,7 @@ def _iterfind_tar_members(name_or_obj, pattern, /):
     else:
         args = (name_or_obj,)
     with tarfile.open(*args, **kwargs) as archive:
-        for name in fnmatch.filter(archive.getnames(), pattern):
+        for name in _filter_archive_members(archive.getnames(), pattern):
             if file := archive.extractfile(name):
                 with file:
                     yield file
@@ -668,7 +685,7 @@ def load_archive(
     file,
     /,
     *,
-    pattern="*.jsonl",
+    pattern=None,
     pwd=None,
     opener=None,
     broken=False,
@@ -680,6 +697,9 @@ def load_archive(
     """
     Load JSON Lines files from an archive (zip or tar) matching a specific pattern.
 
+    When `pattern` is `None`, only members with a recognized JSON Lines suffix are loaded:
+    `.jsonl`, `.ndjson`, or one of those suffixes followed by a supported compression suffix.
+
     Tar archives can be compressed with gzip, bzip2, xz or zst (Python +3.14). (e.g., `.tar.gz`, `.tar.bz2`, `.tar.xz`).
 
     :param str | bytes | os.PathLike | urllib.request.Request | Any file: Archive file to load.
@@ -687,8 +707,9 @@ def load_archive(
         remotely using `urllib.request.urlopen`.
         For more details, see: https://docs.python.org/3/library/urllib.request.html#urllib.request.urlopen
 
-    :param str pattern: Pattern to match filenames inside the archive,
-        following Unix shell-style wildcard rules as defined by `fnmatch`.
+    :param Optional[str] pattern: Pattern to match filenames inside the archive,
+        following Unix shell-style wildcard rules as defined by `fnmatch`. If `None`, load only
+        members with recognized JSON Lines suffixes. Automatic suffix matching is case-sensitive.
         For more details, see: https://docs.python.org/3/library/fnmatch.html
 
     :param Optional[bytes] pwd: The password to decrypt the archive, if applicable.
@@ -848,13 +869,14 @@ def _cli_records(infile, broken, member, on_error, /):
     """Yield decoded records from the CLI input, reusing the streaming public API."""
 
     if member is not None or _is_archive_path(infile):
-        pattern = member or "*.jsonl"
+        pattern = member
         found = False
         for _name, items in load_archive(infile, pattern=pattern, broken=broken, _on_error=on_error):
             found = True
             yield from items
         if not found:
-            raise ValueError("no archive members matched pattern {!r}".format(pattern))
+            description = pattern if pattern is not None else "default JSON Lines suffixes"
+            raise ValueError("no archive members matched pattern {!r}".format(description))
     elif infile is None or infile == "-":
         yield from load(sys.stdin.buffer, broken=broken, _on_error=on_error)
     else:

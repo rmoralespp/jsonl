@@ -5,11 +5,19 @@ import operator
 import os
 import shutil
 import tarfile
+import zipfile
 
 import pytest
 
 import jsonl
 import tests
+
+
+def _archive_member_bytes(tmp_dir, name):
+    path = tmp_dir / name
+    with jsonl._xopen(path, mode="wb") as file:
+        file.write(tests.string_data.encode(jsonl._utf_8))
+    return path.read_bytes()
 
 
 @pytest.mark.parametrize("pattern, match_members", [
@@ -119,3 +127,57 @@ def test_load_archive_tar_skips_directory_members(tmp_dir):
     expected = [("file1.jsonl", tests.data)]
     result = [(name, list(data)) for name, data in jsonl.load_archive(archive_path, pattern="*.jsonl")]
     assert result == expected
+
+
+@pytest.mark.parametrize("archive_format", ["tar", "zip"])
+def test_load_archive_auto_discovers_supported_members(tmp_dir, archive_format):
+    names = [f"records{suffix}" for suffix in jsonl._default_archive_member_suffixes]
+    members = [(name, _archive_member_bytes(tmp_dir, name)) for name in names]
+    members.extend([
+        ("records.JSONL", tests.string_data.encode(jsonl._utf_8)),
+        ("records.jsonl.bak", tests.string_data.encode(jsonl._utf_8)),
+        ("README.txt", b"not JSON Lines"),
+    ])
+
+    archive_path = str(tmp_dir / "data")
+    if archive_format == "zip":
+        archive_path += ".zip"
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            for name, content in members:
+                archive.writestr(name, content)
+    else:
+        archive_path = str(tmp_dir / "data.tar")
+        with tarfile.open(archive_path, "w") as archive:
+            for name, content in members:
+                info = tarfile.TarInfo(name=name)
+                info.size = len(content)
+                archive.addfile(info, io.BytesIO(content))
+
+    result = [(name, list(data)) for name, data in jsonl.load_archive(archive_path)]
+    assert result == [(name, tests.data) for name in names]
+
+
+@pytest.mark.parametrize("archive_format", ["tar", "zip"])
+def test_load_archive_explicit_pattern_selects_compressed_member(tmp_dir, archive_format):
+    selected = "records.ndjson.gz"
+    other = "records.jsonl"
+    members = [
+        (selected, _archive_member_bytes(tmp_dir, selected)),
+        (other, _archive_member_bytes(tmp_dir, other)),
+    ]
+    archive_path = str(tmp_dir / "data")
+    if archive_format == "zip":
+        with zipfile.ZipFile(archive_path + ".zip", "w") as archive:
+            for name, content in members:
+                archive.writestr(name, content)
+        archive_path += ".zip"
+    else:
+        archive_path += ".tar"
+        with tarfile.open(archive_path, "w") as archive:
+            for name, content in members:
+                info = tarfile.TarInfo(name=name)
+                info.size = len(content)
+                archive.addfile(info, io.BytesIO(content))
+
+    result = [(name, list(data)) for name, data in jsonl.load_archive(archive_path, pattern=selected)]
+    assert result == [(selected, tests.data)]

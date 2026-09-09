@@ -8,7 +8,7 @@ Load multiple JSON Lines files from a ZIP or TAR archive incrementally.
 jsonl.load_archive(
     file,
     *,
-    pattern="*.jsonl",
+    pattern=None,
     pwd=None,
     opener=None,
     broken=False,
@@ -23,7 +23,7 @@ jsonl.load_archive(
 | Parameter    | Type                                             | Default            | Description                                                                                                 |
 |--------------|--------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------------------|
 | `file`       | `str`, `PathLike[str]`, URL, `Request`, file-like | *(required)*    | Archive file to load from                                                                                   |
-| `pattern`    | `str`                                            | `"*.jsonl"`        | Unix shell-style wildcard pattern to filter filenames inside the archive                                    |
+| `pattern`    | `str` or `None`                                  | `None`             | Shell-style wildcard pattern; `None` selects the recognized JSON Lines suffixes automatically                |
 | `pwd`        | `bytes` or `None`                                | `None`             | Password to decrypt the archive (ZIP only)                                                                  |
 | `opener`     | `Callable` or `None`                             | `None`             | Custom function to open the file (not supported for URLs)                                                   |
 | `broken`     | `bool`                                           | `False`            | If `True`, skip malformed lines and log a warning                                                           |
@@ -46,8 +46,10 @@ deserialized objects.
 - Load from local files or remote URLs
 - Reject ambiguous raw `bytes` paths and `PathLike` objects returning bytes with a clear `TypeError`
 - Filter files inside the archive using [Unix shell-style wildcards](https://docs.python.org/3/library/fnmatch.html)
-- Support for compressed `.jsonl` files inside the archive (e.g., `.jsonl.gz`, `.jsonl.bz2`, `.jsonl.xz`, `.jsonl.zst` (
-  Python ≥ 3.14) ).
+- Automatically discover these case-sensitive member suffixes: `.jsonl`, `.ndjson`, `.jsonl.gz`,
+  `.jsonl.bz2`, `.jsonl.xz`, `.ndjson.gz`, `.ndjson.bz2`, and `.ndjson.xz`. On Python ≥ 3.14,
+  `.jsonl.zst` and `.ndjson.zst` are also recognized.
+- Support for compressed `.jsonl` and `.ndjson` files inside the archive.
   Check [compression detection](load.md#note-compression) for details.
 - ZIP archives with password protection
 - Graceful handling of malformed lines via the `broken` parameter
@@ -95,7 +97,9 @@ Use Unix shell-style wildcards to select specific files within the archive:
 
 | Pattern            | Matches                                   |
 |--------------------|-------------------------------------------|
-| `*.jsonl`          | All `.jsonl` files (default)              |
+| `*.jsonl`          | All `.jsonl` files                         |
+| `*.ndjson`         | All `.ndjson` files                        |
+| `*.jsonl.gz`       | Gzip-compressed `.jsonl` files             |
 | `users*.jsonl`     | Files starting with `users`               |
 | `data/[ab]*.jsonl` | Files in `data/` starting with `a` or `b` |
 | `*`                | All files                                 |
