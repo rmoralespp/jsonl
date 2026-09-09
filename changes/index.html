@@ -801,6 +801,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#v152-2026-09-9" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        v1.5.2 (2026-09-9)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v151-2026-09-08" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1075,6 +1086,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#v152-2026-09-9" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        v1.5.2 (2026-09-9)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v151-2026-09-08" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1311,6 +1333,14 @@
 <a href="https://github.com/rmoralespp/jsonl/blob/main/CHANGELOG.md">CHANGELOG.md</a> file on GitHub.</p>
 <hr />
 <h2 id="latest-releases">Latest Releases<a class="headerlink" href="#latest-releases" title="Permanent link">&para;</a></h2>
+<h3 id="v152-2026-09-9">v1.5.2 (2026-09-9)<a class="headerlink" href="#v152-2026-09-9" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Added:</strong> The CLI supports sequential record-count splitting with <code>--split N INPUT OUTPUT</code>.</li>
+<li><strong>Added:</strong> <code>load_archive</code> and the CLI now auto-discover <code>.jsonl</code> and <code>.ndjson</code> archive
+  members, including supported compressed variants. Explicit member patterns remain unchanged.</li>
+<li><strong>Breaking Change:</strong> <code>dump_fork</code> and <code>dump_archive</code> now limit open destination files to 64 by default. When the limit is reached, destinations are closed and reopened in append mode (<code>at</code>/<code>ab</code>). Custom <code>opener</code> functions must support append mode for destinations that may be reopened; pass <code>max_open_files=None</code> to retain the previous unbounded behavior.</li>
+<li><strong>Fixed:</strong> Auto-detect archives from remote URLs in the CLI without <code>--member</code></li>
+</ul>
 <h3 id="v151-2026-09-08">v1.5.1 (2026-09-08)<a class="headerlink" href="#v151-2026-09-08" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Fixed:</strong> <code>dump_archive</code> rejects archive member paths that escape the staging directory.</li>

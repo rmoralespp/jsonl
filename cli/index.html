@@ -371,6 +371,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#splitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Splitting
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#error-handling" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -911,6 +922,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#splitting" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Splitting
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#error-handling" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1006,11 +1028,15 @@ handled automatically: the output codec is chosen from the file extension (<code
 </tr>
 <tr>
 <td><code>--member PATTERN</code></td>
-<td>Pick archive members by shell-style pattern. Local archives auto-select <code>*.jsonl</code> when omitted.</td>
+<td>Pick local or remote archive members by shell-style pattern. Without it, archives auto-select recognized <code>.jsonl</code>/<code>.ndjson</code> members and their supported compressed variants.</td>
 </tr>
 <tr>
 <td><code>--broken</code></td>
 <td>Skip invalid records instead of aborting (see <a href="#error-handling">Error handling</a>).</td>
+</tr>
+<tr>
+<td><code>--split N</code></td>
+<td>Write at most <code>N</code> records per output file.</td>
 </tr>
 <tr>
 <td><code>--version</code></td>
@@ -1035,18 +1061,30 @@ handled automatically: the output codec is chosen from the file extension (<code
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Load directly from a URL (auto-decompressed)</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>jsonl<span class="w"> </span>https://example.com/data.jsonl.gz<span class="w"> </span>&gt;<span class="w"> </span>data.jsonl
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Read an archive: its *.jsonl members are auto-discovered and streamed</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Read an archive: recognized JSONL/NDJSON members are auto-discovered and streamed</span>
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>jsonl<span class="w"> </span>dataset.zip<span class="w"> </span>&gt;<span class="w"> </span>merged.jsonl
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># Select specific members from an archive</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>jsonl<span class="w"> </span>--member<span class="w"> </span><span class="s1">'2026/*.jsonl'</span><span class="w"> </span>dataset.tar.gz<span class="w"> </span>&gt;<span class="w"> </span>year.jsonl
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># Remote archives are detected from their content, even without a file extension</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>jsonl<span class="w"> </span><span class="s1">'https://example.com/download?id=123'</span><span class="w"> </span>&gt;<span class="w"> </span>merged.jsonl
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># Tolerate broken input: skip invalid records and report them to stderr</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>jsonl<span class="w"> </span>--broken<span class="w"> </span>messy.jsonl<span class="w"> </span>clean.jsonl
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># Select specific members from an archive</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>jsonl<span class="w"> </span>--member<span class="w"> </span><span class="s1">'2026/*.jsonl'</span><span class="w"> </span>dataset.tar.gz<span class="w"> </span>&gt;<span class="w"> </span>year.jsonl
 </span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># Reformat: sort keys and escape non-ASCII to pure ASCII</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>jsonl<span class="w"> </span>--sort-keys<span class="w"> </span>--ascii<span class="w"> </span>data.jsonl<span class="w"> </span>&gt;<span class="w"> </span>normalized.jsonl
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># Tolerate broken input: skip invalid records and report them to stderr</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>jsonl<span class="w"> </span>--broken<span class="w"> </span>messy.jsonl<span class="w"> </span>clean.jsonl
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="c1"># Split into 50,000-record gzip files</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>jsonl<span class="w"> </span>--split<span class="w"> </span><span class="m">50000</span><span class="w"> </span>input.jsonl<span class="w"> </span>users.jsonl.gz
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="c1"># Reformat: sort keys and escape non-ASCII to pure ASCII</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>jsonl<span class="w"> </span>--sort-keys<span class="w"> </span>--ascii<span class="w"> </span>data.jsonl<span class="w"> </span>&gt;<span class="w"> </span>normalized.jsonl
 </span></code></pre></div>
+<h2 id="splitting">Splitting<a class="headerlink" href="#splitting" title="Permanent link">&para;</a></h2>
+<p><code>--split N</code> streams the input into sequential files of at most <code>N</code> records. Indexing starts at <code>00000</code> and uses five
+zero-padded digits. The index is inserted before a recognized JSONL or NDJSON suffix, preserving compression:
+<code>users.jsonl.gz</code> creates <code>users-00000.jsonl.gz</code>, <code>users-00001.jsonl.gz</code>, and so on.</p>
+<p>Splitting uses the existing incremental multipath writer with one open destination at a time. It does not create a
+manifest and does not publish all shards atomically: if input processing fails, files already written remain available.</p>
 <div class="admonition info">
 <p class="admonition-title">No <code>--indent</code></p>
 <p>Spreading a value across multiple lines would break the JSON Lines format (one value per
@@ -1060,7 +1098,7 @@ skipped and reported to stderr (with the input line number when available) while
 errors always abort.</p>
 <div class="admonition tip">
 <p class="admonition-title">Atomic output files</p>
-<p>When writing to a file, output goes to a temporary file that <strong>atomically</strong> replaces the
+<p>When writing to a file without <code>--split</code>, output goes to a temporary file that <strong>atomically</strong> replaces the
 destination only after the whole input succeeds — a failed run never leaves a partial file,
 and the existing destination is untouched. Input and output may not be the same file. When
 writing to <strong>stdout</strong>, valid records may already be emitted before an error, since stdout

@@ -1089,9 +1089,10 @@ and custom serialization.</p>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">opener</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">text_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">dump_if_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">max_open_files</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
 <table>
@@ -1133,6 +1134,12 @@ and custom serialization.</p>
 <td><code>bool</code></td>
 <td><code>True</code></td>
 <td>If <code>False</code>, don't create empty files or an empty archive</td>
+</tr>
+<tr>
+<td><code>max_open_files</code></td>
+<td><code>int</code> or <code>None</code></td>
+<td><code>64</code></td>
+<td>Maximum number of open members; <code>None</code> disables the limit</td>
 </tr>
 <tr>
 <td><code>cls</code></td>
@@ -1197,6 +1204,10 @@ and custom serialization.</p>
 <li>Raw <code>bytes</code> paths and <code>PathLike</code> objects returning bytes are rejected; decode them with <code>os.fsdecode()</code> first.</li>
 <li>If <code>data</code> contains multiple items for the same path, they are <strong>appended</strong> to the corresponding file within the
   archive.</li>
+<li>At most <code>max_open_files</code> member files remain open. Least recently used members are closed and reopened in append
+  mode when needed. Pass <code>None</code> to disable the limit; frequent reopening of compressed members can reduce
+  compression efficiency.</li>
+<li>Custom openers must support write and append modes when members are reopened.</li>
 </ul>
 </div>
 <hr />
