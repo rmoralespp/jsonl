@@ -556,7 +556,8 @@ def test_broken_pipe_is_handled_before_interpreter_shutdown(data):
     process.stdout.close()
     process.stdin.write(data)
     process.stdin.close()
-    stderr = process.stderr.read()
+    with process.stderr:
+        stderr = process.stderr.read()
 
     assert process.wait() == 3
     assert b"Exception ignored" not in stderr
