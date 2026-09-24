@@ -65,6 +65,7 @@ pip install py-jsonl
 | Function                             | Description                             |
 |--------------------------------------|-----------------------------------------|
 | `jsonl.load(source, **kw)`           | File, URL, or file-like → lazy iterator |
+| `jsonl.open_stream(source, **kw)`    | File, URL, or binary file-like → decompressed stream |
 | `jsonl.loads(text, **kw)`            | JSON Lines string → lazy iterator       |
 | `jsonl.load_archive(file, **kw)`     | Unpack JSONL files from ZIP/TAR         |
 | `jsonl.loader(stream, broken, **kw)` | Low-level line-stream deserializer      |

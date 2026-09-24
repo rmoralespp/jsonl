@@ -10,6 +10,9 @@ All notable changes to this project are documented in the
 ### v1.5.2 (2026-09-9)
 
 - **Added:** The CLI supports sequential record-count splitting with `--split N INPUT OUTPUT`.
+- **Added:** `open_stream` exposes local paths, URLs, and binary file-like objects as
+  decompressed binary streams for incremental consumers; `load` reuses the same source-opening
+  and decompression path.
 - **Added:** `load_archive` and the CLI now auto-discover `.jsonl` and `.ndjson` archive
   members, including supported compressed variants. Explicit member patterns remain unchanged.
 - **Breaking Change:** `dump_fork` and `dump_archive` now limit open destination files to 64 by default. When the limit is reached, destinations are closed and reopened in append mode (`at`/`ab`). Custom `opener` functions must support append mode for destinations that may be reopened; pass `max_open_files=None` to retain the previous unbounded behavior.

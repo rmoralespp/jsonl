@@ -102,6 +102,79 @@ def test_compressed_non_seekable_file_like():
     assert not source.closed
 
 
+def test_open_stream_decompresses_path(tmp_dir):
+    filepath = tmp_dir / "data.jsonl.gz"
+    filepath.write_bytes(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+
+    with jsonl.open_stream(filepath) as source:
+        assert source.read() == tests.string_data.encode(jsonl._utf_8)
+
+
+def test_open_stream_uses_custom_opener(tmp_dir):
+    filepath = tmp_dir / "data.jsonl"
+    filepath.write_bytes(tests.string_data.encode(jsonl._utf_8))
+    calls = []
+
+    def opener(name, *, mode, encoding):
+        calls.append((name, mode, encoding))
+        return open(name, mode=mode, encoding=encoding)
+
+    with jsonl.open_stream(filepath, opener=opener) as source:
+        assert source.read() == tests.string_data.encode(jsonl._utf_8)
+
+    assert calls == [(str(filepath), "rb", None)]
+
+
+def test_open_stream_decompresses_non_seekable_file_like():
+    source = NonSeekableBytesIO(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+
+    with jsonl.open_stream(source) as stream:
+        assert stream.read() == tests.string_data.encode(jsonl._utf_8)
+    assert not source.closed
+
+
+def test_open_stream_rejects_text_file_like():
+    with pytest.raises(TypeError, match="binary file-like object"):
+        with jsonl.open_stream(io.StringIO(tests.string_data)):
+            pass
+
+
+@unittest.mock.patch("urllib.request.urlopen")
+def test_open_stream_url(urlopen):
+    source = io.BytesIO(tests.string_data.encode(jsonl._utf_8))
+    urlopen.return_value.__enter__.return_value = source
+
+    with jsonl.open_stream("https://example.com/data.jsonl") as stream:
+        assert stream.read() == tests.string_data.encode(jsonl._utf_8)
+    urlopen.assert_called_once_with("https://example.com/data.jsonl")
+
+
+@unittest.mock.patch("urllib.request.urlopen")
+def test_open_stream_request(urlopen):
+    source = io.BytesIO(tests.string_data.encode(jsonl._utf_8))
+    urlopen.return_value.__enter__.return_value = source
+    request = urllib.request.Request("https://example.com/data.jsonl")
+
+    with jsonl.open_stream(request) as stream:
+        assert stream.read() == tests.string_data.encode(jsonl._utf_8)
+
+    urlopen.assert_called_once_with(request)
+
+
+def test_open_stream_early_close_keeps_file_like_open():
+    source = io.BytesIO(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
+
+    def read_then_stop():
+        with jsonl.open_stream(source) as stream:
+            assert stream.read(1)
+            raise RuntimeError("stop")
+
+    with pytest.raises(RuntimeError, match="stop"):
+        read_then_stop()
+
+    assert not source.closed
+
+
 def test_compressed_duck_typed_binary_file_like():
     source = BinaryReader(gzip.compress(tests.string_data.encode(jsonl._utf_8)))
 

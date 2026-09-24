@@ -8,6 +8,7 @@ __all__ = [
     "dumps",
     "dump_fork",
     "load",
+    "open_stream",
     "loader",
     "loads",
     "load_archive",
@@ -328,6 +329,51 @@ def _decompress_stream(stream, /, *, extension=None):
         finally:
             if buffered is not None and not buffered.closed:
                 buffered.close()
+
+
+@contextlib.contextmanager
+def _open_source(source, /, *, opener=None):
+    """Open a source as a decompressed binary stream and return its optional response encoding."""
+
+    if _looks_like_url(source):
+        if opener is not None:
+            raise ValueError("Custom opener is not supported for URLs or Request objects.")
+        with urllib.request.urlopen(source) as fd, _decompress_stream(fd) as stream:
+            yield stream, _get_response_encoding(fd)
+    elif isinstance(source, _path_types):
+        filename = _get_path(source)
+        if opener is None:
+            with _xopen(filename, mode="rb") as stream:
+                yield stream, None
+        else:
+            with opener(filename, mode="rb", encoding=None) as fd, _decompress_stream(fd) as stream:
+                yield stream, None
+    else:
+        if not _is_binary_stream(source):
+            yield None
+            return
+        with _decompress_stream(source) as stream:
+            yield stream, None
+
+
+@contextlib.contextmanager
+def open_stream(source, /, *, opener=None):
+    """
+    Open a local path, URL, or binary file-like object as a decompressed binary stream.
+
+    The returned stream is suitable for incremental parsers such as ``ijson``. Paths and URLs are
+    owned and closed by this context manager; a file-like object supplied by the caller remains open.
+
+    :param str | os.PathLike[str] | urllib.request.Request | Any source: Source to open.
+    :param Optional[Callable] opener: Custom function to open a local path.
+    :raises TypeError: If a file-like object is not binary.
+    """
+
+    with _open_source(source, opener=opener) as opened:
+        if opened is None:
+            raise TypeError("open_stream() requires a binary file-like object")
+        stream, _encoding = opened
+        yield stream
 
 
 def _is_binary_stream(stream, /):
@@ -728,38 +774,16 @@ def load(source, /, *, opener=None, broken=False, cls=None, _on_error=None, **kw
     :rtype: Iterator[Any]
     """
 
-    # URL or Request object handling
-    if _looks_like_url(source):
-        if opener is not None:
-            raise ValueError("Custom opener is not supported for URLs or Request objects.")
-        with urllib.request.urlopen(source) as fd:
-            yield from _load_stream(
-                fd,
-                broken,
-                encoding=_get_response_encoding(fd),
-                cls=cls,
-                _on_error=_on_error,
-                **kwargs,
-            )
-    # Filename handling
-    elif isinstance(source, _path_types):
-        filename = _get_path(source)
-        openhook = opener or open
-        extension = None if opener is not None else os.path.splitext(filename)[1]
-        if extension not in _known_extensions:
-            extension = None
-        with openhook(filename, mode="rb", encoding=None) as fd:
-            yield from _load_stream(
-                fd,
-                broken,
-                extension=extension,
-                cls=cls,
-                _on_error=_on_error,
-                **kwargs,
-            )
-    # File-like object handling
-    else:
-        yield from _load_stream(source, broken, cls=cls, _on_error=_on_error, **kwargs)
+    with _open_source(source, opener=opener) as opened:
+        if opened is None:
+            yield from loader(source, broken, cls=cls, _on_error=_on_error, **kwargs)
+        else:
+            stream, encoding = opened
+            if encoding is None:
+                yield from loader(stream, broken, cls=cls, _on_error=_on_error, **kwargs)
+            else:
+                with io.TextIOWrapper(stream, encoding=encoding) as text_stream:
+                    yield from loader(text_stream, broken, cls=cls, _on_error=_on_error, **kwargs)
 
 
 def load_archive(

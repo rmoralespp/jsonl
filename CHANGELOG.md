@@ -1,5 +1,12 @@
 ## Releases
 
+
+### Unreleased
+
+- **Added:** `open_stream` exposes local paths, URLs, and binary file-like objects as
+  decompressed binary streams for incremental consumers; `load` reuses the same source-opening
+  and decompression path.
+
 ### v1.5.2 (2026-09-9)
 
 - **Added:** The CLI supports sequential record-count splitting with `--split N INPUT OUTPUT`.

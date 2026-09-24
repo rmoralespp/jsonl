@@ -125,6 +125,7 @@ See the [Command-line interface](cli.md) page for all options and exit codes.
 | Function                                | Description                                       |
 |-----------------------------------------|---------------------------------------------------|
 | [`jsonl.load`](load.md)                 | File, URL, or file-like → lazy iterator           |
+| [`jsonl.open_stream`](open_stream.md)   | File, URL, or binary file-like → decompressed stream |
 | [`jsonl.loads`](loads.md)               | JSON Lines string → lazy iterator                 |
 | [`jsonl.load_archive`](load_archive.md) | Unpack JSONL files from ZIP/TAR archive           |
 | [`jsonl.loader`](loader.md)             | Low-level line-stream deserializer                |
