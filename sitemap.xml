@@ -4,10 +4,28 @@
         <loc>https://rmoralespp.github.io/jsonl/</loc>
       </url>
       <url>
-        <loc>https://rmoralespp.github.io/jsonl/installation/</loc>
+        <loc>https://rmoralespp.github.io/jsonl/changes/</loc>
       </url>
       <url>
         <loc>https://rmoralespp.github.io/jsonl/cli/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/dump/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/dump_archive/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/dump_fork/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/dumper/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/dumps/</loc>
+      </url>
+      <url>
+        <loc>https://rmoralespp.github.io/jsonl/installation/</loc>
       </url>
       <url>
         <loc>https://rmoralespp.github.io/jsonl/load/</loc>
@@ -22,21 +40,6 @@
         <loc>https://rmoralespp.github.io/jsonl/loads/</loc>
       </url>
       <url>
-        <loc>https://rmoralespp.github.io/jsonl/dump/</loc>
-      </url>
-      <url>
-        <loc>https://rmoralespp.github.io/jsonl/dumps/</loc>
-      </url>
-      <url>
-        <loc>https://rmoralespp.github.io/jsonl/dump_fork/</loc>
-      </url>
-      <url>
-        <loc>https://rmoralespp.github.io/jsonl/dump_archive/</loc>
-      </url>
-      <url>
-        <loc>https://rmoralespp.github.io/jsonl/dumper/</loc>
-      </url>
-      <url>
-        <loc>https://rmoralespp.github.io/jsonl/changes/</loc>
+        <loc>https://rmoralespp.github.io/jsonl/open_stream/</loc>
       </url>
 </urlset>
