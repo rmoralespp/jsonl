@@ -30,6 +30,7 @@ jobs:
           - '3.12'
           - '3.13'
           - '3.14'
+          - '3.15'
 
     steps:
       - name: Checkout
@@ -39,6 +40,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
 
       # pip>=25.1 (needed for `--group`) is not available on Python 3.8, so use uv.
       - name: Install uv
