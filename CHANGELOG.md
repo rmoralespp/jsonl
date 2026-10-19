@@ -1,7 +1,8 @@
 ## Releases
 
-
 ### Unreleased
+
+- **Added**: CI - Test against all supported Python versions
 
 ### v1.5.3 (2026-09-25)
 
