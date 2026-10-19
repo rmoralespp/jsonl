@@ -484,6 +484,21 @@ def _is_archive_path(path, /):
     return False
 
 
+def _is_tarfile(file, /):
+    """Return whether a path or file object is a TAR archive (`tarfile.is_tarfile` lacks file objects on Python 3.8)."""
+
+    if not hasattr(file, "read"):
+        return tarfile.is_tarfile(file)
+    pos = file.tell()
+    try:
+        tarfile.open(fileobj=file, mode="r:*").close()
+    except (OSError, EOFError, tarfile.TarError):
+        return False
+    finally:
+        file.seek(pos)
+    return True
+
+
 def _iterfind_zip_members(name_or_obj, pattern, pwd, /):
     with zipfile.ZipFile(name_or_obj) as zf:
         for name in _filter_archive_members(zf.namelist(), pattern):
@@ -503,7 +518,7 @@ def _iterfind_tar_members(name_or_obj, pattern, /):
         for name in _filter_archive_members(archive.getnames(), pattern):
             if file := archive.extractfile(name):
                 with file:
-                    yield file
+                    yield name, file
 
 
 def _issubclass(o, klass):
@@ -851,14 +866,14 @@ def load_archive(
             file = tmp_path
 
         if zipfile.is_zipfile(file):
-            members = _iterfind_zip_members(file, pattern, pwd)
-        elif tarfile.is_tarfile(file):
+            members = ((member.name, member) for member in _iterfind_zip_members(file, pattern, pwd))
+        elif _is_tarfile(file):
             members = _iterfind_tar_members(file, pattern)
         else:
             raise ValueError("Unsupported archive format")
 
-        for member in members:
-            filename = member.name
+        # Tar member file objects don't expose the member name until Python 3.12.
+        for filename, member in members:
             with _xfile(filename, member) as fp:
                 it = load(fp, opener=opener, broken=broken, cls=cls, _on_error=_on_error, **kwargs)
                 yield (filename, it)
