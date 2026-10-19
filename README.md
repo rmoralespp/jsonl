@@ -42,7 +42,7 @@ pip install py-jsonl
 
 ## Features
 
-- **Familiar API** — same `dump`/`load` interface as Python's `json` module.
+- **Familiar API** — similar `dump`/`load` interface as Python's `json` module.
 - **Streaming by default** — iterators in, iterators out. Constant memory.
 - **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14). Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
 - **Archive support** — read/write `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz` natively.
@@ -186,10 +186,10 @@ cat input.jsonl | jsonl --compact > output.jsonl
 jsonl input.jsonl.gz output.jsonl.xz
 
 # Read every recognized JSONL/NDJSON member from a ZIP/TAR archive
-jsonl dataset.zip > merged.jsonl
+jsonl dataset.zip merged.jsonl
 
 # Select archive members
-jsonl --member '2026/*.jsonl' dataset.tar.gz > output.jsonl
+jsonl --member '2026/*.jsonl' dataset.tar.gz output.jsonl
 
 # Skip invalid records (returns 1 if any are found)
 jsonl --broken input.jsonl output.jsonl

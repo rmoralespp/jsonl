@@ -7,6 +7,12 @@ All notable changes to this project are documented in the
 
 ## Latest Releases
 
+### v1.5.4 (2026-10-19)
+
+- **Added**: CI - Test against all supported Python versions
+- **Added**: Support for Python 3.15
+- **Fixed**: Tar archive loading on Python 3.8-3.11
+
 ### v1.5.3 (2026-09-25)
 
 - **Added:** `open_stream` exposes local paths, URLs, and binary file-like objects as
