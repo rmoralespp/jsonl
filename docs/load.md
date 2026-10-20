@@ -13,7 +13,7 @@ jsonl.load(source, *, opener=None, broken=False, cls=None, **kwargs)
 
 | Parameter    | Type                                               | Default              | Description                                                                         |
 |--------------|----------------------------------------------------|----------------------|-------------------------------------------------------------------------------------|
-| `source`     | `str`, `PathLike[str]`, URL, `Request`, file-like | *(required)*      | The JSON Lines source to read from                                                  |
+| `source`     | `str`, `PathLike[str]`, URL, `Request`, file-like  | *(required)*         | The JSON Lines source to read from                                                  |
 | `opener`     | `Callable` or `None`                               | `None`               | Custom function to open the file (not supported for URLs)                           |
 | `broken`     | `bool`                                             | `False`              | If `True`, skip malformed lines and log a warning instead of raising an exception   |
 | `cls`        | `type[json.JSONDecoder]` or `Callable` or `None`   | `json.JSONDecoder`   | Custom decoder                                                                      |
@@ -200,12 +200,21 @@ for item in jsonl.load("file.jsonl", cls=UpperDecoder):
     print(item)
 ```
 
-#### Using a third-party library
+#### Using third-party JSON decoders
 
-[`orjson`](https://github.com/ijl/orjson) is a popular high-performance JSON library:
+`jsonl` supports custom JSON decoders, so you can choose the implementation that best fits your needs, including high-performance libraries such as:
+
+- [`orjson`](https://github.com/ijl/orjson)
+- [`msgspec`](https://github.com/msgspec/msgspec)
+- [`rapidjson`](https://github.com/python-rapidjson/python-rapidjson)
+
+Pass your preferred decoder to `jsonl.load()` using the `cls` parameter:
 
 ```python
+import msgspec.json
 import orjson
+import rapidjson
+
 import jsonl
 
 data = [
@@ -214,9 +223,19 @@ data = [
 ]
 jsonl.dump(data, "file.jsonl")
 
-for item in jsonl.load("file.jsonl", cls=orjson.loads):
-    print(item)
+decoders = [
+    orjson.loads,
+    msgspec.json.Decoder().decode,
+    rapidjson.Decoder(),
+]
+
+for decode in decoders:
+    print("--------------")
+    for item in jsonl.load("file.jsonl", cls=decode):
+        print(item)
 ```
+
+This allows you to use different JSON decoders without changing your JSONL file handling code.
 
 #### Passing keyword arguments
 

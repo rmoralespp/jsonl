@@ -170,9 +170,11 @@ data = [
 jsonl.dump(data, "file.jsonl", cls=ISODateEncoder)
 ```
 
-#### Using a third-party library
+## Using a third-party JSON encoder
 
-[`orjson`](https://github.com/ijl/orjson) is a high-performance JSON library that returns bytes:
+You can use third-party JSON libraries to serialize data to JSONL files by passing their encoding function through the `cls` parameter of `jsonl.dump()`.
+
+For example, [`orjson`](https://github.com/ijl/orjson) returns `bytes` instead of `str`, so you need to set `text_mode=False`:
 
 ```python
 import orjson
@@ -183,9 +185,12 @@ data = [
     {"name": "May", "wins": []},
 ]
 
-# orjson returns bytes — set text_mode=False
 jsonl.dump(data, "file.jsonl", cls=orjson.dumps, text_mode=False)
 ```
+
+Other libraries, such as [`msgspec`](https://github.com/jcrist/msgspec) and [`python-rapidjson`](https://github.com/python-rapidjson/python-rapidjson), 
+can be used in the same way with their respective encoding functions.
+
 
 #### Passing keyword arguments
 

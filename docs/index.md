@@ -29,14 +29,15 @@ If you know `json.dump` and `json.load`, you already know **jsonl**.
 
 ## Features
 
-- **Familiar API** — same `dump`/`load` interface as Python's `json` module.
+- **Familiar API** — similar `dump`/`load` interface as Python's `json` module.
 - **Streaming by default** — iterators in, iterators out. Constant memory.
-- **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14). Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
+- **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst`. Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
 - **Archive support** — read/write `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz` natively.
 - **URL loading** — pass a URL to `load()` or `load_archive()` directly.
-- **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
+- **Pluggable serialization** — swap in `orjson`, `msgspec`, `rapidjson`, or any encoder/decoder via `cls`.
 - **Error tolerance** — skip malformed lines instead of crashing.
-- **Command-line interface** — a `json`-style [`jsonl` command](cli.md) for shell pipelines.
+- **Command-line interface** — a [`json-style`](https://docs.python.org/3/library/json.html#module-json.tool) `jsonl` command for shell pipelines.
+- **Sequential splitting** — divide a stream into fixed-size JSONL files.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
 Fully compliant with the [JSON Lines](https://jsonlines.org/) and [NDJSON](https://github.com/ndjson/ndjson-spec) specifications.
@@ -111,7 +112,7 @@ Installing the package also provides a `jsonl` command for shell pipelines:
 cat input.jsonl.gz | jsonl --sort-keys > output.jsonl
 
 # Select members from an archive
-jsonl --member '2026/*.jsonl' dataset.tar.gz > output.jsonl
+jsonl --member '2026/*.jsonl' dataset.tar.gz output.jsonl
 ```
 
 See the [Command-line interface](cli.md) page for all options and exit codes.

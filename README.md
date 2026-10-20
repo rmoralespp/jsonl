@@ -44,17 +44,16 @@ pip install py-jsonl
 
 - **Familiar API** — similar `dump`/`load` interface as Python's `json` module.
 - **Streaming by default** — iterators in, iterators out. Constant memory.
-- **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst` (Python ≥ 3.14). Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
+- **Automatic compression** — `.gz`, `.bz2`, `.xz`, `.zst`. Detected by extension or [magic bytes](https://en.wikipedia.org/wiki/List_of_file_signatures).
 - **Archive support** — read/write `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz` natively.
 - **URL loading** — pass a URL to `load()` or `load_archive()` directly.
-- **Pluggable serialization** — swap in `orjson`, `ujson`, or any encoder/decoder via `cls`.
+- **Pluggable serialization** — swap in `orjson`, `msgspec`, `rapidjson`, or any encoder/decoder via `cls`.
 - **Error tolerance** — skip malformed lines instead of crashing.
-- **Command-line interface** — a `json`-style `jsonl` command for shell pipelines.
+- **Command-line interface** — a [`json-style`](https://docs.python.org/3/library/json.html#module-json.tool) `jsonl` command for shell pipelines.
 - **Sequential splitting** — divide a stream into fixed-size JSONL files.
 - **Zero dependencies** — pure standard library; single `.py` file you can vendor.
 
-> Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec)
-> specs.
+> Fully compliant with [jsonlines.org](https://jsonlines.org/) and [ndjson](https://github.com/ndjson/ndjson-spec) specs.
 
 ---
 

@@ -43,16 +43,16 @@ jsonl data.jsonl.gz data.jsonl.zst
 cat data.jsonl | jsonl --compact > compact.jsonl
 
 # Load directly from a URL (auto-decompressed)
-jsonl https://example.com/data.jsonl.gz > data.jsonl
+jsonl https://example.com/data.jsonl.gz data.jsonl
 
 # Read an archive: recognized JSONL/NDJSON members are auto-discovered and streamed
-jsonl dataset.zip > merged.jsonl
+jsonl dataset.zip merged.jsonl
 
 # Remote archives are detected from their content, even without a file extension
-jsonl 'https://example.com/download?id=123' > merged.jsonl
+jsonl 'https://example.com/download?id=123' merged.jsonl
 
 # Select specific members from an archive
-jsonl --member '2026/*.jsonl' dataset.tar.gz > year.jsonl
+jsonl --member '2026/*.jsonl' dataset.tar.gz year.jsonl
 
 # Tolerate broken input: skip invalid records and report them to stderr
 jsonl --broken messy.jsonl clean.jsonl
@@ -61,7 +61,7 @@ jsonl --broken messy.jsonl clean.jsonl
 jsonl --split 50000 input.jsonl users.jsonl.gz
 
 # Reformat: sort keys and escape non-ASCII to pure ASCII
-jsonl --sort-keys --ascii data.jsonl > normalized.jsonl
+jsonl --sort-keys --ascii data.jsonl normalized.jsonl
 ```
 
 ## Splitting
@@ -81,7 +81,7 @@ manifest and does not publish all shards atomically: if input processing fails, 
 
 <a id="error-handling"></a>
 
-By default the **first** invalid record aborts processing. With `--broken`, invalid records are
+By default, the **first** invalid record aborts processing. With `--broken`, invalid records are
 skipped and reported to stderr (with the input line number when available) while the rest continue.
 `--broken` covers only recoverable JSON parsing errors; I/O, filesystem, archive, and compression
 errors always abort.
